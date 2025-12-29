@@ -29,7 +29,7 @@ public abstract class DataHelper {
 
     /**
      * Set the name
-     * 
+     *
      * @param share    Set the context for sharing (eg, does the data get sent to the client?)
      * @param set_name Set the name, (nearly always) used by NBT.
      * @return The object to be used with put*()
@@ -48,7 +48,7 @@ public abstract class DataHelper {
 
     /**
      * Like {@link DataHelper#as(Share, String)}, but leaves the Share mode unchanged.
-     * 
+     *
      * @param set_name Set the name
      * @return The object to be used with put*()
      */

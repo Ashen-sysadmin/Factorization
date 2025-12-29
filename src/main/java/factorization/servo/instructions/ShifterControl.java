@@ -39,10 +39,13 @@ public class ShifterControl extends Instruction {
 
     ShifterModes mode = ShifterModes.EXPORT_MODE;
 
-    @Override //TODO REWRITE
+    @Override
     public IDataSerializable putData(String prefix, DataHelper data) throws IOException {
-        mode = ShifterModes.values[data.as(Share.VISIBLE, "mode")
-            .putByte((byte) mode.ordinal())];
+        mode = ShifterModes.values[
+                data.as(Share.VISIBLE, prefix + "mode")
+                .putByte(
+                    (byte) mode.ordinal()
+                )];
         return this;
     }
 
