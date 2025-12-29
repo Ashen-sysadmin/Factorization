@@ -1,5 +1,14 @@
 package factorization.beauty;
 
+import java.io.IOException;
+import java.util.Random;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.IIcon;
+import net.minecraft.util.Vec3;
+import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fluids.*;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.IMeterInfo;
@@ -18,17 +27,11 @@ import factorization.util.FzUtil;
 import factorization.util.NumUtil;
 import factorization.util.SpaceUtil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.Vec3;
-import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.*;
 
-import java.io.IOException;
-import java.util.Random;
+public class TileEntitySteamShaft extends TileEntityCommon
+    implements IFluidHandler, IRotationalEnergySource, IMeterInfo {
 
-public class TileEntitySteamShaft extends TileEntityCommon implements IFluidHandler, IRotationalEnergySource, IMeterInfo {
-    FluidTank steamTank = new FluidTank(/*this,*/ TileEntitySolarBoiler.steam_stack.copy(), 800);
+    FluidTank steamTank = new FluidTank(/* this, */ TileEntitySolarBoiler.steam_stack.copy(), 800);
 
     public static double Z = 1.6; // exponent on velocity for determining drag
     public static int TURBINE_MASS = 1000; // force:steam = mass * acceleration --> acceleration = force / mass
@@ -57,20 +60,26 @@ public class TileEntitySteamShaft extends TileEntityCommon implements IFluidHand
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        velocity = data.as(Share.VISIBLE, "velocity").putDouble(velocity);
-        drawable_velocity = data.as(Share.PRIVATE, "drawableVelocity").putDouble(drawable_velocity);
-        steamTank = data.as(Share.PRIVATE, "steam").putTank(steamTank);
-        take_spead = data.as(Share.PRIVATE, "lastTake").putInt(take_spead);
+        velocity = data.as(Share.VISIBLE, "velocity")
+            .putDouble(velocity);
+        drawable_velocity = data.as(Share.PRIVATE, "drawableVelocity")
+            .putDouble(drawable_velocity);
+        steamTank = data.as(Share.PRIVATE, "steam")
+            .putTank(steamTank);
+        take_spead = data.as(Share.PRIVATE, "lastTake")
+            .putInt(take_spead);
         if (take_spead < 0) take_spead = 1;
     }
-
 
     @Override
     public IIcon getIcon(ForgeDirection dir) {
         switch (dir) {
-            case UP: return BlockIcons.turbine_top;
-            case DOWN: return BlockIcons.turbine_bottom;
-            default: return BlockIcons.turbine_side;
+            case UP:
+                return BlockIcons.turbine_top;
+            case DOWN:
+                return BlockIcons.turbine_bottom;
+            default:
+                return BlockIcons.turbine_side;
         }
     }
 
@@ -187,11 +196,19 @@ public class TileEntitySteamShaft extends TileEntityCommon implements IFluidHand
             for (int y = 0; y < 3; y++) {
                 if (rng.nextFloat() > threshold) continue;
                 Vec3 pos = Vec3.createVectorHelper(left + scootch_x * y, bottom + scootch_y * y, r);
-                Vec3 mot = Vec3.createVectorHelper(-v + rng.nextGaussian() * motFuzz * 3, rng.nextGaussian() * motFuzz, rng.nextGaussian() * motFuzz + r * 0.125);
+                Vec3 mot = Vec3.createVectorHelper(
+                    -v + rng.nextGaussian() * motFuzz * 3,
+                    rng.nextGaussian() * motFuzz,
+                    rng.nextGaussian() * motFuzz + r * 0.125);
                 rot.applyRotation(pos);
                 rot.applyRotation(mot);
 
-                EntityFXSteam steam = new EntityFXSteam(worldObj, xCoord + 0.5 + pos.xCoord, yCoord + 0.5 + pos.yCoord, zCoord + 0.5 + pos.zCoord, BlockIcons.steam);
+                EntityFXSteam steam = new EntityFXSteam(
+                    worldObj,
+                    xCoord + 0.5 + pos.xCoord,
+                    yCoord + 0.5 + pos.yCoord,
+                    zCoord + 0.5 + pos.zCoord,
+                    BlockIcons.steam);
                 SpaceUtil.toEntVel(steam, mot);
                 Minecraft.getMinecraft().effectRenderer.addEffect(steam);
             }
@@ -200,6 +217,7 @@ public class TileEntitySteamShaft extends TileEntityCommon implements IFluidHand
     }
 
     private transient double last_sent_velocity = 0;
+
     public void shareTurbineSpeed() {
         if (last_sent_velocity == velocity) return;
         if (NumUtil.significantChange(last_sent_velocity, velocity, 0.10)) {
@@ -209,7 +227,8 @@ public class TileEntitySteamShaft extends TileEntityCommon implements IFluidHand
     }
 
     @Override
-    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input) throws IOException {
+    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input)
+        throws IOException {
         if (super.handleMessageFromServer(messageType, input)) {
             return true;
         }
@@ -256,13 +275,13 @@ public class TileEntitySteamShaft extends TileEntityCommon implements IFluidHand
 
     @Override
     public String getInfo() {
-        return FzUtil.toRpm(getVelocity(ForgeDirection.UP))
-                + "\nPower: " + (int) (velocity * 10)
-                + "\nSteam: " + steamTank.getFluidAmount() + "mB"
-                + (!Core.dev_environ ? "" :
-                        "\nTake-speed: " + take_spead
-                        + "\nLast-sync: " + last_sent_velocity
-                        + "\nAccel: " + take_accel);
+        return FzUtil.toRpm(getVelocity(ForgeDirection.UP)) + "\nPower: "
+            + (int) (velocity * 10)
+            + "\nSteam: "
+            + steamTank.getFluidAmount()
+            + "mB"
+            + (!Core.dev_environ ? ""
+                : "\nTake-speed: " + take_spead + "\nLast-sync: " + last_sent_velocity + "\nAccel: " + take_accel);
     }
 
     @Override

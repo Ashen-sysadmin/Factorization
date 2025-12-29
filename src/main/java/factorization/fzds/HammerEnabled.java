@@ -1,12 +1,14 @@
 package factorization.fzds;
 
-import factorization.coremod.LoadingPlugin;
-import factorization.shared.Core;
-import net.minecraftforge.common.config.Configuration;
-
 import java.io.File;
 
+import net.minecraftforge.common.config.Configuration;
+
+import factorization.shared.coremod.LoadingPlugin;
+import factorization.shared.Core;
+
 public class HammerEnabled {
+
     public static final boolean ENABLED = isEnabled();
 
     private static boolean isEnabled() {

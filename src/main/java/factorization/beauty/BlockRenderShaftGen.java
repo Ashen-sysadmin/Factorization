@@ -1,17 +1,19 @@
 package factorization.beauty;
 
+import net.minecraft.client.renderer.RenderBlocks;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.util.IIcon;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.FzOrientation;
 import factorization.api.Quaternion;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.shared.BlockRenderHelper;
 import factorization.shared.FactorizationBlockRender;
-import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.util.IIcon;
-import net.minecraftforge.common.util.ForgeDirection;
 
 public class BlockRenderShaftGen extends FactorizationBlockRender {
+
     @Override
     public boolean render(RenderBlocks rb) {
         BlockRenderHelper block = BlockRenderHelper.instance;

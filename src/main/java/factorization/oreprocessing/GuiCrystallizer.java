@@ -1,13 +1,14 @@
 package factorization.oreprocessing;
 
-import factorization.util.NumUtil;
 import org.lwjgl.opengl.GL11;
 
 import factorization.common.ContainerFactorization;
 import factorization.shared.Core;
 import factorization.shared.FactorizationGui;
+import factorization.util.NumUtil;
 
 public class GuiCrystallizer extends FactorizationGui {
+
     TileEntityCrystallizer crys;
 
     public GuiCrystallizer(ContainerFactorization container) {
@@ -16,11 +17,11 @@ public class GuiCrystallizer extends FactorizationGui {
         xSize = 175;
         ySize = 188;
     }
-    
+
     @Override
     protected void drawGuiContainerForegroundLayer(int foo, int bar) {
         fontRendererObj.drawString(factContainer.factory.getInventoryName(), 8, 6, 0x404040);
-        //"inventory" doesn't fit.
+        // "inventory" doesn't fit.
     }
 
     @Override
@@ -36,8 +37,8 @@ public class GuiCrystallizer extends FactorizationGui {
         this.drawTexturedModalRect(var5 + 43, var6 + 89, 0, 192, progress, 16);
 
         float h = crys.heat / (float) crys.heating_amount;
-        float cool_start = 1F/20F;
-        float cool_end = 2F/20F;
+        float cool_start = 1F / 20F;
+        float cool_end = 2F / 20F;
         if (prog > cool_start) {
             h *= (1 - NumUtil.uninterp(cool_start, cool_end, prog));
         }

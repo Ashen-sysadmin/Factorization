@@ -7,10 +7,11 @@ import factorization.truth.api.ITypesetter;
 import factorization.truth.api.TruthError;
 
 public class CmdCheckMods extends AgnosticCommand {
+
     @Override
     protected void call(ITypesetter out, ITokenizer tokenizer) throws TruthError {
         String mode = tokenizer.getParameter("\\checkmods mod mode: all|none|any"); // all some none
-        String modList = tokenizer.getParameter("\\checkmods list of mods"); //craftguide NotEnoughItems
+        String modList = tokenizer.getParameter("\\checkmods list of mods"); // craftguide NotEnoughItems
         String content = tokenizer.getParameter("\\checkmods when mods installed");
         String other = tokenizer.getParameter("\\checkmods when mods not installed");
         int count = 0;

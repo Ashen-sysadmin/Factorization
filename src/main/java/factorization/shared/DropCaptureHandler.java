@@ -4,24 +4,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import factorization.api.Coord;
-import factorization.util.ItemUtil;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.world.BlockEvent;
+
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import factorization.api.Coord;
+import factorization.util.ItemUtil;
 
 public enum DropCaptureHandler {
+
     CATCHER;
-    
+
     private DropCaptureHandler() {
         Core.loadBus(this);
     }
 
     private static class Capturer {
+
         final ICaptureDrops net;
         final Coord src;
         final double distSq;
@@ -41,17 +44,17 @@ public enum DropCaptureHandler {
             return dx + dy + dz <= distSq;
         }
     }
-    
+
     public static void startCapture(ICaptureDrops catcher, Coord src, double maxDist) {
         CATCHER.catchers.set(new Capturer(catcher, src, maxDist * maxDist));
     }
-    
+
     public static void endCapture() {
         CATCHER.catchers.set(null);
     }
-    
+
     private ThreadLocal<Capturer> catchers = new ThreadLocal<Capturer>();
-    
+
     void removeInvalids(Collection<ItemStack> drops) {
         for (Iterator<ItemStack> it = drops.iterator(); it.hasNext();) {
             if (ItemUtil.normalize(it.next()) == null) {

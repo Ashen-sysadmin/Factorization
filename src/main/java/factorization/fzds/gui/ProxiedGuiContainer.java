@@ -1,10 +1,11 @@
 package factorization.fzds.gui;
 
-import factorization.fzds.Hammer;
-import factorization.fzds.interfaces.IFzdsShenanigans;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Container;
+
+import factorization.fzds.Hammer;
+import factorization.fzds.interfaces.IFzdsShenanigans;
 
 public class ProxiedGuiContainer extends GuiContainer implements IFzdsShenanigans {
     // Basically a copy of ProxiedGuiScreen.
@@ -33,7 +34,6 @@ public class ProxiedGuiContainer extends GuiContainer implements IFzdsShenanigan
             Hammer.proxy.restoreRealWorld();
         }
     }
-
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partial, int mouseX, int mouseY) {

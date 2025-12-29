@@ -1,6 +1,5 @@
 package factorization.utiligoo;
 
-import factorization.util.RenderUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
@@ -21,20 +20,23 @@ import cpw.mods.fml.relauncher.SideOnly;
 import factorization.common.BlockIcons;
 import factorization.shared.BlockRenderHelper;
 import factorization.shared.Core;
+import factorization.util.RenderUtil;
 
 public enum GooRenderer {
+
     INSTANCE;
+
     Minecraft mc = Minecraft.getMinecraft();
     ShaderManager sobel = null;
     boolean loaded = false;
-    
+
     javax.vecmath.Matrix4f projectionMatrix;
-    
+
     void resetProjectionMatrix() {
         projectionMatrix = new javax.vecmath.Matrix4f();
         projectionMatrix.setIdentity();
-        projectionMatrix.m00 = 2.0F / (float)mc.displayWidth;
-        projectionMatrix.m11 = 2.0F / (float)(-mc.displayHeight);
+        projectionMatrix.m00 = 2.0F / (float) mc.displayWidth;
+        projectionMatrix.m11 = 2.0F / (float) (-mc.displayHeight);
         projectionMatrix.m22 = -0.0020001999F;
         projectionMatrix.m33 = 1.0F;
         projectionMatrix.m03 = -1.0F;
@@ -42,41 +44,41 @@ public enum GooRenderer {
         projectionMatrix.m23 = -1.0001999F;
     }
 
-    
     private boolean useShaders() {
         return false;
-/*        if (loaded) return sobel != null;
-        loaded = true;
-        try {
-            sobel = new ShaderManager(mc.getResourceManager(), "invert");
-            sobel.func_147992_a("DiffuseSampler", mc.getFramebuffer());
-        } catch (IOException e) {
-            e.printStackTrace();
-            sobel = null;
-            return false;
-        }
-        return true;*/
+        /*
+         * if (loaded) return sobel != null;
+         * loaded = true;
+         * try {
+         * sobel = new ShaderManager(mc.getResourceManager(), "invert");
+         * sobel.func_147992_a("DiffuseSampler", mc.getFramebuffer());
+         * } catch (IOException e) {
+         * e.printStackTrace();
+         * sobel = null;
+         * return false;
+         * }
+         * return true;
+         */
     }
-    
-    
+
     private void beginGlWithShaders() {
         resetProjectionMatrix();
         int width = mc.getFramebuffer().framebufferWidth;
         int height = mc.getFramebuffer().framebufferHeight;
-        //sobel.func_147984_b("ProjMat").setProjectionMatrix(projectionMatrix);
-        //sobel.func_147984_b("InSize").func_148087_a((float)width, (float)height);
-        //sobel.func_147984_b("OutSize").func_148087_a(width, height);
-        //sobel.func_147984_b("Time").func_148090_a(0);
+        // sobel.func_147984_b("ProjMat").setProjectionMatrix(projectionMatrix);
+        // sobel.func_147984_b("InSize").func_148087_a((float)width, (float)height);
+        // sobel.func_147984_b("OutSize").func_148087_a(width, height);
+        // sobel.func_147984_b("Time").func_148090_a(0);
         sobel.func_147995_c();
     }
-    
+
     private void endGlWithShaders() {
         sobel.func_147993_b();
     }
-    
+
     private void beginGlNoShaders() {
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
-        
+
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glColor4d(1, 1, 1, 0.9);
         OpenGlHelper.glBlendFunc(774, 768, 1, 0);
@@ -85,12 +87,12 @@ public enum GooRenderer {
         GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
         GL11.glPolygonOffset(0F, -100F);
     }
-    
+
     private void endGlNoShaders() {
         GL11.glPolygonOffset(0.0F, 0.0F);
         GL11.glPopAttrib();
     }
-    
+
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public void renderGoo(RenderWorldLastEvent event) {
@@ -102,7 +104,7 @@ public enum GooRenderer {
             ItemStack is = player.inventory.getStackInSlot(slot);
             if (is == null || is.getItem() != Core.registry.utiligoo) continue;
             GooData data = GooData.getNullGooData(is, mc.theWorld);
-            if (data == null) continue; 
+            if (data == null) continue;
             if (data.dimensionId != mc.theWorld.provider.dimensionId) continue;
             if (data.coords.length == 0) continue;
             if (!rendered_something) {
@@ -131,11 +133,11 @@ public enum GooRenderer {
             }
         }
     }
-    
+
     @SideOnly(Side.CLIENT)
     void renderGooFor(RenderWorldLastEvent event, GooData data, EntityPlayer player) {
         boolean rendered_something = false;
-        double render_dist_sq = 32*32;
+        double render_dist_sq = 32 * 32;
         Tessellator tess = Tessellator.instance;
         BlockRenderHelper block = BlockRenderHelper.instance;
         RenderBlocks rb = RenderUtil.getRB();
@@ -157,7 +159,13 @@ public enum GooRenderer {
                     rb.renderBlockByRenderType(b, x, y, z);
                 } else {
                     b.setBlockBoundsBasedOnState(player.worldObj, x, y, z);
-                    block.setBlockBounds((float)b.getBlockBoundsMinX(), (float)b.getBlockBoundsMinY(), (float)b.getBlockBoundsMinZ(), (float)b.getBlockBoundsMaxX(), (float)b.getBlockBoundsMaxY(), (float)b.getBlockBoundsMaxZ()); // Hello, Notch! 
+                    block.setBlockBounds(
+                        (float) b.getBlockBoundsMinX(),
+                        (float) b.getBlockBoundsMinY(),
+                        (float) b.getBlockBoundsMinZ(),
+                        (float) b.getBlockBoundsMaxX(),
+                        (float) b.getBlockBoundsMaxY(),
+                        (float) b.getBlockBoundsMaxZ()); // Hello, Notch!
                     block.useTexture(BlockIcons.utiligoo$invasion);
                     block.render(rb, x, y, z);
                 }
@@ -172,7 +180,13 @@ public enum GooRenderer {
                     block.render(rb, x, y, z);
                 } else {
                     b.setBlockBoundsBasedOnState(player.worldObj, x, y, z);
-                    block.setBlockBounds((float)b.getBlockBoundsMinX(), (float)b.getBlockBoundsMinY(), (float)b.getBlockBoundsMinZ(), (float)b.getBlockBoundsMaxX(), (float)b.getBlockBoundsMaxY(), (float)b.getBlockBoundsMaxZ()); // Hello, Notch! 
+                    block.setBlockBounds(
+                        (float) b.getBlockBoundsMinX(),
+                        (float) b.getBlockBoundsMinY(),
+                        (float) b.getBlockBoundsMinZ(),
+                        (float) b.getBlockBoundsMaxX(),
+                        (float) b.getBlockBoundsMaxY(),
+                        (float) b.getBlockBoundsMaxZ()); // Hello, Notch!
                     block.useTexture(BlockIcons.utiligoo$invasion);
                     block.render(rb, x, y, z);
                 }

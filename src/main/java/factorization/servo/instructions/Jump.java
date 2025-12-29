@@ -7,6 +7,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.IDataSerializable;
@@ -19,10 +20,13 @@ import factorization.servo.ServoMotor;
 import factorization.servo.ServoStack;
 
 public class Jump extends Instruction {
+
     byte mode = Executioner.JMP_NEXT_INSTRUCTION;
+
     @Override
     public IDataSerializable putData(String prefix, DataHelper data) throws IOException {
-        mode = data.as(Share.MUTABLE, "mode").putByte(mode);
+        mode = data.as(Share.MUTABLE, "mode")
+            .putByte(mode);
         return this;
     }
 
@@ -34,7 +38,8 @@ public class Jump extends Instruction {
     @Override
     public void motorHit(ServoMotor motor) {
         if (mode == Executioner.JMP_NEXT_INSTRUCTION) {
-            Boolean b = motor.getArgStack().popType(Boolean.class);
+            Boolean b = motor.getArgStack()
+                .popType(Boolean.class);
             motor.executioner.markDirty();
             if (b == null) {
                 motor.putError("Jump: Stack Underflow of Boolean");
@@ -63,7 +68,7 @@ public class Jump extends Instruction {
             return BlockIcons.error;
         }
     }
-    
+
     @Override
     public boolean onClick(EntityPlayer player, Coord block, ForgeDirection side) {
         if (!playerHasProgrammer(player)) {
@@ -76,7 +81,7 @@ public class Jump extends Instruction {
         }
         return true;
     }
-    
+
     @Override
     public String getInfo() {
         if (mode == Executioner.JMP_NEXT_INSTRUCTION) {
@@ -92,7 +97,7 @@ public class Jump extends Instruction {
     public String getName() {
         return "fz.instruction.jmp";
     }
-    
+
     @Override
     public CpuBlocking getBlockingBehavior() {
         return CpuBlocking.BLOCK_FOR_TICK;

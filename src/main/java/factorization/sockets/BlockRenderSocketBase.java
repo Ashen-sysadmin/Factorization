@@ -14,7 +14,9 @@ import factorization.shared.BlockRenderHelper;
 import factorization.shared.FactorizationBlockRender;
 
 public class BlockRenderSocketBase extends FactorizationBlockRender {
+
     final FactoryType forType;
+
     public BlockRenderSocketBase(FactoryType ft) {
         super(ft);
         forType = ft;
@@ -26,16 +28,21 @@ public class BlockRenderSocketBase extends FactorizationBlockRender {
         TileEntitySocketBase socket;
         BlockRenderHelper block = BlockRenderHelper.instance;
         block.setBlockBounds(0, 0.75F, 0, 1, 1, 1);
-        block.useTextures(BlockIcons.socket$face, BlockIcons.socket$face,
-                BlockIcons.socket$side, BlockIcons.socket$side,
-                BlockIcons.socket$side, BlockIcons.socket$side, 
-                BlockIcons.socket$side, BlockIcons.socket$side);
-        
+        block.useTextures(
+            BlockIcons.socket$face,
+            BlockIcons.socket$face,
+            BlockIcons.socket$side,
+            BlockIcons.socket$side,
+            BlockIcons.socket$side,
+            BlockIcons.socket$side,
+            BlockIcons.socket$side,
+            BlockIcons.socket$side);
+
         if (world_mode) {
             Tessellator.instance.setBrightness(block.getMixedBrightnessForBlock(w, x, y, z));
             socket = (TileEntitySocketBase) te;
             dir = socket.facing;
-            
+
             block.beginWithMirroredUVs();
             block.rotateCenter(Quaternion.fromOrientation(FzOrientation.fromDirection(dir.getOpposite())));
             block.renderRotated(Tessellator.instance, x, y, z);

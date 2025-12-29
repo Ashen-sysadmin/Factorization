@@ -1,10 +1,11 @@
 package factorization.util;
 
-import net.minecraft.util.Vec3;
-
 import java.util.Random;
 
+import net.minecraft.util.Vec3;
+
 public final class NumUtil {
+
     public static Random rand = new Random();
     private static ThreadLocal<Random> random_cache = new ThreadLocal<Random>();
 
@@ -21,6 +22,7 @@ public final class NumUtil {
 
     /**
      * See also: {@link factorization.fzds.interfaces.Interpolation}
+     * 
      * @param partial value between 0 and 1, inclusive
      * @return the linear interpolation of the two values
      */
@@ -56,9 +58,9 @@ public final class NumUtil {
     }
 
     public static boolean intersect(double la, double ha, double lb, double hb) {
-        //If we're not intersecting, then one is to the right of the other.
-        //<--  (la ha) -- (lb hb) -->
-        //<--- (lb hb) -- (la ha) -->
+        // If we're not intersecting, then one is to the right of the other.
+        // <-- (la ha) -- (lb hb) -->
+        // <--- (lb hb) -- (la ha) -->
         return !(ha < lb || hb < la);
     }
 

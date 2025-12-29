@@ -1,17 +1,12 @@
 package factorization.notify;
 
-import factorization.api.Coord;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
-
 import java.io.DataInput;
 import java.io.IOException;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.NetHandlerPlayServer;
+
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.network.FMLEventChannel;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ServerCustomPacketEvent;
@@ -19,17 +14,24 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import factorization.api.Coord;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
 
 public enum PointNetworkHandler {
+
     INSTANCE;
+
     String channelName = NotifyNetwork.channelName + "|point";
     FMLEventChannel channel;
-    
+
     void initialize() {
         channel = NetworkRegistry.INSTANCE.newEventDrivenChannel(channelName);
         channel.register(this);
     }
-    
+
     @SubscribeEvent
     public void recievePacket(ServerCustomPacketEvent event) {
         ByteBufInputStream input = new ByteBufInputStream(event.packet.payload());
@@ -40,13 +42,14 @@ public enum PointNetworkHandler {
             e.printStackTrace();
         }
     }
-    
+
     static final byte COORD = 1, ENTITY = 2;
-    
+
     void handlePoint(DataInput input, EntityPlayer player) throws IOException {
         Notice notice = null;
         switch (input.readByte()) {
-            default: return;
+            default:
+                return;
             case COORD: {
                 int x = input.readInt();
                 int y = input.readInt();
@@ -72,7 +75,7 @@ public enum PointNetworkHandler {
             notice.send(viewer);
         }
     }
-    
+
     private String buildMessage(EntityPlayer player, DataInput input) throws IOException {
         String base = "<" + player.getCommandSenderName() + ">";
         String msg = input.readUTF();
@@ -81,7 +84,7 @@ public enum PointNetworkHandler {
         }
         return base + "\n" + msg;
     }
-    
+
     @SideOnly(Side.CLIENT)
     void pointAtCoord(Coord at, String msg) throws IOException {
         ByteBuf buf = Unpooled.buffer();
@@ -94,7 +97,7 @@ public enum PointNetworkHandler {
         out.close();
         send(buf);
     }
-    
+
     @SideOnly(Side.CLIENT)
     void pointAtEntity(Entity ent, String msg) throws IOException {
         if (ent == null) return;
@@ -106,7 +109,7 @@ public enum PointNetworkHandler {
         out.close();
         send(buf);
     }
-    
+
     @SideOnly(Side.CLIENT)
     void send(ByteBuf out) {
         channel.sendToServer(new FMLProxyPacket(out, channelName));

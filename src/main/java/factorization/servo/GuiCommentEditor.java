@@ -11,6 +11,7 @@ import org.lwjgl.input.Keyboard;
 import factorization.shared.NetworkFactorization.MessageType;
 
 public class GuiCommentEditor extends GuiScreen {
+
     GuiTextField rem;
     TileEntityServoRail rail;
 

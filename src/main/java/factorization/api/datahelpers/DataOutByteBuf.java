@@ -1,30 +1,30 @@
 package factorization.api.datahelpers;
 
-import factorization.util.DataUtil;
-import io.netty.buffer.ByteBuf;
-
 import java.io.IOException;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.relauncher.Side;
+import factorization.util.DataUtil;
+import io.netty.buffer.ByteBuf;
 
 public class DataOutByteBuf extends DataHelper {
+
     private final ByteBuf dos;
     private final Side side;
-    
+
     public DataOutByteBuf(ByteBuf dos, Side side) {
         this.dos = dos;
         this.side = side;
     }
-    
 
     @Override
     protected boolean shouldStore(Share share) {
         return share.is_public;
     }
-    
+
     @Override
     public boolean isReader() {
         return false;

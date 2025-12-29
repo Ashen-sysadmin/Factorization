@@ -2,11 +2,11 @@ package factorization.servo.instructions;
 
 import java.io.IOException;
 
-import factorization.servo.stepper.StepperEngine;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.IDataSerializable;
@@ -15,15 +15,18 @@ import factorization.common.BlockIcons;
 import factorization.servo.CpuBlocking;
 import factorization.servo.Instruction;
 import factorization.servo.ServoMotor;
+import factorization.servo.stepper.StepperEngine;
 import factorization.shared.Core;
 
 public class SocketCtrl extends Instruction {
+
     static final byte MODE_PULSE = 0, MODE_POWER = 1, MODE_UNPOWER = 2;
     byte mode = MODE_PULSE;
 
     @Override
     public IDataSerializable putData(String prefix, DataHelper data) throws IOException {
-        mode = data.as(Share.VISIBLE, "mode").putByte(mode);
+        mode = data.as(Share.VISIBLE, "mode")
+            .putByte(mode);
         return this;
     }
 
@@ -67,7 +70,7 @@ public class SocketCtrl extends Instruction {
         }
         return BlockIcons.servo$socket_pulse;
     }
-    
+
     @Override
     public String getInfo() {
         if (mode == MODE_POWER) {
@@ -77,7 +80,7 @@ public class SocketCtrl extends Instruction {
         }
         return "Socket Pulse";
     }
-    
+
     @Override
     public boolean onClick(EntityPlayer player, Coord block, ForgeDirection side) {
         if (!playerHasProgrammer(player)) return false;
@@ -92,7 +95,7 @@ public class SocketCtrl extends Instruction {
     public String getName() {
         return "fz.instruction.socketCtrl";
     }
-    
+
     @Override
     public CpuBlocking getBlockingBehavior() {
         return CpuBlocking.BLOCK_FOR_TICK;

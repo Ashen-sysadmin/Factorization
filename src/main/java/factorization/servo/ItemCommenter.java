@@ -3,6 +3,7 @@ package factorization.servo;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+
 import factorization.api.Coord;
 import factorization.shared.Core.TabType;
 import factorization.shared.ItemFactorization;
@@ -17,7 +18,7 @@ public class ItemCommenter extends ItemFactorization {
 
     @Override
     public boolean onItemUse(ItemStack is, EntityPlayer player, World world, int x, int y, int z, int side, float vx,
-            float vy, float vz) {
+        float vy, float vz) {
         if (player == null) {
             return false;
         }

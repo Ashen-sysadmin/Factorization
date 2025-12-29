@@ -1,21 +1,20 @@
 package factorization.shared;
 
-import java.io.DataInput;
-import java.io.IOException;
 import java.util.ArrayList;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.relauncher.Side;
-
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
 import factorization.api.Coord;
 import factorization.shared.NetworkFactorization.MessageType;
+import io.netty.buffer.ByteBuf;
 
 public enum Sound {
+
     // it might be kinda cool to have this be configable?
     rightClick("random.click", 1.0, 1.25),
     leftClick("random.click", 1.0, 0.75),
@@ -33,14 +32,16 @@ public enum Sound {
     servoInstall("mob.slime.attack", 1.0, 1.0, true),
     artifactForged("random.anvil_use", 1.0, 0.25, true),
     legendariumInsert("factorization:legendarium.insert", 0.75, 1.0, true),
-    
+
     ;
+
     String src;
     float volume, pitch;
     int index;
     boolean share;
 
     static class sound {
+
         static ArrayList<Sound> list = new ArrayList();
     }
 
@@ -50,7 +51,7 @@ public enum Sound {
         this.pitch = (float) pitch;
         this.index = sound.list.size();
         sound.list.add(this);
-        
+
     }
 
     Sound(String src, double volume, double pitch) {
@@ -79,9 +80,10 @@ public enum Sound {
         if (player == null) {
             return;
         }
-        sound.list.get(index).playAt(coord);
+        sound.list.get(index)
+            .playAt(coord);
     }
-    
+
     public void playAt(Coord c) {
         playAt(c.w, c.x, c.y, c.z);
     }
@@ -93,7 +95,8 @@ public enum Sound {
     }
 
     public void playAt(World world, double x, double y, double z) {
-        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+        if (FMLCommonHandler.instance()
+            .getEffectiveSide() == Side.CLIENT) {
             world.playSound(x, y, z, src, volume, pitch, false);
         }
         share(world, (int) x, (int) y, (int) z);

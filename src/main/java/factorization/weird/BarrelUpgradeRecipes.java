@@ -1,7 +1,7 @@
 package factorization.weird;
 
-import cpw.mods.fml.common.registry.GameRegistry;
-import factorization.shared.Core;
+import static factorization.weird.TileEntityDayBarrel.Type.*;
+
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
@@ -11,9 +11,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.RecipeSorter;
 
-import static factorization.weird.TileEntityDayBarrel.Type.*;
+import cpw.mods.fml.common.registry.GameRegistry;
+import factorization.shared.Core;
 
 public class BarrelUpgradeRecipes {
+
     private static final ItemStack oakLog = new ItemStack(Blocks.log);
     private static final ItemStack oakPlank = new ItemStack(Blocks.wooden_slab);
     private static final ItemStack hopper = new ItemStack(Blocks.hopper);
@@ -26,26 +28,16 @@ public class BarrelUpgradeRecipes {
 
         RecipeSorter.register("factorization:barrel_upgrade", BarrelUpgrade.class, RecipeSorter.Category.SHAPED, "");
 
-        GameRegistry.addRecipe(new BarrelUpgrade(SILKY, 3, 3, new ItemStack[] {
-                web, web, web,
-                web, oakBarrel, web,
-                web, web, web
-        }));
+        GameRegistry.addRecipe(
+            new BarrelUpgrade(SILKY, 3, 3, new ItemStack[] { web, web, web, web, oakBarrel, web, web, web, web }));
 
-        GameRegistry.addRecipe(new BarrelUpgrade(HOPPING, 1, 3, new ItemStack[] {
-                hopper,
-                oakBarrel,
-                hopper
-        }));
+        GameRegistry.addRecipe(new BarrelUpgrade(HOPPING, 1, 3, new ItemStack[] { hopper, oakBarrel, hopper }));
 
-        GameRegistry.addRecipe(new BarrelUpgrade(STICKY, 1, 3, new ItemStack[] {
-                slime_ball,
-                oakBarrel,
-                slime_ball
-        }));
+        GameRegistry.addRecipe(new BarrelUpgrade(STICKY, 1, 3, new ItemStack[] { slime_ball, oakBarrel, slime_ball }));
     }
 
     public static class BarrelUpgrade extends ShapedRecipes {
+
         final TileEntityDayBarrel.Type upgradeType;
 
         public BarrelUpgrade(TileEntityDayBarrel.Type upgrade, int width, int height, ItemStack[] inputs) {

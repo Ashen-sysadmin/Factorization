@@ -1,17 +1,22 @@
 package factorization.beauty;
 
-import factorization.shared.Core;
-import factorization.shared.ObjectModel;
-import factorization.util.NumUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import factorization.shared.Core;
+import factorization.shared.ObjectModel;
+import factorization.util.NumUtil;
+
 public class TileEntityBiblioGenRenderer extends TileEntitySpecialRenderer {
-    private static final ResourceLocation bookTexture = new ResourceLocation("factorization", "textures/model/book.png");
+
+    private static final ResourceLocation bookTexture = new ResourceLocation(
+        "factorization",
+        "textures/model/book.png");
     private ObjectModel bookModel = new ObjectModel(Core.getResource("models/beauty/book.obj"));
 
     @Override
@@ -27,7 +32,9 @@ public class TileEntityBiblioGenRenderer extends TileEntitySpecialRenderer {
     }
 
     void drawBook() {
-        Minecraft.getMinecraft().getTextureManager().bindTexture(bookTexture);
+        Minecraft.getMinecraft()
+            .getTextureManager()
+            .bindTexture(bookTexture);
         double s = 5.0 / 4.0;
         GL11.glScaled(s, s, s);
         GL11.glPushAttrib(GL11.GL_TRANSFORM_BIT);

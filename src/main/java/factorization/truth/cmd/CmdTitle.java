@@ -1,9 +1,11 @@
 package factorization.truth.cmd;
 
-import factorization.truth.api.*;
 import net.minecraft.util.EnumChatFormatting;
 
+import factorization.truth.api.*;
+
 public class CmdTitle implements ITypesetCommand {
+
     static final String title_format = "" + EnumChatFormatting.UNDERLINE + EnumChatFormatting.BOLD;
 
     @Override

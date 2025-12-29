@@ -1,12 +1,7 @@
 package factorization.truth.minecraft;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import factorization.api.Coord;
-import factorization.api.ICoordFunction;
-import factorization.common.FzConfig;
-import factorization.shared.Core;
-import factorization.util.PlayerUtil;
+import java.util.HashSet;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -20,12 +15,21 @@ import net.minecraft.world.WorldSettings;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.world.BlockEvent;
 
-import java.util.HashSet;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import factorization.api.Coord;
+import factorization.api.ICoordFunction;
+import factorization.common.FzConfig;
+import factorization.shared.Core;
+import factorization.util.PlayerUtil;
 
 public class DistributeDocs {
+
     static HashSet<String> needyPlayers = new HashSet<String>();
     static final String guideKey = "fzColossusGuide";
-    static StatBase guideGet = new StatBase("factorization.dropcolossusguide", new ChatComponentTranslation("factorization.dropcolossusguide")).registerStat();
+    static StatBase guideGet = new StatBase(
+        "factorization.dropcolossusguide",
+        new ChatComponentTranslation("factorization.dropcolossusguide")).registerStat();
 
     static Item getGivenItem() {
         if (FzConfig.gen_colossi) {
@@ -34,13 +38,14 @@ public class DistributeDocs {
             return Core.registry.logicMatrixProgrammer;
         }
     }
-    
+
     static boolean givenBook(EntityPlayer player) {
         if (!FzConfig.players_discover_colossus_guides) return true;
         StatisticsFile statsFile = PlayerUtil.getStatsFile(player);
-        return (statsFile != null && statsFile.writeStat(guideGet) > 0) || player.getEntityData().hasKey(guideKey);
+        return (statsFile != null && statsFile.writeStat(guideGet) > 0) || player.getEntityData()
+            .hasKey(guideKey);
     }
-    
+
     static void setGivenBook(EntityPlayer player) {
         if (!FzConfig.players_discover_colossus_guides) return;
         needyPlayers.remove(player.getCommandSenderName());
@@ -48,9 +53,10 @@ public class DistributeDocs {
         if (statsFile != null) {
             statsFile.func_150873_a(player, guideGet, 1);
         }
-        player.getEntityData().setBoolean(guideKey, true);
+        player.getEntityData()
+            .setBoolean(guideKey, true);
     }
-    
+
     @SubscribeEvent
     public void onPlayerLogon(PlayerLoggedInEvent event) {
         if (givenBook(event.player)) {
@@ -61,7 +67,7 @@ public class DistributeDocs {
         EntityPlayerMP player = (EntityPlayerMP) event.player;
         needyPlayers.add(player.getCommandSenderName());
     }
-    
+
     @SubscribeEvent
     public void breakBlock(BlockEvent.BreakEvent event) {
         if (event.world.rand.nextInt(32) != 0 && !Core.dev_environ) return;
@@ -108,11 +114,13 @@ public class DistributeDocs {
     }
 
     static class Checker implements ICoordFunction {
+
         boolean cool = true;
 
         @Override
         public void handle(Coord here) {
-            Material mat = here.getBlock().getMaterial();
+            Material mat = here.getBlock()
+                .getMaterial();
             if (mat == Material.lava || mat == Material.cactus || mat == Material.fire) cool = false;
         }
     }

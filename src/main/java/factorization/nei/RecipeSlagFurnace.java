@@ -6,6 +6,7 @@ import java.util.List;
 
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
+
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.FurnaceRecipeHandler;
 import codechicken.nei.recipe.GuiRecipe;
@@ -16,16 +17,17 @@ import factorization.oreprocessing.TileEntitySlagFurnace.SmeltingResult;
 import factorization.shared.Core;
 
 public class RecipeSlagFurnace extends TemplateRecipeHandler {
+
     @Override
     public void loadCraftingRecipes(ItemStack result) {
-        //XXX NOTE: This is probably a lame implementation of this function.
+        // XXX NOTE: This is probably a lame implementation of this function.
         for (SmeltingResult sr : TileEntitySlagFurnace.SlagRecipes.smeltingResults) {
             if (result == null || result.isItemEqual(sr.output1) || result.isItemEqual(sr.output2)) {
                 arecipes.add(new CachedSlagRecipe(sr));
             }
         }
     }
-    
+
     @Override
     public void loadCraftingRecipes(String outputId, Object... results) {
         if (outputId.equals("fz.slagging")) {
@@ -34,7 +36,7 @@ public class RecipeSlagFurnace extends TemplateRecipeHandler {
             super.loadCraftingRecipes(outputId, results);
         }
     }
-    
+
     @Override
     public void loadUsageRecipes(String inputId, Object... ingredients) {
         ItemStack ingredient;
@@ -44,7 +46,7 @@ public class RecipeSlagFurnace extends TemplateRecipeHandler {
             ingredient = (ItemStack) ingredients[0];
         } else {
             return;
-        } 
+        }
         for (Object o : TileEntitySlagFurnace.SlagRecipes.smeltingResults) {
             if (!(o instanceof SmeltingResult)) continue;
             SmeltingResult sr = (SmeltingResult) o;
@@ -55,6 +57,7 @@ public class RecipeSlagFurnace extends TemplateRecipeHandler {
     }
 
     class CachedSlagRecipe extends CachedRecipe {
+
         SmeltingResult sr;
 
         public CachedSlagRecipe(SmeltingResult rs) {
@@ -77,33 +80,34 @@ public class RecipeSlagFurnace extends TemplateRecipeHandler {
             int h = 11;
             int w = 109;
             ret.add(new PositionedStack(sr.output1, w, h));
-            ret.add(new PositionedStack(sr.output2, w, h+26));
-            ItemStack f = FurnaceRecipeHandler.afuels.get((cycleticks/48) % FurnaceRecipeHandler.afuels.size()).stack.item;
+            ret.add(new PositionedStack(sr.output2, w, h + 26));
+            ItemStack f = FurnaceRecipeHandler.afuels
+                .get((cycleticks / 48) % FurnaceRecipeHandler.afuels.size()).stack.item;
             ret.add(new PositionedStack(f, 56 - 5, 42));
             return ret;
         }
 
     }
-    
+
     @Override
     public List<String> handleItemTooltip(GuiRecipe gui, ItemStack stack, List<String> currenttip, int recipe) {
         if (stack == null) {
             return currenttip;
         }
-        SmeltingResult sr = ((CachedSlagRecipe)arecipes.get(recipe)).sr;
+        SmeltingResult sr = ((CachedSlagRecipe) arecipes.get(recipe)).sr;
         float leftProb = 0, rightProb = 0;
         int c = 0;
         if (sr.output1 != null && stack.isItemEqual(sr.output1)) {
-            leftProb = (stack.stackSize - 1) * 100 + sr.prob1*100;
+            leftProb = (stack.stackSize - 1) * 100 + sr.prob1 * 100;
             c++;
         }
         if (sr.output2 != null && stack.isItemEqual(sr.output2)) {
-            rightProb = (stack.stackSize - 1) * 100 + sr.prob2*100;
+            rightProb = (stack.stackSize - 1) * 100 + sr.prob2 * 100;
             c++;
         }
-        int prob = (int)(leftProb + rightProb);
+        int prob = (int) (leftProb + rightProb);
         if (prob == 0) {
-            return currenttip; 
+            return currenttip;
         }
         if (c == 2) {
             currenttip.add(prob + "% (both slots)");

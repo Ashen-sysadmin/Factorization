@@ -1,33 +1,36 @@
 package factorization.fzds.network;
 
-import com.google.common.collect.BiMap;
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
-import factorization.fzds.interfaces.IFzdsShenanigans;
-import factorization.shared.Core;
+import java.io.IOException;
+
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.client.C17PacketCustomPayload;
 import net.minecraft.network.play.server.S3FPacketCustomPayload;
 
-import java.io.IOException;
+import com.google.common.collect.BiMap;
+
+import cpw.mods.fml.common.network.internal.FMLProxyPacket;
+import factorization.fzds.interfaces.IFzdsShenanigans;
+import factorization.shared.Core;
 
 public abstract class WrappedPacket extends Packet implements IFzdsShenanigans {
+
     /**
      * These fields hold the packet maps.
      * See {@link net.minecraft.util.MessageDeserializer#decode}
      */
-    static final BiMap<Integer, Class> serverPacketMap = EnumConnectionState.PLAY.func_150755_b();
-    static final BiMap<Integer, Class> clientPacketMap = EnumConnectionState.PLAY.func_150753_a();
-    
-    
+    static final BiMap<Integer, Class<? extends Packet>> serverPacketMap = EnumConnectionState.PLAY.func_150755_b();
+    static final BiMap<Integer, Class<? extends Packet>> clientPacketMap = EnumConnectionState.PLAY.func_150753_a();
+
     static int server_packet_id = 92;
     static int client_packet_id = 92;
+
     public static void registerPacket() {
         if (serverPacketMap.containsKey(server_packet_id)) {
             throw new RuntimeException("Packet " + server_packet_id + " is already registered!");
         }
-        serverPacketMap.put(server_packet_id, WrappedPacketFromServer.class); //server -> client packets
+        serverPacketMap.put(server_packet_id, WrappedPacketFromServer.class); // server -> client packets
         EnumConnectionState.PLAY.field_150761_f.put(WrappedPacketFromServer.class, EnumConnectionState.PLAY);
 
         if (clientPacketMap.containsKey(client_packet_id)) {
@@ -36,13 +39,12 @@ public abstract class WrappedPacket extends Packet implements IFzdsShenanigans {
         clientPacketMap.put(client_packet_id, WrappedPacketFromClient.class);
         EnumConnectionState.PLAY.field_150761_f.put(WrappedPacketFromClient.class, EnumConnectionState.PLAY);
     }
-    
+
     Packet wrapped = null;
     boolean localPacket = true;
 
-    public WrappedPacket() {
-    }
-    
+    public WrappedPacket() {}
+
     public WrappedPacket(Packet wrapped) {
         this.wrapped = wrapped;
     }
@@ -52,7 +54,7 @@ public abstract class WrappedPacket extends Packet implements IFzdsShenanigans {
         wrapped = unwrapPacket(data);
         localPacket = false;
     }
-    
+
     private Packet unwrapPacket(PacketBuffer buf) {
         int packetId = buf.readVarIntFromBuffer();
         if (packetId == -1) {
@@ -80,7 +82,8 @@ public abstract class WrappedPacket extends Packet implements IFzdsShenanigans {
     }
 
     protected abstract boolean isServerside();
-    protected abstract BiMap<Integer, Class> getPacketMap();
+
+    protected abstract BiMap<Integer, Class<? extends Packet>> getPacketMap();
 
     @Override
     public void writePacketData(PacketBuffer data) {
@@ -93,7 +96,8 @@ public abstract class WrappedPacket extends Packet implements IFzdsShenanigans {
             FMLProxyPacket pp = (FMLProxyPacket) wrapped;
             wrapped = this.isServerside() ? pp.toS3FPacket() : pp.toC17Packet();
         }
-        Integer packetId = getPacketMap().inverse().get(wrapped.getClass());
+        Integer packetId = getPacketMap().inverse()
+            .get(wrapped.getClass());
         if (packetId == null || packetId == -1) {
             if (packetId == null) {
                 Core.logSevere("Can't send unregistered packet: " + wrappedToString());
@@ -115,7 +119,8 @@ public abstract class WrappedPacket extends Packet implements IFzdsShenanigans {
 
     private String wrappedToString() {
         if (wrapped == null) return "NULL";
-        String info = wrapped.getClass().getName();
+        String info = wrapped.getClass()
+            .getName();
         if (wrapped instanceof FMLProxyPacket) {
             FMLProxyPacket p = (FMLProxyPacket) wrapped;
             info += " channel:" + p.channel();

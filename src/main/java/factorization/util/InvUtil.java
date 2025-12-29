@@ -1,9 +1,7 @@
 package factorization.util;
 
-import factorization.api.Coord;
-import factorization.shared.TileEntityCommon;
-import factorization.util.ItemUtil;
-import factorization.util.NumUtil;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -19,7 +17,8 @@ import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.util.List;
+import factorization.api.Coord;
+import factorization.shared.TileEntityCommon;
 
 /**
  * Everything to do with moving items around
@@ -39,7 +38,8 @@ public final class InvUtil {
         return transferSlotToSlots(player, clickSlot, destinations, 64);
     }
 
-    public static ItemStack transferSlotToSlots(EntityPlayer player, Slot clickSlot, Iterable<Slot> destinations, int maxTransfer) {
+    public static ItemStack transferSlotToSlots(EntityPlayer player, Slot clickSlot, Iterable<Slot> destinations,
+        int maxTransfer) {
         ItemStack got = tryTransferSlotToSlots(player, clickSlot, destinations, maxTransfer);
         if (got != null) {
             clickSlot.putStack(got);
@@ -51,14 +51,15 @@ public final class InvUtil {
         return tryTransferSlotToSlots(player, clickSlot, destinations, 64);
     }
 
-    public static ItemStack tryTransferSlotToSlots(EntityPlayer player, Slot clickSlot, Iterable<Slot> destinations, int maxTransfer) {
+    public static ItemStack tryTransferSlotToSlots(EntityPlayer player, Slot clickSlot, Iterable<Slot> destinations,
+        int maxTransfer) {
         ItemStack clickStack = ItemUtil.normalize(clickSlot.getStack());
         if (clickStack == null) {
             return null;
         }
         int clickStackSize = Math.min(maxTransfer, clickStack.stackSize);
         clickSlot.onPickupFromSlot(player, clickStack);
-        //try to fill up partially filled slots
+        // try to fill up partially filled slots
         for (Slot slot : destinations) {
             ItemStack is = ItemUtil.normalize(slot.getStack());
             if (is == null || !ItemUtil.couldMerge(is, clickStack)) {
@@ -84,7 +85,7 @@ public final class InvUtil {
                 return null;
             }
         }
-        //try to fill up empty slots
+        // try to fill up empty slots
         for (Slot slot : destinations) {
             if (slot.getHasStack() || !slot.isItemValid(clickStack)) {
                 continue;
@@ -139,6 +140,7 @@ public final class InvUtil {
             }
             final int[] slotMap = slotMapTmp;
             return new FzInv(inv) {
+
                 @Override
                 int slotIndex(int i) {
                     return slotMap[i];
@@ -163,7 +165,8 @@ public final class InvUtil {
                         return true;
                     }
                     return super.canInsert(i, is) && inv.canInsertItem(slotIndex(i), is, side);
-                }};
+                }
+            };
         } else {
             return new PlainInvWrapper(orig_inv);
         }
@@ -177,7 +180,7 @@ public final class InvUtil {
             return openInventory((IInventory) ent, ForgeDirection.UP);
         }
         if (ent instanceof EntityPlayer) {
-            InventoryPlayer ip = ((EntityPlayer)ent).inventory;
+            InventoryPlayer ip = ((EntityPlayer) ent).inventory;
             return openInventory(ip, ForgeDirection.UP).slice(0, ip.mainInventory.length);
         }
         return null;
@@ -186,7 +189,7 @@ public final class InvUtil {
     public static boolean canAccessSlot(IInventory inv, int slot) {
         if (inv instanceof net.minecraft.inventory.ISidedInventory) {
             net.minecraft.inventory.ISidedInventory isi = (net.minecraft.inventory.ISidedInventory) inv;
-            //O(n). Ugh.
+            // O(n). Ugh.
             for (int i = 0; i < 6; i++) {
                 int[] slots = isi.getAccessibleSlotsFromSide(i);
                 for (int j = 0; j < slots.length; j++) {
@@ -202,8 +205,10 @@ public final class InvUtil {
     }
 
     /**
-     * If you are accessing multiple chests, and some might be adjacent you'll want to treat them as a double chest. Calling this function with a lower chest
-     * will return 'null'; calling with an upper chest will return an InventoryLargeChest. If it's a single chest, it'll return that chest.
+     * If you are accessing multiple chests, and some might be adjacent you'll want to treat them as a double chest.
+     * Calling this function with a lower chest
+     * will return 'null'; calling with an upper chest will return an InventoryLargeChest. If it's a single chest, it'll
+     * return that chest.
      *
      * @param chest
      * @return
@@ -218,21 +223,33 @@ public final class InvUtil {
         }
         Block chestBlock = Blocks.chest;
         if (world.getBlock(i - 1, j, k) == chestBlock) {
-            return new InventoryLargeChest(origChest.getInventoryName(), (TileEntityChest) world.getTileEntity(i - 1, j, k), origChest);
+            return new InventoryLargeChest(
+                origChest.getInventoryName(),
+                (TileEntityChest) world.getTileEntity(i - 1, j, k),
+                origChest);
         }
         if (world.getBlock(i, j, k - 1) == chestBlock) {
-            return new InventoryLargeChest(origChest.getInventoryName(), (TileEntityChest) world.getTileEntity(i, j, k - 1), origChest);
+            return new InventoryLargeChest(
+                origChest.getInventoryName(),
+                (TileEntityChest) world.getTileEntity(i, j, k - 1),
+                origChest);
         }
         // If we're the lower chest, skip ourselves
         if (world.getBlock(i + 1, j, k) == chestBlock) {
             if (openBothSides) {
-                return new InventoryLargeChest(origChest.getInventoryName(), origChest, (TileEntityChest) world.getTileEntity(i + 1, j, k));
+                return new InventoryLargeChest(
+                    origChest.getInventoryName(),
+                    origChest,
+                    (TileEntityChest) world.getTileEntity(i + 1, j, k));
             }
             return null;
         }
         if (world.getBlock(i, j, k + 1) == chestBlock) {
             if (openBothSides) {
-                return new InventoryLargeChest(origChest.getInventoryName(), origChest, (TileEntityChest) world.getTileEntity(i, j, k + 1));
+                return new InventoryLargeChest(
+                    origChest.getInventoryName(),
+                    origChest,
+                    (TileEntityChest) world.getTileEntity(i, j, k + 1));
             }
             return null;
         }
@@ -284,7 +301,8 @@ public final class InvUtil {
     public static boolean emptyBuffer(EntityPlayer entityplayer, List<ItemStack> buffer, TileEntityCommon te) {
         if (buffer.isEmpty()) return false;
         ItemStack is = buffer.remove(0);
-        new Coord(te).spawnItem(is).onCollideWithPlayer(entityplayer);
+        new Coord(te).spawnItem(is)
+            .onCollideWithPlayer(entityplayer);
         te.markDirty();
         return true;
     }
@@ -305,7 +323,12 @@ public final class InvUtil {
         if (item == null) {
             return null;
         }
-        EntityItem entityitem = new EntityItem(c.worldObj, c.posX + c.width/2, c.posY + c.height/2, c.posZ + c.width/2, item);
+        EntityItem entityitem = new EntityItem(
+            c.worldObj,
+            c.posX + c.width / 2,
+            c.posY + c.height / 2,
+            c.posZ + c.width / 2,
+            item);
         entityitem.motionY = 0.2 + NumUtil.rand.nextGaussian() * 0.02;
         entityitem.motionX = NumUtil.rand.nextGaussian() * 0.02;
         entityitem.motionZ = NumUtil.rand.nextGaussian() * 0.02;
@@ -314,7 +337,9 @@ public final class InvUtil {
     }
 
     public static abstract class FzInv {
+
         public abstract int size();
+
         abstract int slotIndex(int i);
 
         boolean forceInsert = false;
@@ -517,7 +542,7 @@ public final class InvUtil {
 
         public ItemStack push(ItemStack is) {
             is = ItemUtil.normalize(is);
-            //First, fill up already existing stacks
+            // First, fill up already existing stacks
             int first_empty = -1;
             for (int i = 0; i < size(); i++) {
                 if (is == null) return null;
@@ -528,7 +553,7 @@ public final class InvUtil {
                     first_empty = i;
                 }
             }
-            //Second, add to null stacks
+            // Second, add to null stacks
             if (first_empty == -1) return is; // No nulls found.
             for (int i = first_empty; i < size(); i++) {
                 if (is == null) {
@@ -621,7 +646,7 @@ public final class InvUtil {
         private int slice_index(int i) {
             int size = size();
             while (i < 0 && size > 0) {
-                i += size; //super inefficient!
+                i += size; // super inefficient!
             }
             return i;
         }
@@ -642,8 +667,10 @@ public final class InvUtil {
     }
 
     public static class SubsetInv extends FzInv {
+
         final FzInv ui;
         int start, end;
+
         public SubsetInv(FzInv ui, int start, int end) {
             super(ui.under);
             this.ui = ui;
@@ -664,7 +691,9 @@ public final class InvUtil {
     }
 
     public static class PlainInvWrapper extends FzInv {
+
         final int length;
+
         public PlainInvWrapper(IInventory inv) {
             super(inv);
             length = inv.getSizeInventory();
@@ -682,27 +711,36 @@ public final class InvUtil {
     }
 
     public static class Container2IInventory implements IInventory {
+
         Container cont;
+
         public Container2IInventory(Container cont) {
             this.cont = cont;
         }
+
         @Override
         public int getSizeInventory() {
-            return cont.getInventory().size();
+            return cont.getInventory()
+                .size();
         }
 
         @Override
         public ItemStack getStackInSlot(int i) {
-            return cont.getSlot(i).getStack();
+            return cont.getSlot(i)
+                .getStack();
         }
+
         @Override
         public ItemStack decrStackSize(int i, int j) {
-            return cont.getSlot(i).decrStackSize(j);
+            return cont.getSlot(i)
+                .decrStackSize(j);
         }
+
         @Override
         public ItemStack getStackInSlotOnClosing(int i) {
             return null;
         }
+
         @Override
         public void setInventorySlotContents(int i, ItemStack itemstack) {
             cont.putStackInSlot(i, itemstack);
@@ -710,23 +748,37 @@ public final class InvUtil {
 
         @Override
         public boolean isItemValidForSlot(int i, ItemStack itemstack) {
-            return cont.getSlot(i).isItemValid(itemstack);
+            return cont.getSlot(i)
+                .isItemValid(itemstack);
         }
 
         @Override
-        public String getInventoryName() { return "Container2IInventory wrapper"; }
+        public String getInventoryName() {
+            return "Container2IInventory wrapper";
+        }
 
         @Override
-        public boolean hasCustomInventoryName() { return false; }
+        public boolean hasCustomInventoryName() {
+            return false;
+        }
+
         @Override
-        public int getInventoryStackLimit() { return 64; }
+        public int getInventoryStackLimit() {
+            return 64;
+        }
+
         @Override
-        public void markDirty() { }
+        public void markDirty() {}
+
         @Override
-        public boolean isUseableByPlayer(EntityPlayer entityplayer) { return false; }
+        public boolean isUseableByPlayer(EntityPlayer entityplayer) {
+            return false;
+        }
+
         @Override
-        public void openInventory() { }
+        public void openInventory() {}
+
         @Override
-        public void closeInventory() { }
+        public void closeInventory() {}
     }
 }

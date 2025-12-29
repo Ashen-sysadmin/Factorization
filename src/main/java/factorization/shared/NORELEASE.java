@@ -15,31 +15,33 @@ import com.google.common.base.Joiner;
  */
 @SuppressWarnings("unused")
 public class NORELEASE {
+
     /**
      * Use with || NORELEASE.on
      * NORELEASE.just may be better.
      */
     public static boolean on = true;
-    
+
     /**
      * Use with && NORELEASE.off
      * NORELEASE.just may be better.
      */
     public static boolean off = false;
-    
+
     /**
      * Use to adjust numeric values, such as int constant = 0xBEEF + 23 * NORELEASE.one.
      * NORELEASE.just may be better.
      */
     public static int one = 1;
-    
+
     /**
      * Use to adjust numeric values, such as int minVal = 10 * NORELEASE.zero
      * NORELEASE.just may be better.
      */
     public static int zero = 0;
 
-    public static final Joiner joiner = Joiner.on(" ").useForNull("null");
+    public static final Joiner joiner = Joiner.on(" ")
+        .useForNull("null");
 
     /**
      * Noise-free logging. (On Posix, at least)
@@ -57,18 +59,19 @@ public class NORELEASE {
     }
 
     public static PrintStream trace;
-    
+
     /**
      * Indicate something that needs to be done before release, eg <code>NORELEASE.fixme("some stuff")</code>
+     * 
      * @param notes
      */
-    public static void fixme(Object... notes) { }
+    public static void fixme(Object... notes) {}
 
     /**
      * Create a place to put a breakpoint
      */
-    public static void breakpoint() { }
-    
+    public static void breakpoint() {}
+
     static {
         try {
             trace = new PrintStream(new FileOutputStream(new File("/dev/stderr")));
@@ -76,7 +79,7 @@ public class NORELEASE {
             trace = System.err;
         }
     }
-    
+
     // Free variables for use when hotswapping code
     public static int i1 = 0, i2 = 0, i3 = 0, i4 = 0;
     public static boolean b1 = false, b2 = false, b3 = false, b4 = false;

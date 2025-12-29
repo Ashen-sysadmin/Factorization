@@ -1,14 +1,16 @@
 package factorization.misc;
 
-import factorization.util.SpaceUtil;
+import java.util.Random;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.Vec3;
 
-import java.util.Random;
+import factorization.util.SpaceUtil;
 
 public class Deglitch extends CommandBase {
+
     @Override
     public int getRequiredPermissionLevel() {
         return 0;

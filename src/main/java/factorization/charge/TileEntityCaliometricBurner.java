@@ -1,38 +1,34 @@
 package factorization.charge;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 
-import com.google.common.collect.HashMultimap;
-import factorization.shared.*;
-import factorization.util.DataUtil;
-import factorization.util.InvUtil;
-import factorization.util.ItemUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import com.google.common.collect.HashMultimap;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
 import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.DataInNBT;
-import factorization.api.datahelpers.DataOutNBT;
-import factorization.api.datahelpers.IDataSerializable;
 import factorization.api.datahelpers.Share;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.notify.Notice;
+import factorization.shared.*;
+import factorization.util.DataUtil;
+import factorization.util.InvUtil;
+import factorization.util.ItemUtil;
 
 public class TileEntityCaliometricBurner extends TileEntityFactorization {
+
     public static class FoodInfo {
+
         public final ItemStack match;
         public final int heal;
         public final double sat;
@@ -69,7 +65,7 @@ public class TileEntityCaliometricBurner extends TileEntityFactorization {
     ItemStack stomache;
     int foodQuality = 0;
     int ticksUntilNextDigestion = 0;
-    
+
     @Override
     public FactoryType getFactoryType() {
         return FactoryType.CALIOMETRIC_BURNER;
@@ -79,7 +75,7 @@ public class TileEntityCaliometricBurner extends TileEntityFactorization {
     public String getInventoryName() {
         return "Caliometric Burner";
     }
-    
+
     @Override
     public BlockClass getBlockClass() {
         return BlockClass.Machine;
@@ -88,11 +84,14 @@ public class TileEntityCaliometricBurner extends TileEntityFactorization {
     @Override
     public void putData(DataHelper data) throws IOException {
         super.putData(data);
-        stomache = data.as(Share.PRIVATE, "stomache").putItemStack(stomache);
-        foodQuality = data.as(Share.PRIVATE, "food").putInt(foodQuality);
-        ticksUntilNextDigestion = data.as(Share.PRIVATE, "digest").putInt(ticksUntilNextDigestion);
+        stomache = data.as(Share.PRIVATE, "stomache")
+            .putItemStack(stomache);
+        foodQuality = data.as(Share.PRIVATE, "food")
+            .putInt(foodQuality);
+        ticksUntilNextDigestion = data.as(Share.PRIVATE, "digest")
+            .putInt(ticksUntilNextDigestion);
     }
-    
+
     @Override
     public int getSizeInventory() {
         return 1;
@@ -112,7 +111,7 @@ public class TileEntityCaliometricBurner extends TileEntityFactorization {
             stomache = itemstack;
         }
     }
-    
+
     @Override
     public int getInventoryStackLimit() {
         return 4;
@@ -126,15 +125,16 @@ public class TileEntityCaliometricBurner extends TileEntityFactorization {
         return getFoodValue(itemstack) > 0;
     }
 
-    private static final int[] nomslots = new int[] {0}, emptySlots = new int[] {};
+    private static final int[] nomslots = new int[] { 0 }, emptySlots = new int[] {};
+
     @Override
     public int[] getAccessibleSlotsFromSide(int side) {
         if (ForgeDirection.getOrientation(side).offsetY != 0) {
-            return emptySlots; //Food goes in through the teeth
+            return emptySlots; // Food goes in through the teeth
         }
         return nomslots;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(ForgeDirection dir) {
@@ -163,12 +163,12 @@ public class TileEntityCaliometricBurner extends TileEntityFactorization {
             foodQuality = consumeFood();
         }
     }
-    
+
     @Override
     protected int getLogicSpeed() {
         return 1;
     }
-    
+
     int consumeFood() {
         stomache = ItemUtil.normalize(stomache);
         if (stomache == null) {
@@ -178,10 +178,10 @@ public class TileEntityCaliometricBurner extends TileEntityFactorization {
         stomache = ItemUtil.normalDecr(stomache);
         markDirty();
         Sound.caliometricDigest.playAt(this);
-        ticksUntilNextDigestion = 20*10*noms;
+        ticksUntilNextDigestion = 20 * 10 * noms;
         return 16;
     }
-    
+
     int getFoodValue(ItemStack is) {
         if (is == null) {
             return 0;
@@ -204,11 +204,11 @@ public class TileEntityCaliometricBurner extends TileEntityFactorization {
             heal = (int) sat;
             sat = swapah;
         }
-        heal += Math.min(0, heal*2*sat);
-        int r = (int)(heal*(heal/4F));
+        heal += Math.min(0, heal * 2 * sat);
+        int r = (int) (heal * (heal / 4F));
         return Math.max(heal, r);
     }
-    
+
     @Override
     public boolean activate(EntityPlayer entityplayer, ForgeDirection side) {
         if (worldObj.isRemote) {
@@ -219,18 +219,19 @@ public class TileEntityCaliometricBurner extends TileEntityFactorization {
             info(entityplayer);
             return false;
         }
-        is = InvUtil.openInventory(this, ForgeDirection.NORTH).push(is);
+        is = InvUtil.openInventory(this, ForgeDirection.NORTH)
+            .push(is);
         entityplayer.setCurrentItemOrArmor(0, is);
         info(entityplayer);
         markDirty();
         return true;
     }
-    
+
     void info(EntityPlayer entityplayer) {
         String append = "";
         if (ticksUntilNextDigestion > 0) {
-            int n = (ticksUntilNextDigestion/20);
-            int min = n/60;
+            int n = (ticksUntilNextDigestion / 20);
+            int min = n / 60;
             int s = n % 60;
             append = "\n" + min + ":";
             if (s < 10) {
@@ -253,9 +254,10 @@ public class TileEntityCaliometricBurner extends TileEntityFactorization {
             new Notice(this, "Empty" + append).send(entityplayer);
             return;
         }
-        new Notice(this, stomache.stackSize + " {ITEM_NAME}" + append).withItem(stomache).send(entityplayer);
+        new Notice(this, stomache.stackSize + " {ITEM_NAME}" + append).withItem(stomache)
+            .send(entityplayer);
     }
-    
+
     @Override
     public boolean canExtractItem(int slot, ItemStack itemstack, int side) {
         return false;

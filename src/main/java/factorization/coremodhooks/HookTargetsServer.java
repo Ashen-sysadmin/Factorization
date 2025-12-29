@@ -1,7 +1,7 @@
 package factorization.coremodhooks;
 
-import factorization.api.Coord;
-import factorization.shared.Core;
+import java.util.List;
+
 import net.minecraft.command.IEntitySelector;
 import net.minecraft.enchantment.EnchantmentProtection;
 import net.minecraft.entity.Entity;
@@ -12,17 +12,18 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
-import java.util.ArrayList;
-import java.util.List;
+import factorization.api.Coord;
+import factorization.shared.Core;
 
 public class HookTargetsServer {
+
     public static void diamondExploded(Object dis, World world, int x, int y, int z) {
         if (dis != Blocks.diamond_block) return;
         if (world.isRemote) {
             return;
         }
         Coord c = new Coord(world, x, y, z);
-        //if (c.isAir()) return;
+        // if (c.isAir()) return;
         c.setAir();
         int i = 18;
         while (i > 0) {
@@ -36,9 +37,9 @@ public class HookTargetsServer {
             ent.motionZ = randShardVelocity(world);
         }
     }
-    
+
     private static double randShardVelocity(World world) {
-        double r = world.rand.nextGaussian()/4;
+        double r = world.rand.nextGaussian() / 4;
         double max = 0.3;
         if (r > max) {
             r = max;
@@ -48,23 +49,25 @@ public class HookTargetsServer {
         return r;
     }
 
-    public static void addConstantColliders(Object me, Entity collider, AxisAlignedBB box, List found, IEntitySelector filter) {
+    public static void addConstantColliders(Object me, Entity collider, AxisAlignedBB box, List found,
+        IEntitySelector filter) {
         Entity[] constant_colliders = ((IExtraChunkData) me).getConstantColliders();
         if (constant_colliders == null) return;
         for (Entity ent : constant_colliders) {
             if (ent == collider) continue;
             if (filter == null || filter.isEntityApplicable(ent)) {
-                //AxisAlignedBB ebox = ent.getBoundingBox();
-                //if (ebox == null) continue;
-                //if (!box.intersectsWith(ebox)) continue;
-                // NOTE: The boxes are being compared backwards from the usual way so that the (presumably) vanilla box can get a crude check
+                // AxisAlignedBB ebox = ent.getBoundingBox();
+                // if (ebox == null) continue;
+                // if (!box.intersectsWith(ebox)) continue;
+                // NOTE: The boxes are being compared backwards from the usual way so that the (presumably) vanilla box
+                // can get a crude check
                 found.add(ent);
                 Entity[] parts = ent.getParts();
                 if (parts == null) continue;
                 for (Entity part : parts) {
-                    //AxisAlignedBB pbox = ent.getBoundingBox();
-                    //if (pbox == null) continue;
-                    //if (!pbox.intersectsWith(box)) continue;
+                    // AxisAlignedBB pbox = ent.getBoundingBox();
+                    // if (pbox == null) continue;
+                    // if (!pbox.intersectsWith(box)) continue;
                     // Swapped again
                     found.add(part);
                 }
@@ -77,18 +80,19 @@ public class HookTargetsServer {
         if (constant_colliders == null) return;
         for (Entity ent : constant_colliders) {
             if (ent == collider) continue;
-            //AxisAlignedBB ebox = ent.getBoundingBox();
-            //if (ebox == null) continue;
-            //if (!box.intersectsWith(ebox)) continue;
-            // NOTE: The boxes are being compared backwards from the usual way so that the (presumably) vanilla box can get a crude check
+            // AxisAlignedBB ebox = ent.getBoundingBox();
+            // if (ebox == null) continue;
+            // if (!box.intersectsWith(ebox)) continue;
+            // NOTE: The boxes are being compared backwards from the usual way so that the (presumably) vanilla box can
+            // get a crude check
             AxisAlignedBB bb = ent.getBoundingBox();
             if (bb != null && bb.intersectsWith(box)) found.add(bb);
             Entity[] parts = ent.getParts();
             if (parts == null) continue;
             for (Entity part : parts) {
-                //AxisAlignedBB pbox = ent.getBoundingBox();
-                //if (pbox == null) continue;
-                //if (!pbox.intersectsWith(box)) continue;
+                // AxisAlignedBB pbox = ent.getBoundingBox();
+                // if (pbox == null) continue;
+                // if (!pbox.intersectsWith(box)) continue;
                 // Swapped again
                 bb = part.getBoundingBox();
                 if (bb != null && bb.intersectsWith(box)) found.add(bb);
@@ -146,9 +150,11 @@ public class HookTargetsServer {
     }
 
     private static boolean collides(IExtraChunkData data, AxisAlignedBB box) {
-        Entity[] colliders = data.getConstantColliders(); // This method can return null, but it will have already been checked by workableChunk
+        Entity[] colliders = data.getConstantColliders(); // This method can return null, but it will have already been
+                                                          // checked by workableChunk
         for (Entity ent : colliders) {
-            if (ent.getBoundingBox().intersectsWith(box)) return true;
+            if (ent.getBoundingBox()
+                .intersectsWith(box)) return true;
         }
         return false;
     }

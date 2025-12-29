@@ -1,5 +1,16 @@
 package factorization.charge;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.IIcon;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.*;
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.Share;
@@ -9,18 +20,9 @@ import factorization.shared.BlockClass;
 import factorization.shared.NetworkFactorization.MessageType;
 import factorization.shared.TileEntityCommon;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.IIcon;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TileEntityHeater extends TileEntityCommon implements IChargeConductor {
+
     Charge charge = new Charge(this);
     public byte heat = 0;
     public static final byte maxHeat = 32;
@@ -29,7 +31,7 @@ public class TileEntityHeater extends TileEntityCommon implements IChargeConduct
     public FactoryType getFactoryType() {
         return FactoryType.HEATER;
     }
-    
+
     @Override
     public IIcon getIcon(ForgeDirection dir) {
         return BlockIcons.heater_spiral;
@@ -53,9 +55,10 @@ public class TileEntityHeater extends TileEntityCommon implements IChargeConduct
     @Override
     public void putData(DataHelper data) throws IOException {
         charge.serialize("", data);
-        heat = data.as(Share.VISIBLE, "heat").putByte(heat);
+        heat = data.as(Share.VISIBLE, "heat")
+            .putByte(heat);
     }
-    
+
     int charge2heat(int i) {
         return (int) (i / 1.5);
     }
@@ -132,7 +135,8 @@ public class TileEntityHeater extends TileEntityCommon implements IChargeConduct
         if (heat < to_take) {
             return;
         }
-        for (Coord c : heater.getCoord().getRandomNeighborsAdjacent()) {
+        for (Coord c : heater.getCoord()
+            .getRandomNeighborsAdjacent()) {
             IFurnaceHeatable adj = HeatConverters.convert(c.w, c.x, c.y, c.z);
             if (adj == null) continue;
             if (heater.sendHeat(adj)) {

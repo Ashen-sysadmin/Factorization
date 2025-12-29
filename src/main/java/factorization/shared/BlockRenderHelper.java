@@ -1,12 +1,5 @@
 package factorization.shared;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.api.Coord;
-import factorization.api.FzOrientation;
-import factorization.api.Quaternion;
-import factorization.api.VectorUV;
-import factorization.common.BlockIcons;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.RenderBlocks;
@@ -16,8 +9,17 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.api.Coord;
+import factorization.api.FzOrientation;
+import factorization.api.Quaternion;
+import factorization.api.VectorUV;
+import factorization.common.BlockIcons;
+
 public class BlockRenderHelper extends Block {
-    //This class is used to make it easy (and very thread-safe) to render cubes of various sizes. It's a fake block.
+
+    // This class is used to make it easy (and very thread-safe) to render cubes of various sizes. It's a fake block.
     public static BlockRenderHelper instance;
 
     public BlockRenderHelper() {
@@ -28,20 +30,20 @@ public class BlockRenderHelper extends Block {
     }
 
     public BlockRenderHelper setBlockBoundsOffset(float x, float y, float z) {
-        setBlockBounds(x, y, z, 1 - x, 1 -y , 1 - z);
+        setBlockBounds(x, y, z, 1 - x, 1 - y, 1 - z);
         return this;
     }
-    
+
     public BlockRenderHelper setBlockBoundsBasedOnRotation() {
         double minX, minY, minZ;
         double maxX, maxY, maxZ;
-        
+
         currentFace = faceCache[0];
-        
+
         minX = maxX = currentFace[0].x;
         minY = maxY = currentFace[0].y;
         minZ = maxZ = currentFace[0].z;
-        
+
         for (int face = 0; face < faceCache.length; face++) {
             currentFace = faceCache[face];
             for (int i = 1; i < currentFace.length; i++) {
@@ -54,13 +56,13 @@ public class BlockRenderHelper extends Block {
                 maxZ = Math.max(maxZ, vec.z);
             }
         }
-        setBlockBounds((float)minX, (float)minY, (float)minZ, (float)maxX, (float)maxY, (float)maxZ);
+        setBlockBounds((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ);
         return this;
     }
-    
+
     public IIcon[] textures;
     private IIcon[] repetitionCache = new IIcon[6];
-    
+
     @SideOnly(Side.CLIENT)
     public BlockRenderHelper useTexture(IIcon texture) {
         textures = repetitionCache;
@@ -69,26 +71,26 @@ public class BlockRenderHelper extends Block {
         }
         return this;
     }
-    
+
     @SideOnly(Side.CLIENT)
-    public BlockRenderHelper useTextures(IIcon ...textures) {
+    public BlockRenderHelper useTextures(IIcon... textures) {
         this.textures = textures;
         return this;
     }
-    
+
     @SideOnly(Side.CLIENT)
     public BlockRenderHelper setTexture(int i, IIcon texture) {
         textures = repetitionCache;
         textures[i] = texture;
         return this;
     }
-    
+
     @SideOnly(Side.CLIENT)
     @Override
     public boolean shouldSideBeRendered(IBlockAccess w, int x, int y, int z, int side) {
         return textures[side] != null;
     }
-    
+
     @SideOnly(Side.CLIENT)
     @Override
     public IIcon getIcon(int side, int md) {
@@ -104,22 +106,22 @@ public class BlockRenderHelper extends Block {
         }
         return textures[side];
     }
-    
+
     public VectorUV[][] getFaceVertices() {
         return faceCache;
     }
-    
+
     @SideOnly(Side.CLIENT)
     public void renderForTileEntity() {
         renderRotated(Tessellator.instance, 0, 0, 0);
     }
-    
+
     @SideOnly(Side.CLIENT)
     public void renderForInventory(RenderBlocks renderblocks) {
         // This originally copied from RenderBlocks.renderBlockAsItem (near the bottom)
         renderblocks.setRenderBoundsFromBlock(this);
         Tessellator tessellator = Tessellator.instance;
-        
+
         IIcon texture;
         tessellator.addTranslation(-0.5F, -0.5F, -0.5F);
         tessellator.startDrawingQuads();
@@ -150,38 +152,39 @@ public class BlockRenderHelper extends Block {
         tessellator.draw();
         tessellator.addTranslation(0.5F, 0.5F, 0.5F);
     }
-    
+
     @SideOnly(Side.CLIENT)
     public boolean render(RenderBlocks rb, int x, int y, int z) {
         rb.setRenderBounds(minX, minY, minZ, maxX, maxY, maxZ);
         return rb.renderStandardBlock(this, x, y, z);
     }
-    
+
     @SideOnly(Side.CLIENT)
     public boolean render(RenderBlocks rb, Coord c) {
         rb.setRenderBounds(minX, minY, minZ, maxX, maxY, maxZ);
         return rb.renderStandardBlock(this, c.x, c.y, c.z);
     }
-    
-    private static final byte UV_NONE = 0, UV_OLD_STYLE_ROTATED = 1, UV_NEW_STYLE_MIRRORED = 2, UV_FULLY_ROTATED_STYLE = 3;
-    
+
+    private static final byte UV_NONE = 0, UV_OLD_STYLE_ROTATED = 1, UV_NEW_STYLE_MIRRORED = 2,
+        UV_FULLY_ROTATED_STYLE = 3;
+
     private VectorUV center = new VectorUV();
-    
+
     @SideOnly(Side.CLIENT)
     public BlockRenderHelper beginWithRotatedUVs() {
         return begin(UV_OLD_STYLE_ROTATED);
     }
-    
+
     @SideOnly(Side.CLIENT)
     public BlockRenderHelper beginWithMirroredUVs() {
         return begin(UV_NEW_STYLE_MIRRORED);
     }
-    
+
     @SideOnly(Side.CLIENT)
     public BlockRenderHelper beginWithHipsterUVs() {
         return begin(UV_FULLY_ROTATED_STYLE);
     }
-    
+
     @SideOnly(Side.CLIENT)
     private BlockRenderHelper begin(byte uv_mode) {
         for (int i = 0; i < 6; i++) {
@@ -196,32 +199,32 @@ public class BlockRenderHelper extends Block {
                 vert.v = faceIIcon.getInterpolatedV(vert.v * 16);
             }
         }
-        center.x = (minX + maxX)/2;
-        center.y = (minY + maxY)/2;
-        center.z = (minZ + maxZ)/2;
+        center.x = (minX + maxX) / 2;
+        center.y = (minY + maxY) / 2;
+        center.z = (minZ + maxZ) / 2;
         return this;
     }
-    
+
     public BlockRenderHelper beginNoIIcons() {
         for (int i = 0; i < 6; i++) {
-            //We'll have multiple instances of BlockRenderHelper for server & client, so that they don't interfere with eachother.
+            // We'll have multiple instances of BlockRenderHelper for server & client, so that they don't interfere with
+            // eachother.
             currentFace = faceCache[i];
             faceVerts(i, UV_NONE);
         }
         return this;
     }
 
-    
     boolean hasTexture(int f) {
-        //Efficiency
+        // Efficiency
         return Core.proxy.BlockRenderHelper_has_texture(this, f);
     }
-    
+
     /**
      * Rotate around the block's 0,0,0 or something. You don't want this one.
      */
     public BlockRenderHelper rotate(Quaternion q) {
-        //Apply the Quaternion to the vertices
+        // Apply the Quaternion to the vertices
         for (int f = 0; f < faceCache.length; f++) {
             if (!hasTexture(f)) {
                 continue;
@@ -234,32 +237,32 @@ public class BlockRenderHelper extends Block {
         q.applyRotation(center);
         return this;
     }
-    
+
     /**
      * Rotate around the block's bounding box center of mass. You probably don't want this one.
      */
     public BlockRenderHelper rotateMiddle(Quaternion q) {
         Vec3 d = getBoundsMiddle();
-        translate((float)(-d.xCoord), (float)(-d.yCoord), (float)(-d.zCoord));
+        translate((float) (-d.xCoord), (float) (-d.yCoord), (float) (-d.zCoord));
         rotate(q);
-        translate((float)(d.xCoord), (float)(d.yCoord), (float)(d.zCoord));
+        translate((float) (d.xCoord), (float) (d.yCoord), (float) (d.zCoord));
         return this;
     }
-    
+
     /**
      * Rotate around the center of the block. Use this one!
      */
     public BlockRenderHelper rotateCenter(Quaternion q) {
-        //TODO: FzOrientation variant; could let us do mad render optimizations
+        // TODO: FzOrientation variant; could let us do mad render optimizations
         float d = 0.5F;
         translate(-d, -d, -d);
         rotate(q);
         translate(d, d, d);
         return this;
     }
-    
+
     public BlockRenderHelper translate(float dx, float dy, float dz) {
-        //Move the vertices
+        // Move the vertices
         for (int f = 0; f < faceCache.length; f++) {
             if (!hasTexture(f)) {
                 continue;
@@ -276,54 +279,55 @@ public class BlockRenderHelper extends Block {
         center.z += dz;
         return this;
     }
-    
+
     private int[] colors = new int[6];
     {
         resetColors();
     }
-    
+
     public void setColor(int index, int color) {
         colors[index] = color;
     }
-    
+
     public void setColor(int color) {
         for (int i = 0; i < colors.length; i++) {
             colors[i] = color;
         }
     }
-    
+
     public void resetColors() {
         for (int i = 0; i < colors.length; i++) {
             colors[i] = 0xFFFFFF;
         }
     }
-    
+
     Quaternion getNormal(VectorUV a, VectorUV b, VectorUV c) {
-        //Dir = (B - A) x (C - A)
-        //Norm = Dir / len(Dir)
+        // Dir = (B - A) x (C - A)
+        // Norm = Dir / len(Dir)
         Quaternion A = new Quaternion(), B = new Quaternion(), C = new Quaternion();
         A.loadFrom(a);
         B.loadFrom(b);
         C.loadFrom(c);
-        
+
         A.incrScale(-1);
         B.incrAdd(A);
         C.incrAdd(A);
-        
+
         B.incrCross(C);
         B.incrNormalize();
         return B;
     }
-    
-    public float alpha = 1F;
 
+    public float alpha = 1F;
 
     public void simpleCull(FzOrientation fzo, IBlockAccess w, int x, int y, int z) {
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            /*Quaternion quat = Quaternion.fromOrientation(fzo);
-            Vec3 v = SpaceUtil.fromDirection(dir);
-            quat.applyRotation(v);
-            ForgeDirection turned = SpaceUtil.round(v, ForgeDirection.UNKNOWN);*/
+            /*
+             * Quaternion quat = Quaternion.fromOrientation(fzo);
+             * Vec3 v = SpaceUtil.fromDirection(dir);
+             * quat.applyRotation(v);
+             * ForgeDirection turned = SpaceUtil.round(v, ForgeDirection.UNKNOWN);
+             */
             ForgeDirection turned = fzo.applyRotation(dir);
             Block b = w.getBlock(x + turned.offsetX, y + turned.offsetY, z + turned.offsetZ);
             boolean cull = b.isOpaqueCube();
@@ -346,9 +350,8 @@ public class BlockRenderHelper extends Block {
             float color_r = (color & 0xFF0000) >> 16;
             float color_g = (color & 0x00FF00) >> 8;
             float color_b = (color & 0x0000FF);
-            lighting /= 255F; /* because the colors go from 0x00 to 0xFF*/
-            tess.setColorRGBA_F(lighting*color_r, lighting*color_g, lighting*color_b, alpha);
-
+            lighting /= 255F; /* because the colors go from 0x00 to 0xFF */
+            tess.setColorRGBA_F(lighting * color_r, lighting * color_g, lighting * color_b, alpha);
 
             for (VectorUV vert : face) {
                 tess.addVertexWithUV(vert.x + x, vert.y + y, vert.z + z, vert.u, vert.v);
@@ -356,7 +359,7 @@ public class BlockRenderHelper extends Block {
         }
         return any;
     }
-    
+
     @SideOnly(Side.CLIENT)
     public void renderRotatedUnshaded(Tessellator tess, int x, int y, int z) {
         for (int f = 0; f < faceCache.length; f++) {
@@ -369,15 +372,15 @@ public class BlockRenderHelper extends Block {
             float color_r = (color & 0xFF0000) >> 16;
             float color_g = (color & 0x00FF00) >> 8;
             float color_b = (color & 0x0000FF);
-            lighting /= 255F; /* because the colors go from 0x00 to 0xFF*/
-            tess.setColorOpaque_F(lighting*color_r, lighting*color_g, lighting*color_b);
+            lighting /= 255F; /* because the colors go from 0x00 to 0xFF */
+            tess.setColorOpaque_F(lighting * color_r, lighting * color_g, lighting * color_b);
             for (int i = 0; i < face.length; i++) {
                 VectorUV vert = face[i];
                 tess.addVertexWithUV(vert.x + x, vert.y + y, vert.z + z, vert.u, vert.v);
             }
         }
     }
-    
+
     @SideOnly(Side.CLIENT)
     public void renderRotated(Tessellator tess, Coord c) {
         if (c == null) {
@@ -386,16 +389,16 @@ public class BlockRenderHelper extends Block {
         }
         renderRotated(tess, c.x, c.y, c.z);
     }
-    
+
     static Vec3 midCache = Vec3.createVectorHelper(0, 0, 0);
+
     public Vec3 getBoundsMiddle() {
-        midCache.xCoord = (minX + maxX)/2;
-        midCache.yCoord = (minY + maxY)/2;
-        midCache.zCoord = (minZ + maxZ)/2;
+        midCache.xCoord = (minX + maxX) / 2;
+        midCache.yCoord = (minY + maxY) / 2;
+        midCache.zCoord = (minZ + maxZ) / 2;
         return midCache;
     }
-    
-    
+
     VectorUV[] currentFace;
     public VectorUV[][] faceCache = new VectorUV[6][4];
     {
@@ -406,174 +409,174 @@ public class BlockRenderHelper extends Block {
             }
         }
     }
-    
+
     private void setVertexPositions(int face) {
         switch (face) {
-        case 0: //-y
-            set(0, 1, 0, 1);
-            set(1, 0, 0, 1);
-            set(2, 0, 0, 0);
-            set(3, 1, 0, 0);
-            break;
-        case 1: //+y
-            set(0, 1, 1, 0);
-            set(1, 0, 1, 0);
-            set(2, 0, 1, 1);
-            set(3, 1, 1, 1);
-            break;
-        case 2: //-z
-            set(0, 1, 1, 0);
-            set(1, 1, 0, 0);
-            set(2, 0, 0, 0);
-            set(3, 0, 1, 0);
-            break;
-        case 3: //+z
-            set(0, 1, 1, 1);
-            set(1, 0, 1, 1);
-            set(2, 0, 0, 1);
-            set(3, 1, 0, 1);
-            break;
-        case 4: //-x
-            set(0, 0, 0, 1);
-            set(1, 0, 1, 1);
-            set(2, 0, 1, 0);
-            set(3, 0, 0, 0);
-            break;
-        case 5: //+x
-            set(0, 1, 1, 1);
-            set(1, 1, 0, 1);
-            set(2, 1, 0, 0);
-            set(3, 1, 1, 0);
-            break;
+            case 0: // -y
+                set(0, 1, 0, 1);
+                set(1, 0, 0, 1);
+                set(2, 0, 0, 0);
+                set(3, 1, 0, 0);
+                break;
+            case 1: // +y
+                set(0, 1, 1, 0);
+                set(1, 0, 1, 0);
+                set(2, 0, 1, 1);
+                set(3, 1, 1, 1);
+                break;
+            case 2: // -z
+                set(0, 1, 1, 0);
+                set(1, 1, 0, 0);
+                set(2, 0, 0, 0);
+                set(3, 0, 1, 0);
+                break;
+            case 3: // +z
+                set(0, 1, 1, 1);
+                set(1, 0, 1, 1);
+                set(2, 0, 0, 1);
+                set(3, 1, 0, 1);
+                break;
+            case 4: // -x
+                set(0, 0, 0, 1);
+                set(1, 0, 1, 1);
+                set(2, 0, 1, 0);
+                set(3, 0, 0, 0);
+                break;
+            case 5: // +x
+                set(0, 1, 1, 1);
+                set(1, 1, 0, 1);
+                set(2, 1, 0, 0);
+                set(3, 1, 1, 0);
+                break;
         }
     }
-    
+
     private void setOldStyleRotatedishUVs(int face) {
         switch (face) {
-        case 0: //-y
-        case 1: //+y
-            //Mirror these like MC does.
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = vert.x;
-                vert.v = vert.z;
-            }
-            break;
-        case 2: //-z
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = 1 - vert.x;
-                vert.v = 1 - vert.y;
-            }
-            break;
-        case 3: //+z
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = vert.x;
-                vert.v = 1 - vert.y;
-            }
-            break;
-        case 4: //-x
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = vert.z;
-                vert.v = 1 - vert.y;
-            }
-            break;
-        case 5: //+x
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = 1 - vert.z;
-                vert.v = 1 - vert.y;
-            }
-            break;
-        default:
-            throw new RuntimeException("Invalid face number");
+            case 0: // -y
+            case 1: // +y
+                // Mirror these like MC does.
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = vert.x;
+                    vert.v = vert.z;
+                }
+                break;
+            case 2: // -z
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = 1 - vert.x;
+                    vert.v = 1 - vert.y;
+                }
+                break;
+            case 3: // +z
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = vert.x;
+                    vert.v = 1 - vert.y;
+                }
+                break;
+            case 4: // -x
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = vert.z;
+                    vert.v = 1 - vert.y;
+                }
+                break;
+            case 5: // +x
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = 1 - vert.z;
+                    vert.v = 1 - vert.y;
+                }
+                break;
+            default:
+                throw new RuntimeException("Invalid face number");
         }
     }
-    
+
     private void setVanillaStyleMirroredUVs(int face) {
         switch (face) {
-        case 0: //-y
-        case 1: //+y
-            //Mirror these like MC does.
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = vert.x;
-                vert.v = vert.z;
-            }
-            break;
+            case 0: // -y
+            case 1: // +y
+                // Mirror these like MC does.
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = vert.x;
+                    vert.v = vert.z;
+                }
+                break;
             // In 1.7, MC side faces mirror each-other as well.
-        case 2: //-z
-        case 3: //+z
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = vert.x;
-                vert.v = 1 - vert.y;
-            }
-            break;
-        case 4: //-x
-        case 5: //+x
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = vert.z;
-                vert.v = 1 - vert.y;
-            }
-            break;
-        default:
-            throw new RuntimeException("Invalid face number");
+            case 2: // -z
+            case 3: // +z
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = vert.x;
+                    vert.v = 1 - vert.y;
+                }
+                break;
+            case 4: // -x
+            case 5: // +x
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = vert.z;
+                    vert.v = 1 - vert.y;
+                }
+                break;
+            default:
+                throw new RuntimeException("Invalid face number");
         }
     }
-    
+
     private void setStyleFullyRotatedUVs(int face) {
         switch (face) {
-        case 0: //-y
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = vert.x;
-                vert.v = 1 - vert.z;
-            }
-            break;
-        case 1: //+y
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = 1 - vert.x;
-                vert.v = 1 - vert.z;
-            }
-            break;
-        case 2: //-z
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = 1 - vert.x;
-                vert.v = 1 - vert.y;
-            }
-            break;
-        case 3: //+z
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = vert.x;
-                vert.v = 1 - vert.y;
-            }
-            break;
-        case 4: //-x
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = vert.z;
-                vert.v = 1 - vert.y;
-            }
-            break;
-        case 5: //+x
-            for (int i = 0; i < currentFace.length; i++) {
-                VectorUV vert = currentFace[i];
-                vert.u = 1 - vert.z;
-                vert.v = 1 - vert.y;
-            }
-            break;
-        default:
-            throw new RuntimeException("Invalid face number");
+            case 0: // -y
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = vert.x;
+                    vert.v = 1 - vert.z;
+                }
+                break;
+            case 1: // +y
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = 1 - vert.x;
+                    vert.v = 1 - vert.z;
+                }
+                break;
+            case 2: // -z
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = 1 - vert.x;
+                    vert.v = 1 - vert.y;
+                }
+                break;
+            case 3: // +z
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = vert.x;
+                    vert.v = 1 - vert.y;
+                }
+                break;
+            case 4: // -x
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = vert.z;
+                    vert.v = 1 - vert.y;
+                }
+                break;
+            case 5: // +x
+                for (int i = 0; i < currentFace.length; i++) {
+                    VectorUV vert = currentFace[i];
+                    vert.u = 1 - vert.z;
+                    vert.v = 1 - vert.y;
+                }
+                break;
+            default:
+                throw new RuntimeException("Invalid face number");
         }
     }
-    
+
     private void convertUVsForIcon(int face) {
         VectorUV[] cache = currentFace;
         int WIDTH = 1;
@@ -605,7 +608,7 @@ public class BlockRenderHelper extends Block {
             }
         }
     }
-    
+
     private void clipUVs() {
         for (int i = 0; i < currentFace.length; i++) {
             VectorUV vec = currentFace[i];
@@ -613,7 +616,7 @@ public class BlockRenderHelper extends Block {
             vec.v = clip(vec.v);
         }
     }
-    
+
     private void faceVerts(int face, byte uv_mode) {
         setVertexPositions(face);
         if (uv_mode == UV_NONE) return;
@@ -627,17 +630,17 @@ public class BlockRenderHelper extends Block {
         convertUVsForIcon(face);
         clipUVs();
     }
-    
+
     static double clip(double v) {
         return Math.max(0, Math.min(1, v));
     }
-    
+
     private void set(int i, int X, int Y, int Z) {
         currentFace[i].x = X == 0 ? minX : maxX;
         currentFace[i].y = Y == 0 ? minY : maxY;
         currentFace[i].z = Z == 0 ? minZ : maxZ;
     }
-    
+
     static private ForgeDirection getDirectionFromVector(VectorUV here) {
         double x = Math.abs(here.x), y = Math.abs(here.y), z = Math.abs(here.z);
         if (x >= y && x >= z) {
@@ -651,9 +654,10 @@ public class BlockRenderHelper extends Block {
         }
         return ForgeDirection.UP;
     }
-    
-    private static final float[] directionLighting = new float[] {0.5F, 1F, 0.8F, 0.8F, 0.6F, 0.6F};
+
+    private static final float[] directionLighting = new float[] { 0.5F, 1F, 0.8F, 0.8F, 0.6F, 0.6F };
     VectorUV normal_uv = new VectorUV();
+
     private float getNormalizedLighting(VectorUV[] vecs, VectorUV center) {
         Quaternion normal = getNormal(vecs[0], vecs[1], vecs[2]);
         normal_uv.x = normal.x;
@@ -662,12 +666,12 @@ public class BlockRenderHelper extends Block {
         ForgeDirection dir = getDirectionFromVector(normal_uv);
         return directionLighting[dir.ordinal()];
     }
-    
+
     public void setupBrightness(Tessellator tess, IBlockAccess w, int x, int y, int z) {
         if (w == null) return; // Is that cool?
         tess.instance.setBrightness(getMixedBrightnessForBlock(w, x, y, z));
     }
-    
+
     public void setupBrightness(Tessellator tess, Coord c) {
         if (c.w == null) return; // Is that cool?
         tess.instance.setBrightness(getMixedBrightnessForBlock(c.w, c.x, c.y, c.z));

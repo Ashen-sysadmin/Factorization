@@ -1,13 +1,5 @@
 package factorization.truth.gen.recipe;
 
-import com.google.common.base.Splitter;
-import factorization.truth.api.IObjectWriter;
-import factorization.truth.word.LocalizedWord;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
-import net.minecraft.util.StringUtils;
-import net.minecraftforge.common.util.Constants;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -15,20 +7,31 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-/** NBT tag syntax:
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.*;
+import net.minecraft.util.StringUtils;
+import net.minecraftforge.common.util.Constants;
+
+import com.google.common.base.Splitter;
+
+import factorization.truth.api.IObjectWriter;
+import factorization.truth.word.LocalizedWord;
+
+/**
+ * NBT tag syntax:
  * {
- *     "category": "Same syntax as AddRecipeCategory",
- *     "output": ["ReflectionExpression"],
- *     "input": ["ReflectionExpression"],
- *     "catalyst": ["ReflectionExpression"],
- *     "text": "a string; goes w/ the recipe. For special instructions. Uses FzDoc formatting."
+ * "category": "Same syntax as AddRecipeCategory",
+ * "output": ["ReflectionExpression"],
+ * "input": ["ReflectionExpression"],
+ * "catalyst": ["ReflectionExpression"],
+ * "text": "a string; goes w/ the recipe. For special instructions. Uses FzDoc formatting."
  * }
  * The recipe will be printed in the order shown. output, input, catalyst, and text do not have to be specified.
  * A ReflectionExpression is a series of actions separated by periods, which can be one of:
  * <ul>
- *     <li>field access: none of the below symbols</li>
- *     <li>method invokation: ends with "()"; no parameters may be passed in, and the function may not return void</li>
- *     <li>NBTTagCompound access: wrapped 'single quotes'. </li>
+ * <li>field access: none of the below symbols</li>
+ * <li>method invokation: ends with "()"; no parameters may be passed in, and the function may not return void</li>
+ * <li>NBTTagCompound access: wrapped 'single quotes'.</li>
  * </ul>
  *
  * If a null is returned anywhere, 'null' will be the result of the expression.
@@ -41,12 +44,15 @@ import java.util.List;
  *
  */
 public class GuidedReflectionWriter<T> implements IObjectWriter<T> {
+
     final ReflectionExpression[] input, catalyst, output;
     final String text;
 
-    public static void register(NBTTagCompound tag) throws ClassNotFoundException, NoSuchMethodException, NoSuchFieldException {
+    public static void register(NBTTagCompound tag)
+        throws ClassNotFoundException, NoSuchMethodException, NoSuchFieldException {
         GuidedReflectionWriter<Object> writer = new GuidedReflectionWriter<Object>(tag);
-        String label = tag.getString("category").split("\\|")[0];
+        String label = tag.getString("category")
+            .split("\\|")[0];
         RecipeViewer.instance.guiders.put(label, writer);
     }
 
@@ -109,7 +115,8 @@ public class GuidedReflectionWriter<T> implements IObjectWriter<T> {
                     } else if (v instanceof Collection) {
                         Collection c = (Collection) v;
                         if (c.size() == 1) {
-                            Object next = c.iterator().next();
+                            Object next = c.iterator()
+                                .next();
                             if (next instanceof ItemStack) {
                                 is = (ItemStack) next;
                             }
@@ -126,10 +133,10 @@ public class GuidedReflectionWriter<T> implements IObjectWriter<T> {
         }
     }
 
-
 }
 
 class ReflectionExpression {
+
     String exprBody, prefix;
     ReflectionComponent[] parts;
 
@@ -138,7 +145,8 @@ class ReflectionExpression {
         this.exprBody = exprBody;
     }
 
-    void parse(Object walker, String exprBody) throws NoSuchMethodException, NoSuchFieldException, InvocationTargetException, IllegalAccessException {
+    void parse(Object walker, String exprBody)
+        throws NoSuchMethodException, NoSuchFieldException, InvocationTargetException, IllegalAccessException {
         Class<?> head = walker.getClass();
         if (exprBody.contains("#")) {
             String parts[] = exprBody.split("#");
@@ -148,7 +156,8 @@ class ReflectionExpression {
             prefix = null;
         }
         ArrayList<ReflectionComponent> found = new ArrayList<ReflectionComponent>();
-        for (String part : Splitter.on(".").split(exprBody)) {
+        for (String part : Splitter.on(".")
+            .split(exprBody)) {
             ReflectionComponent rc = new ReflectionComponent(head, part);
             walker = rc.get(walker);
             head = walker.getClass();
@@ -157,7 +166,8 @@ class ReflectionExpression {
         this.parts = found.toArray(new ReflectionComponent[found.size()]);
     }
 
-    Object get(Object val) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, NoSuchFieldException {
+    Object get(Object val)
+        throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, NoSuchFieldException {
         if (parts == null) {
             parse(val, exprBody);
         }
@@ -169,6 +179,7 @@ class ReflectionExpression {
 }
 
 class ReflectionComponent {
+
     // So the format is, like...
     // Well, we've got to be given objects from an iterable. So then for each object...
     // "someField.and.aMethod().andAnother.field"
@@ -218,19 +229,32 @@ class ReflectionComponent {
             NBTTagCompound tag = (NBTTagCompound) src;
             NBTBase value = tag.getTag(nbtKey);
             switch (value.getId()) {
-                case Constants.NBT.TAG_END: return null;
-                case Constants.NBT.TAG_BYTE: return "" + ((NBTTagByte) value).func_150290_f();
-                case Constants.NBT.TAG_SHORT: return "" + ((NBTTagShort) value).func_150289_e();
-                case Constants.NBT.TAG_INT: return "" + ((NBTTagInt) value).func_150287_d();
-                case Constants.NBT.TAG_LONG: return "" + ((NBTTagLong) value).func_150291_c();
-                case Constants.NBT.TAG_FLOAT: return "" + ((NBTTagFloat) value).func_150288_h();
-                case Constants.NBT.TAG_DOUBLE: return "" + ((NBTTagDouble) value).func_150286_g();
-                case Constants.NBT.TAG_BYTE_ARRAY: return null; // No way to handle
-                case Constants.NBT.TAG_STRING: return ((NBTTagString) value).func_150285_a_();
-                case Constants.NBT.TAG_LIST: return null; // No way to handle
-                case Constants.NBT.TAG_COMPOUND: return value;
-                case Constants.NBT.TAG_INT_ARRAY: return null; // No way to handle
-                default: return null;
+                case Constants.NBT.TAG_END:
+                    return null;
+                case Constants.NBT.TAG_BYTE:
+                    return "" + ((NBTTagByte) value).func_150290_f();
+                case Constants.NBT.TAG_SHORT:
+                    return "" + ((NBTTagShort) value).func_150289_e();
+                case Constants.NBT.TAG_INT:
+                    return "" + ((NBTTagInt) value).func_150287_d();
+                case Constants.NBT.TAG_LONG:
+                    return "" + ((NBTTagLong) value).func_150291_c();
+                case Constants.NBT.TAG_FLOAT:
+                    return "" + ((NBTTagFloat) value).func_150288_h();
+                case Constants.NBT.TAG_DOUBLE:
+                    return "" + ((NBTTagDouble) value).func_150286_g();
+                case Constants.NBT.TAG_BYTE_ARRAY:
+                    return null; // No way to handle
+                case Constants.NBT.TAG_STRING:
+                    return ((NBTTagString) value).func_150285_a_();
+                case Constants.NBT.TAG_LIST:
+                    return null; // No way to handle
+                case Constants.NBT.TAG_COMPOUND:
+                    return value;
+                case Constants.NBT.TAG_INT_ARRAY:
+                    return null; // No way to handle
+                default:
+                    return null;
             }
         }
         if (field != null) return field.get(src);

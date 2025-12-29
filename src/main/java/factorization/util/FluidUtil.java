@@ -1,21 +1,24 @@
 package factorization.util;
 
-import factorization.api.Coord;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.*;
 
+import factorization.api.Coord;
+
 public class FluidUtil {
+
     public static void spill(Coord where, FluidStack what) {
-        //TODO: Should be in Coord, no?
+        // TODO: Should be in Coord, no?
         if (what == null || what.amount < 0) {
             return;
         }
         FluidEvent.fireEvent(new FluidEvent.FluidSpilledEvent(what, where.w, where.x, where.y, where.z));
     }
 
-    public static FluidStack drainSpecificBlockFluid(World worldObj, int x, int y, int z, boolean doDrain, Fluid targetFluid) {
+    public static FluidStack drainSpecificBlockFluid(World worldObj, int x, int y, int z, boolean doDrain,
+        Fluid targetFluid) {
         Block b = worldObj.getBlock(x, y, z);
         if (!(b instanceof IFluidBlock)) {
             Fluid vanilla;

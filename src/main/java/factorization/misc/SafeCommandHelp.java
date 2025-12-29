@@ -1,14 +1,14 @@
 package factorization.misc;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandHelp;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import net.minecraft.command.CommandException;
+import net.minecraft.command.CommandHelp;
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
 
 public class SafeCommandHelp extends CommandHelp {
 
@@ -59,6 +59,7 @@ public class SafeCommandHelp extends CommandHelp {
     }
 
     static class SafetyWrap implements ICommand {
+
         final ICommand base;
 
         SafetyWrap(ICommand base) {
@@ -138,7 +139,11 @@ public class SafeCommandHelp extends CommandHelp {
         @Override
         public int compareTo(@SuppressWarnings("NullableProblems") Object obj) {
             try {
-                return base.getClass().getName().compareTo(obj.getClass().getName());
+                return base.getClass()
+                    .getName()
+                    .compareTo(
+                        obj.getClass()
+                            .getName());
             } catch (Throwable t) {
                 final int a = System.identityHashCode(base);
                 final int b = System.identityHashCode(obj);

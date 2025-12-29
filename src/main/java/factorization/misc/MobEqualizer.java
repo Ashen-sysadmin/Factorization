@@ -1,8 +1,7 @@
 package factorization.misc;
 
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import factorization.util.FzUtil;
+import java.util.ArrayList;
+
 import net.minecraft.entity.IRangedAttackMob;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,9 +9,12 @@ import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 
-import java.util.ArrayList;
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import factorization.util.FzUtil;
 
 public class MobEqualizer {
+
     @SubscribeEvent(priority = EventPriority.LOW)
     public void upgradeMob(LivingSpawnEvent.SpecialSpawn event) {
         if (event.world.difficultySetting == null || event.world.difficultySetting.getDifficultyId() <= 1) {
@@ -36,11 +38,12 @@ public class MobEqualizer {
         if (event.entity instanceof IRangedAttackMob || event.world.rand.nextBoolean()) {
             for (int i = 0; i < 4; i++) {
                 ItemStack is = template.getCurrentArmor(i);
-                if (is != null && is.getItem().isValidArmor(is, 3 - i, ent)) {
+                if (is != null && is.getItem()
+                    .isValidArmor(is, 3 - i, ent)) {
                     armorCopies[i] = is.copy();
                     equipment_count++;
                 }
-                //It's okay to leave slots empty
+                // It's okay to leave slots empty
             }
         }
         ArrayList<ItemStack> weapons = new ArrayList();
@@ -64,13 +67,14 @@ public class MobEqualizer {
             }
         }
         if (!weapons.isEmpty()) {
-            weaponCopy = weapons.get(event.world.rand.nextInt(weapons.size())).copy();
+            weaponCopy = weapons.get(event.world.rand.nextInt(weapons.size()))
+                .copy();
             equipment_count++;
         }
         if (equipment_count <= 0) {
             return;
         }
-        
+
         event.setCanceled(true);
         ent.onSpawnWithEgg(null); // We need to cancel the event so that we can call this before the below happens
         ent.setCanPickUpLoot(false);
@@ -88,11 +92,12 @@ public class MobEqualizer {
     }
 
     private EntityPlayer pickNearPlayer(LivingSpawnEvent.SpecialSpawn event) {
-        //See "Algorithm R (Reservoir sampling)" in "The Art of Computer Programming: Seminumerical Algorithms" by Donald Knuth, Chapter 3.4.2, page 144.
-        double maxDistanceSq = Math.pow(16*8, 2);
+        // See "Algorithm R (Reservoir sampling)" in "The Art of Computer Programming: Seminumerical Algorithms" by
+        // Donald Knuth, Chapter 3.4.2, page 144.
+        double maxDistanceSq = Math.pow(16 * 8, 2);
         EntityPlayer secretary = null;
         int interviews = 0;
-        for (EntityPlayer player : (Iterable<EntityPlayer>)event.world.playerEntities) {
+        for (EntityPlayer player : (Iterable<EntityPlayer>) event.world.playerEntities) {
             if (player.capabilities.isCreativeMode) {
                 continue;
             }

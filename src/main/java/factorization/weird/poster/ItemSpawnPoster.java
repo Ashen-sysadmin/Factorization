@@ -1,12 +1,7 @@
 package factorization.weird.poster;
 
-import factorization.api.Coord;
-import factorization.api.Quaternion;
-import factorization.shared.Core;
-import factorization.shared.ItemFactorization;
-import factorization.util.ItemUtil;
-import factorization.util.PlayerUtil;
-import factorization.util.SpaceUtil;
+import java.util.ArrayList;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
@@ -15,15 +10,22 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.util.ArrayList;
+import factorization.api.Coord;
+import factorization.api.Quaternion;
+import factorization.shared.Core;
+import factorization.shared.ItemFactorization;
+import factorization.util.ItemUtil;
+import factorization.util.SpaceUtil;
 
 public class ItemSpawnPoster extends ItemFactorization {
+
     public ItemSpawnPoster() {
         super("spawnPoster", Core.TabType.ART);
     }
 
     @Override
-    public boolean onItemUse(ItemStack is, EntityPlayer player, World w, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+    public boolean onItemUse(ItemStack is, EntityPlayer player, World w, int x, int y, int z, int side, float hitX,
+        float hitY, float hitZ) {
         if (w.isRemote) return false;
         final PosterPlacer placer = new PosterPlacer(is, player, w, x, y, z, side);
         if (placer.invoke()) return false;
@@ -32,6 +34,7 @@ public class ItemSpawnPoster extends ItemFactorization {
     }
 
     public static class PosterPlacer {
+
         private boolean myResult;
         private ItemStack is;
         private EntityPlayer player;
@@ -130,11 +133,13 @@ public class ItemSpawnPoster extends ItemFactorization {
         }
 
         private boolean determineBoundingBox() {
-            // Determine what the box should be. Ray tracing for multi-box blocks; fallbacks to the selection bounding box.
+            // Determine what the box should be. Ray tracing for multi-box blocks; fallbacks to the selection bounding
+            // box.
 
             final ArrayList<AxisAlignedBB> boxes = new ArrayList<AxisAlignedBB>();
             final AxisAlignedBB query = SpaceUtil.createAABB(at.add(-9, -9, -9), at.add(+9, +9, +9));
-            at.getBlock().addCollisionBoxesToList(at.w, at.x, at.y, at.z, query, boxes, player);
+            at.getBlock()
+                .addCollisionBoxesToList(at.w, at.x, at.y, at.z, query, boxes, player);
 
             final Vec3 playerEye = SpaceUtil.fromPlayerEyePos(player);
             final Vec3 look = player.getLookVec();
@@ -156,13 +161,15 @@ public class ItemSpawnPoster extends ItemFactorization {
 
             if (blockBox == null) blockBox = at.getCollisionBoundingBoxFromPool();
             if (blockBox == null) {
-                MovingObjectPosition mop = at.getBlock().collisionRayTrace(at.w, at.x, at.y, at.z, playerEye, reachEnd);
+                MovingObjectPosition mop = at.getBlock()
+                    .collisionRayTrace(at.w, at.x, at.y, at.z, playerEye, reachEnd);
                 if (mop != null) {
-                    // Oh, look, the mop doesn't actually help us! Let's just act like this block's like BlockTorch and sets its bounds idiotically like it does
+                    // Oh, look, the mop doesn't actually help us! Let's just act like this block's like BlockTorch and
+                    // sets its bounds idiotically like it does
                     blockBox = at.getBlockBounds();
                 }
             }
-            //Client-side only: if (blockBox == null) blockBox = at.getSelectedBoundingBoxFromPool();
+            // Client-side only: if (blockBox == null) blockBox = at.getSelectedBoundingBoxFromPool();
             if (blockBox == null) return true;
             return false;
         }

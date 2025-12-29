@@ -1,5 +1,23 @@
 package factorization.servo;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.Packet;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.*;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import cpw.mods.fml.relauncher.Side;
@@ -19,32 +37,16 @@ import factorization.util.InvUtil.FzInv;
 import factorization.util.ItemUtil;
 import factorization.util.SpaceUtil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.Packet;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.*;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class ServoMotor extends AbstractServoMachine implements IInventory, ISocketHolder {
+
     public Executioner executioner = new Executioner(this);
     public TileEntitySocketBase socket = new SocketEmpty();
     public boolean isSocketActive = false;
     public boolean isSocketPulsed = false;
-    
+
     ItemStack[] inv = new ItemStack[1], inv_last_sent = new ItemStack[inv.length];
-    
+
     public ServoMotor(World world) {
         super(world);
         setSize(1, 1);
@@ -56,21 +58,21 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
         Packet p = FMLNetworkHandler.getEntitySpawningPacket(this);
         FzNetDispatch.addPacketFrom(p, this);
     }
-    
-    
-    
+
     // Serialization
 
     @Override
     public void putData(DataHelper data) throws IOException {
         super.putData(data);
         executioner.putData(data);
-        
-        final byte invSize = data.as(Share.VISIBLE, "inv#").putByte((byte) inv.length);
+
+        final byte invSize = data.as(Share.VISIBLE, "inv#")
+            .putByte((byte) inv.length);
         resizeInventory(invSize);
         for (int i = 0; i < invSize; i++) {
             ItemStack is = NetworkFactorization.nullItem(inv[i]);
-            is = data.as(Share.VISIBLE, "inv" + i).putItemStack(is);
+            is = data.as(Share.VISIBLE, "inv" + i)
+                .putItemStack(is);
             if (is == null) {
                 inv[i] = null;
             } else {
@@ -91,13 +93,12 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
             socket.writeToNBT(output);
             data.putTag(output);
         }
-        isSocketActive = data.as(Share.VISIBLE, "sockon").putBoolean(isSocketActive);
-        isSocketPulsed = data.as(Share.VISIBLE, "sockpl").putBoolean(isSocketPulsed);
+        isSocketActive = data.as(Share.VISIBLE, "sockon")
+            .putBoolean(isSocketActive);
+        isSocketPulsed = data.as(Share.VISIBLE, "sockpl")
+            .putBoolean(isSocketPulsed);
     }
-    
-    
-    
-    
+
     // Networking
 
     @Override
@@ -110,7 +111,7 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
         }
         return false;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public boolean handleMessageFromServer(MessageType messageType, ByteBuf input) throws IOException {
@@ -118,37 +119,33 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
             return true;
         }
         switch (messageType) {
-        case OpenDataHelperGuiOnEntity:
-            if (!worldObj.isRemote) {
-                return false;
-            } else {
-                DataHelper dip = new DataInByteBuf(input, Side.CLIENT);
-                socket.serialize("", dip);
-                Minecraft.getMinecraft().displayGuiScreen(new GuiDataConfig(socket, this));
-            }
-            return true;
-        case servo_item:
-            while (true) {
-                byte index = input.readByte();
-                if (index < 0) {
-                    break;
+            case OpenDataHelperGuiOnEntity:
+                if (!worldObj.isRemote) {
+                    return false;
+                } else {
+                    DataHelper dip = new DataInByteBuf(input, Side.CLIENT);
+                    socket.serialize("", dip);
+                    Minecraft.getMinecraft()
+                        .displayGuiScreen(new GuiDataConfig(socket, this));
                 }
-                inv[index] = DataUtil.readStack(input);
-            }
-            return true;
-        case TileEntityMessageOnEntity:
-            MessageType subMsg = MessageType.read(input);
-            return socket.handleMessageFromServer(subMsg, input);
-        default:
-            return socket.handleMessageFromServer(messageType, input);
+                return true;
+            case servo_item:
+                while (true) {
+                    byte index = input.readByte();
+                    if (index < 0) {
+                        break;
+                    }
+                    inv[index] = DataUtil.readStack(input);
+                }
+                return true;
+            case TileEntityMessageOnEntity:
+                MessageType subMsg = MessageType.read(input);
+                return socket.handleMessageFromServer(subMsg, input);
+            default:
+                return socket.handleMessageFromServer(messageType, input);
         }
     }
-    
-    
-    
-    
-    
-    
+
     // Main logic
 
     @Override
@@ -162,7 +159,6 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
         executioner.stacks_changed = false;
         broadcastFullUpdate();
     }
-
 
     @Override
     public void updateSocket() {
@@ -188,38 +184,30 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
         }
         executioner.onEnterNewBlock(rail);
     }
-    
-    
-    
-    
-    
+
     // Utility functions for client code
-    
+
     public ServoStack getArgStack() {
         return executioner.getArgStack();
     }
-    
+
     public ServoStack getInstructionsStack() {
         return executioner.getInstructionStack();
     }
-    
+
     public ServoStack getEntryInstructionStack() {
         return executioner.getEntryInstructionStack();
     }
-    
+
     public void putError(Object error) {
         executioner.putError(error);
     }
 
-
-
-
-    
     // Entity behavior
-    
+
     @Override
-    protected void entityInit() { }
-    
+    protected void entityInit() {}
+
     @Override
     public boolean interactFirst(EntityPlayer player) {
         if (worldObj.isRemote) return true;
@@ -284,7 +272,7 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
         }
         return false;
     }
-    
+
     protected void dropItemsOnBreak() {
         ArrayList<ItemStack> toDrop = new ArrayList<ItemStack>();
         toDrop.add(new ItemStack(Core.registry.servo_placer));
@@ -302,13 +290,13 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
         }
         dropItemStacks(toDrop);
     }
-    
+
     public void dropItemStacks(Iterable<ItemStack> toDrop) {
         for (ItemStack is : toDrop) {
             InvUtil.spawnItemStack(this, is);
         }
     }
-    
+
     public void resizeInventory(int newSize) {
         if (newSize == inv.length) return;
         ItemStack[] origInv = inv;
@@ -326,12 +314,8 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
         inv_last_sent = new ItemStack[newSize];
     }
 
-    
-    
-    
-    
     // IInventory implementation
-    
+
     @Override
     public int getSizeInventory() {
         return inv.length;
@@ -373,10 +357,10 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
     public int getInventoryStackLimit() {
         return 64;
     }
-    
+
     @Override
     public void markDirty() {
-        ArrayList<Object> toSend = new ArrayList(inv.length*2);
+        ArrayList<Object> toSend = new ArrayList(inv.length * 2);
         for (byte i = 0; i < inv.length; i++) {
             if (ItemUtil.identical(inv[i], inv_last_sent[i])) {
                 continue;
@@ -390,76 +374,78 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
         }
         toSend.add(-1);
         broadcast(MessageType.servo_item, toSend.toArray());
-        getCurrentPos().getChunk().setChunkModified();
-        getNextPos().getChunk().setChunkModified();
+        getCurrentPos().getChunk()
+            .setChunkModified();
+        getNextPos().getChunk()
+            .setChunkModified();
     }
-    
+
     @Override
     public boolean isUseableByPlayer(EntityPlayer entityplayer) {
         return false;
     }
 
     @Override
-    public void openInventory() { }
+    public void openInventory() {}
 
     @Override
-    public void closeInventory() { }
+    public void closeInventory() {}
 
     @Override
     public boolean isItemValidForSlot(int i, ItemStack itemstack) {
         return true;
     }
 
-    
-    
-    
-    
-    
     // ISocketHolder implementation
-    
+
     private final ArrayList<MovingObjectPosition> ret = new ArrayList<MovingObjectPosition>();
-    
+
     ArrayList<MovingObjectPosition> rayTrace() {
         ret.clear();
         final Coord c = getCurrentPos();
         final ForgeDirection top = motionHandler.orientation.top;
         final ForgeDirection face = motionHandler.orientation.facing;
         final ForgeDirection right = face.getRotation(top);
-        
+
         AxisAlignedBB ab = AxisAlignedBB.getBoundingBox(
-                c.x + top.offsetX, c.y + top.offsetY, c.z + top.offsetZ,  
-                c.x + 1 + top.offsetX, c.y + 1 + top.offsetY, c.z + 1 + top.offsetZ);
-        for (Entity entity : (Iterable<Entity>)worldObj.getEntitiesWithinAABBExcludingEntity(this, ab)) {
+            c.x + top.offsetX,
+            c.y + top.offsetY,
+            c.z + top.offsetZ,
+            c.x + 1 + top.offsetX,
+            c.y + 1 + top.offsetY,
+            c.z + 1 + top.offsetZ);
+        for (Entity entity : (Iterable<Entity>) worldObj.getEntitiesWithinAABBExcludingEntity(this, ab)) {
             if (!entity.canBeCollidedWith()) {
                 continue;
             }
             ret.add(new MovingObjectPosition(entity));
         }
-        
+
         nullVec.xCoord = nullVec.yCoord = nullVec.zCoord = 0;
         Coord targetBlock = c.add(top);
-        mopBlock(ret, targetBlock, top.getOpposite()); //nose-to-nose with the servo
-        mopBlock(ret, targetBlock.add(top), top.getOpposite()); //a block away
+        mopBlock(ret, targetBlock, top.getOpposite()); // nose-to-nose with the servo
+        mopBlock(ret, targetBlock.add(top), top.getOpposite()); // a block away
         mopBlock(ret, targetBlock.add(top.getOpposite()), top);
         if (ret.size() == 0) {
-            mopBlock(ret, targetBlock.add(face), face.getOpposite()); //running forward
-            mopBlock(ret, targetBlock.add(face.getOpposite()), face); //running backward
+            mopBlock(ret, targetBlock.add(face), face.getOpposite()); // running forward
+            mopBlock(ret, targetBlock.add(face.getOpposite()), face); // running backward
             if (ret.size() == 0) {
-                mopBlock(ret, targetBlock.add(right), right.getOpposite()); //to the servo's right
-                mopBlock(ret, targetBlock.add(right.getOpposite()), right); //to the servo's left
+                mopBlock(ret, targetBlock.add(right), right.getOpposite()); // to the servo's right
+                mopBlock(ret, targetBlock.add(right.getOpposite()), right); // to the servo's left
             }
         }
         return ret;
     }
-    
+
     private static final Vec3 nullVec = Vec3.createVectorHelper(0, 0, 0);
+
     void mopBlock(ArrayList<MovingObjectPosition> list, Coord target, ForgeDirection side) {
         if (target.isAir()) {
             return;
         }
         list.add(target.createMop(side, nullVec));
     }
-    
+
     @Override
     public boolean dumpBuffer(List<ItemStack> buffer) {
         if (buffer.isEmpty()) {
@@ -479,14 +465,14 @@ public class ServoMotor extends AbstractServoMachine implements IInventory, ISoc
         }
         return true;
     }
-    
+
     @Override
     public void sendMessage(MessageType msgType, Object... msg) {
         Object[] buff = new Object[msg.length + 1];
         System.arraycopy(msg, 0, buff, 1, msg.length);
         buff[0] = msgType;
         FMLProxyPacket toSend = Core.network.entityPacket(this, MessageType.TileEntityMessageOnEntity, buff);
-        Core.network.broadcastPacket(null, getCurrentPos(), toSend); 
+        Core.network.broadcastPacket(null, getCurrentPos(), toSend);
     }
 
     @Override

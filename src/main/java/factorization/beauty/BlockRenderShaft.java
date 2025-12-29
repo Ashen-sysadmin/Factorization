@@ -1,11 +1,13 @@
 package factorization.beauty;
 
+import net.minecraft.client.renderer.RenderBlocks;
+
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.shared.FactorizationBlockRender;
-import net.minecraft.client.renderer.RenderBlocks;
 
 public class BlockRenderShaft extends FactorizationBlockRender {
+
     @Override
     public boolean render(RenderBlocks rb) {
         if (world_mode) return false;

@@ -1,4 +1,4 @@
-package factorization.coremod;
+package factorization.shared.coremod;
 
 import java.util.ListIterator;
 
@@ -7,19 +7,20 @@ import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
 
 public abstract class AbstractAsmClassTransform {
+
     public abstract void apply(ClassNode cn);
-    
+
     public static class Mixin extends AbstractAsmClassTransform {
+
         ClassNode mixin;
         String mixinName;
         String slashedMixinName;
         String mangledMixinName;
-        
+
         public Mixin(String mixinName, String mangledMixinName) {
             this.mixinName = mixinName;
             this.slashedMixinName = mixinName.replace(".", "/");
@@ -74,7 +75,7 @@ public abstract class AbstractAsmClassTransform {
                     parent.invisibleAnnotations.add(annotation);
                 }
             }
-            
+
         }
     }
 }

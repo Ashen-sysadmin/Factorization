@@ -5,23 +5,25 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import factorization.api.crafting.IVexatiousCrafting;
-import factorization.util.ItemUtil;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
+
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.TemplateRecipeHandler;
+import factorization.api.crafting.IVexatiousCrafting;
 import factorization.crafting.GuiMixer;
 import factorization.crafting.TileEntityMixer;
 import factorization.crafting.TileEntityMixer.RecipeMatchInfo;
 import factorization.shared.Core;
+import factorization.util.ItemUtil;
 
 public class RecipeMixer extends TemplateRecipeHandler {
-    //FIXME: People keep sending invalid bug reports for the mixer because it can't really merge OD ItemStacks.
+
+    // FIXME: People keep sending invalid bug reports for the mixer because it can't really merge OD ItemStacks.
     @Override
     public void loadCraftingRecipes(ItemStack result) {
-        //XXX NOTE: This is probably a lame implementation of this function.
+        // XXX NOTE: This is probably a lame implementation of this function.
         for (RecipeMatchInfo mr : getCache()) {
             if (result == null) {
                 arecipes.add(new CachedMixerRecipe(mr));
@@ -33,9 +35,9 @@ public class RecipeMixer extends TemplateRecipeHandler {
             }
         }
     }
-    
+
     private ArrayList<TileEntityMixer.RecipeMatchInfo> cache;
-    
+
     ArrayList<TileEntityMixer.RecipeMatchInfo> getCache() {
         if (cache == null) {
             cache = new ArrayList<RecipeMatchInfo>();
@@ -47,7 +49,7 @@ public class RecipeMixer extends TemplateRecipeHandler {
         }
         return cache;
     }
-    
+
     @Override
     public void loadCraftingRecipes(String outputId, Object... results) {
         if (outputId.equals("fz.mixing")) {
@@ -56,10 +58,10 @@ public class RecipeMixer extends TemplateRecipeHandler {
         }
         super.loadCraftingRecipes(outputId, results);
     }
-    
+
     @Override
     public void loadUsageRecipes(ItemStack ingredient) {
-        //XXX NOTE: This is probably a lame implementation of this function.
+        // XXX NOTE: This is probably a lame implementation of this function.
         List<ItemStack> items = new ArrayList();
         outerloop: for (RecipeMatchInfo mr : getCache()) {
             if (ingredient == null) {
@@ -86,6 +88,7 @@ public class RecipeMixer extends TemplateRecipeHandler {
     }
 
     class CachedMixerRecipe extends CachedRecipe {
+
         RecipeMatchInfo recipe;
 
         public CachedMixerRecipe(RecipeMatchInfo recipe) {
@@ -109,34 +112,37 @@ public class RecipeMixer extends TemplateRecipeHandler {
             int w = 33;
             try {
                 switch (recipe.inputs.size()) {
-                default: //But it's incomplete!
-                case 4:
-                    ret.add(new PositionedStack(recipe.inputs.get(3), w + 18, h + 18));
-                    //$FALL-THROUGH$
-                case 3:
-                    ret.add(new PositionedStack(recipe.inputs.get(2), w, h + 18));
-                    //$FALL-THROUGH$
-                case 2:
-                    ret.add(new PositionedStack(recipe.inputs.get(1), w, h));
-                    //$FALL-THROUGH$
-                case 1:
-                    ret.add(new PositionedStack(recipe.inputs.get(0), w + 18, h));
-                    //$FALL-THROUGH$
-                case 0:
-                    //$FALL-THROUGH$
-                } //Huh, ti mi cnino
+                    default: // But it's incomplete!
+                    case 4:
+                        ret.add(new PositionedStack(recipe.inputs.get(3), w + 18, h + 18));
+                        //$FALL-THROUGH$
+                    case 3:
+                        ret.add(new PositionedStack(recipe.inputs.get(2), w, h + 18));
+                        //$FALL-THROUGH$
+                    case 2:
+                        ret.add(new PositionedStack(recipe.inputs.get(1), w, h));
+                        //$FALL-THROUGH$
+                    case 1:
+                        ret.add(new PositionedStack(recipe.inputs.get(0), w + 18, h));
+                        //$FALL-THROUGH$
+                    case 0:
+                        //$FALL-THROUGH$
+                } // Huh, ti mi cnino
             } catch (Exception e) {
                 e.printStackTrace();
             }
             w = 107;
-            
+
             ArrayList<ItemStack> output = new ArrayList();
             output.add(recipe.output);
             for (Object o : recipe.inputs) {
                 if (o instanceof ItemStack) {
                     ItemStack is = (ItemStack) o;
-                    if (is.getItem().hasContainerItem(is)) {
-                        ItemStack cnt = ItemUtil.normalize(is.getItem().getContainerItem(is));
+                    if (is.getItem()
+                        .hasContainerItem(is)) {
+                        ItemStack cnt = ItemUtil.normalize(
+                            is.getItem()
+                                .getContainerItem(is));
                         if (cnt != null) {
                             output.add(cnt);
                         }
@@ -144,21 +150,21 @@ public class RecipeMixer extends TemplateRecipeHandler {
                 }
             }
             switch (output.size()) {
-            default:
-            case 4:
-                ret.add(new PositionedStack(output.get(3), w + 18, h + 18));
-                //$FALL-THROUGH$
-            case 3:
-                ret.add(new PositionedStack(output.get(2), w, h + 18));
-                //$FALL-THROUGH$
-            case 2:
-                ret.add(new PositionedStack(output.get(1), w + 18, h));
-                //$FALL-THROUGH$
-            case 1:
-                ret.add(new PositionedStack(output.get(0), w, h));
-                //$FALL-THROUGH$
-            case 0:
-                //$FALL-THROUGH$
+                default:
+                case 4:
+                    ret.add(new PositionedStack(output.get(3), w + 18, h + 18));
+                    //$FALL-THROUGH$
+                case 3:
+                    ret.add(new PositionedStack(output.get(2), w, h + 18));
+                    //$FALL-THROUGH$
+                case 2:
+                    ret.add(new PositionedStack(output.get(1), w + 18, h));
+                    //$FALL-THROUGH$
+                case 1:
+                    ret.add(new PositionedStack(output.get(0), w, h));
+                    //$FALL-THROUGH$
+                case 0:
+                    //$FALL-THROUGH$
             }
             return ret;
         }

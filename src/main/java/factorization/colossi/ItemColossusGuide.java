@@ -2,8 +2,6 @@ package factorization.colossi;
 
 import java.util.ArrayList;
 
-import factorization.common.FzConfig;
-import factorization.util.PlayerUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
@@ -13,12 +11,15 @@ import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.DeltaCoord;
+import factorization.common.FzConfig;
 import factorization.notify.Notice;
 import factorization.shared.Core;
 import factorization.shared.Core.TabType;
 import factorization.shared.ItemFactorization;
+import factorization.util.PlayerUtil;
 
 public class ItemColossusGuide extends ItemFactorization {
 
@@ -28,20 +29,21 @@ public class ItemColossusGuide extends ItemFactorization {
         setMaxStackSize(1);
         setMaxDamage(24);
     }
-    
+
     @Override
     public ItemStack onItemRightClick(ItemStack is, World world, EntityPlayer player) {
         if (world.isRemote) return is;
         if (player instanceof FakePlayer) return is;
-        
+
         int msgKey = 888888888;
         if (!WorldGenColossus.genOnWorld(world)) {
             Notice.chat(player, msgKey, new ChatComponentTranslation("colossus.is.impossible"));
             return is;
         }
-        
+
         int range = WorldGenColossus.GENERATION_SPACING * 3 / 2;
-        if (MinecraftServer.getServer().getCurrentPlayerCount() == 1) {
+        if (MinecraftServer.getServer()
+            .getCurrentPlayerCount() == 1) {
             range = WorldGenColossus.GENERATION_SPACING * 5 / 2;
         }
         Coord playerPos = new Coord(player);
@@ -85,10 +87,10 @@ public class ItemColossusGuide extends ItemFactorization {
                 msg = getCompass(dc);
             }
             Notice.chat(player, msgKey, msg);
-            
+
             if (!FzConfig.infinite_guide_usage) is.damageItem(1, player);
         }
-        
+
         return is;
     }
 
@@ -100,9 +102,12 @@ public class ItemColossusGuide extends ItemFactorization {
             pretty = String.format("%.1f", d / 1000F);
             unit = ".km";
         }
-        return new ChatComponentTranslation(getDirection(dc), pretty, new ChatComponentTranslation("colossus.compass.unit" +unit));
+        return new ChatComponentTranslation(
+            getDirection(dc),
+            pretty,
+            new ChatComponentTranslation("colossus.compass.unit" + unit));
     }
-    
+
     String getDirection(DeltaCoord dc) {
         double angle = Math.toDegrees(dc.getAngleHorizontal());
         angle = (angle + 360) % 360;

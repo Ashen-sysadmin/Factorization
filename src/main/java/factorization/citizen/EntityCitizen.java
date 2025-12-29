@@ -1,5 +1,24 @@
 package factorization.citizen;
 
+import static factorization.citizen.EntityCitizen.ScriptKinds.*;
+
+import java.io.IOException;
+import java.util.Random;
+
+import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.GameSettings;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.monster.IMob;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.*;
+import net.minecraft.world.World;
+
 import factorization.api.Coord;
 import factorization.api.FzOrientation;
 import factorization.api.Quaternion;
@@ -15,24 +34,6 @@ import factorization.util.InvUtil;
 import factorization.util.ItemUtil;
 import factorization.util.LangUtil;
 import factorization.util.SpaceUtil;
-import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.GameSettings;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.*;
-import net.minecraft.world.World;
-
-import java.io.IOException;
-import java.util.Random;
-
-import static factorization.citizen.EntityCitizen.ScriptKinds.*;
 
 public class EntityCitizen extends EntityFz {
 
@@ -43,9 +44,11 @@ public class EntityCitizen extends EntityFz {
 
     public static final float TICKS_PER_SPIN = 90;
     private static final Quaternion NORMAL = new Quaternion(),
-            POINT1 = Quaternion.fromOrientation(FzOrientation.FACE_UP_POINT_EAST),
-            POINT2 = Quaternion.fromOrientation(FzOrientation.FACE_NORTH_POINT_DOWN).multiply(Quaternion.getRotationQuaternionRadians(Math.PI * 9, 0, 1, 0)),
-            POINT3 = Quaternion.fromOrientation(FzOrientation.FACE_UP_POINT_SOUTH).multiply(Quaternion.getRotationQuaternionRadians(Math.PI * -9, 0, 0, -1));
+        POINT1 = Quaternion.fromOrientation(FzOrientation.FACE_UP_POINT_EAST),
+        POINT2 = Quaternion.fromOrientation(FzOrientation.FACE_NORTH_POINT_DOWN)
+            .multiply(Quaternion.getRotationQuaternionRadians(Math.PI * 9, 0, 1, 0)),
+        POINT3 = Quaternion.fromOrientation(FzOrientation.FACE_UP_POINT_SOUTH)
+            .multiply(Quaternion.getRotationQuaternionRadians(Math.PI * -9, 0, 0, -1));
 
     Quaternion rotation_start = NORMAL, rotation_target = NORMAL;
 
@@ -92,12 +95,18 @@ public class EntityCitizen extends EntityFz {
 
     @Override
     protected void putData(DataHelper data) throws IOException {
-        held = data.as(Share.VISIBLE, "heldItem").putItemStack(held);
-        ticks = data.as(Share.PRIVATE, "citizenTicks").putInt(ticks);
-        spinning = data.as(Share.VISIBLE, "citizenSpin").putBoolean(spinning);
-        visible = data.as(Share.VISIBLE, "visible").putBoolean(visible);
-        player_lost_visibility_state = data.as(Share.PRIVATE, "playerLostVis").putBoolean(player_lost_visibility_state);
-        data.as(Share.PRIVATE, "playerRef").putIDS(playerRef);
+        held = data.as(Share.VISIBLE, "heldItem")
+            .putItemStack(held);
+        ticks = data.as(Share.PRIVATE, "citizenTicks")
+            .putInt(ticks);
+        spinning = data.as(Share.VISIBLE, "citizenSpin")
+            .putBoolean(spinning);
+        visible = data.as(Share.VISIBLE, "visible")
+            .putBoolean(visible);
+        player_lost_visibility_state = data.as(Share.PRIVATE, "playerLostVis")
+            .putBoolean(player_lost_visibility_state);
+        data.as(Share.PRIVATE, "playerRef")
+            .putIDS(playerRef);
     }
 
     @Override
@@ -106,6 +115,7 @@ public class EntityCitizen extends EntityFz {
     }
 
     private static class ScriptEvent {
+
         final int duration;
         final ScriptKinds kind;
         final String arg;
@@ -128,7 +138,16 @@ public class EntityCitizen extends EntityFz {
     }
 
     static enum ScriptKinds {
-        potions, reveal, say, spin, unspin, authenticate, give, leave, wait, restart
+        potions,
+        reveal,
+        say,
+        spin,
+        unspin,
+        authenticate,
+        give,
+        leave,
+        wait,
+        restart
     }
 
     public static final int WAIT_TIME = 20 * 5;
@@ -136,32 +155,14 @@ public class EntityCitizen extends EntityFz {
     public static final int EXPLODE_TIME = WAIT_TIME - SURRENDER_TIME;
 
     private static int script_duration = 0;
-    private static final ScriptEvent[] script = new ScriptEvent[] {
-            s(WAIT_TIME + 40, wait), // NOTE: Initial wait time is coordinated with the colossus
-            s(20, potions),
-            s(0, reveal),
-            s(80, say, "intruder"),
-            s(0, spin),
-            s(40, say, "gotcha"),
-            s(45, wait),
-            s(40, say, "young"),
-            s(60, say, "age"),
-            s(80, say, "lmp"),
-            s(40, say, "garbage"),
-            s(0, unspin),
-            s(80, say, "cold"),
-            s(80, say, "lift"),
-            s(80, say, "mind"),
-            s(20, wait),
-            s(10, say, "okay"),
-            s(40, authenticate),
-            s(100, say, "authed"),
-            s(0, give),
-            s(80, say, "bedrock"),
-            s(80, say, "power"),
-            s(80, say, "bye"),
-            s(0, leave)
-    };
+    private static final ScriptEvent[] script = new ScriptEvent[] { s(WAIT_TIME + 40, wait), // NOTE: Initial wait time
+                                                                                             // is coordinated with the
+                                                                                             // colossus
+        s(20, potions), s(0, reveal), s(80, say, "intruder"), s(0, spin), s(40, say, "gotcha"), s(45, wait),
+        s(40, say, "young"), s(60, say, "age"), s(80, say, "lmp"), s(40, say, "garbage"), s(0, unspin),
+        s(80, say, "cold"), s(80, say, "lift"), s(80, say, "mind"), s(20, wait), s(10, say, "okay"),
+        s(40, authenticate), s(100, say, "authed"), s(0, give), s(80, say, "bedrock"), s(80, say, "power"),
+        s(80, say, "bye"), s(0, leave) };
 
     String current_text = null;
     int text_time = 0;
@@ -170,7 +171,7 @@ public class EntityCitizen extends EntityFz {
 
     private void doEvent(ScriptEvent se, EntityPlayer player) {
         final String arg = se.arg;
-        //NORELEASE.println(se.kind, arg);
+        // NORELEASE.println(se.kind, arg);
         current_text = null;
         switch (se.kind) {
             case restart:
@@ -218,8 +219,7 @@ public class EntityCitizen extends EntityFz {
                 }
                 // Play a cool upgrade noise
                 break;
-            case give:
-            {
+            case give: {
                 ItemStack old = player.getHeldItem();
                 player.setCurrentItemOrArmor(0, held);
                 held = null;
@@ -228,7 +228,8 @@ public class EntityCitizen extends EntityFz {
                     old = inv.push(old);
                     inv.onInvChanged();
                     if (old != null) {
-                        new Coord(this).spawnItem(held).onCollideWithPlayer(player);
+                        new Coord(this).spawnItem(held)
+                            .onCollideWithPlayer(player);
                     }
                 }
                 syncData();
@@ -243,7 +244,8 @@ public class EntityCitizen extends EntityFz {
     private static void pot(EntityPlayer player, Potion potion, int power, int duration) {
         boolean ambient = potion != Potion.blindness;
         PotionEffect effect = new PotionEffect(potion.getId(), duration, power, ambient);
-        effect.getCurativeItems().clear();
+        effect.getCurativeItems()
+            .clear();
         player.addPotionEffect(effect);
     }
 
@@ -303,7 +305,8 @@ public class EntityCitizen extends EntityFz {
                 rotation_start = rotation_target;
                 if (!spinning) {
                     rotation_target = NORMAL;
-                } if (rotation_target == NORMAL) {
+                }
+                if (rotation_target == NORMAL) {
                     rotation_target = POINT1;
                 } else if (rotation_target == POINT1) {
                     rotation_target = POINT2;
@@ -364,9 +367,11 @@ public class EntityCitizen extends EntityFz {
             String tail = current_text.substring(boundary, clen);
 
             final ChatComponentText headText = new ChatComponentText(head);
-            final ChatStyle tailFormat = new ChatStyle().setObfuscated(true).setColor(EnumChatFormatting.AQUA);
+            final ChatStyle tailFormat = new ChatStyle().setObfuscated(true)
+                .setColor(EnumChatFormatting.AQUA);
             final IChatComponent tailText = new ChatComponentText(tail).setChatStyle(tailFormat);
-            final IChatComponent toSend = new ChatComponentTranslation("fz.ent.citizen.name").appendSibling(headText).appendSibling(tailText);
+            final IChatComponent toSend = new ChatComponentTranslation("fz.ent.citizen.name").appendSibling(headText)
+                .appendSibling(tailText);
             Notice.chat(player, 90 + text_msg_index, toSend);
             if (text_time == max_text_time) {
                 current_text = null;
@@ -385,7 +390,8 @@ public class EntityCitizen extends EntityFz {
         Vec3 me = SpaceUtil.fromEntPos(this);
         for (Entity ent : (Iterable<Entity>) worldObj.selectEntitiesWithinAABB(Entity.class, range, IMob.mobSelector)) {
             Vec3 you = SpaceUtil.fromEntPos(ent);
-            Vec3 delta = SpaceUtil.subtract(you, me).normalize();
+            Vec3 delta = SpaceUtil.subtract(you, me)
+                .normalize();
             SpaceUtil.incrScale(delta, r * 2 + Math.abs(rand.nextGaussian()));
             Vec3 target = SpaceUtil.add(you, delta);
             enderport(ent, target.xCoord, target.yCoord, target.zCoord);
@@ -410,7 +416,8 @@ public class EntityCitizen extends EntityFz {
             while (!flag1 && j > 0) {
                 Block block = ent.worldObj.getBlock(i, j - 1, k);
 
-                if (block.getMaterial().blocksMovement()) {
+                if (block.getMaterial()
+                    .blocksMovement()) {
                     flag1 = true;
                 } else {
                     --ent.posY;
@@ -421,7 +428,8 @@ public class EntityCitizen extends EntityFz {
             if (flag1) {
                 ent.setPosition(ent.posX, ent.posY, ent.posZ);
 
-                if (ent.worldObj.getCollidingBoundingBoxes(ent, ent.boundingBox).isEmpty() && !ent.worldObj.isAnyLiquid(ent.boundingBox)) {
+                if (ent.worldObj.getCollidingBoundingBoxes(ent, ent.boundingBox)
+                    .isEmpty() && !ent.worldObj.isAnyLiquid(ent.boundingBox)) {
                     flag = true;
                 }
             }

@@ -1,14 +1,15 @@
 package factorization.truth.gen;
 
-import factorization.truth.api.IDocGenerator;
-import factorization.truth.api.ITypesetter;
-import factorization.truth.api.TruthError;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.oredict.OreDictionary;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.oredict.OreDictionary;
+
+import factorization.truth.api.IDocGenerator;
+import factorization.truth.api.ITypesetter;
+import factorization.truth.api.TruthError;
 
 public class OreDictionaryViewer implements IDocGenerator {
 
@@ -31,7 +32,7 @@ public class OreDictionaryViewer implements IDocGenerator {
                 bountiful.add(name);
             }
         }
-        
+
         boolean prev = false;
         if (!bountiful.isEmpty()) {
             prev = true;
@@ -39,7 +40,7 @@ public class OreDictionaryViewer implements IDocGenerator {
                 show(out, name);
             }
         }
-        
+
         if (!singles.isEmpty()) {
             if (prev) out.write("\\newpage");
             prev = true;
@@ -47,7 +48,7 @@ public class OreDictionaryViewer implements IDocGenerator {
                 show(out, name);
             }
         }
-        
+
         if (!empties.isEmpty()) {
             if (prev) out.write("\\newpage");
             prev = true;
@@ -58,7 +59,7 @@ public class OreDictionaryViewer implements IDocGenerator {
             }
         }
     }
-    
+
     void show(ITypesetter out, String name) throws TruthError {
         ArrayList<ItemStack> ores = OreDictionary.getOres(name);
         out.write("\\seg");

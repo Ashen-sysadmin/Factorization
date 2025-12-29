@@ -1,5 +1,12 @@
 package factorization.scrap;
 
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
+
+import org.apache.logging.log4j.Logger;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -8,19 +15,10 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.relauncher.Side;
 import factorization.shared.Core;
 import factorization.util.FzUtil;
-import org.apache.logging.log4j.Logger;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
-
-@Mod(
-        modid = "fz.scrap",
-        version = Core.version,
-        name = "Scrap"
-)
+@Mod(modid = "fz.scrap", version = Core.version, name = "Scrap")
 public class ScrapManager {
+
     public static Logger log;
 
     @Mod.EventHandler
@@ -31,7 +29,8 @@ public class ScrapManager {
         actionClasses.put("SetMaxSize", SetMaxSize.class);
         actionClasses.put("BusRemove", BusRemove.class);
         actionClasses.put("Script", Script.class);
-        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+        if (FMLCommonHandler.instance()
+            .getSide() == Side.CLIENT) {
             actionClasses.put("DeregisterTesr", DeregisterTesr.class);
         }
     }
@@ -87,11 +86,10 @@ public class ScrapManager {
         return "Reloaded";
     }
 
-
     static final ArrayList<IRevertible> actions = new ArrayList<IRevertible>();
     public static final HashMap<String, Class<? extends IRevertible>> actionClasses = new HashMap();
 
-    public static IRevertible compile(String src) throws CompileError{
+    public static IRevertible compile(String src) throws CompileError {
         Scanner scanner = new Scanner(src);
         String actionName = scanner.next();
         Class<? extends IRevertible> actionClass = actionClasses.get(actionName);

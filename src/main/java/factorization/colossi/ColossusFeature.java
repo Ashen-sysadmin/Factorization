@@ -5,8 +5,9 @@ import factorization.fzds.HammerInfo;
 import factorization.shared.Core;
 
 public class ColossusFeature {
+
     static int deltachunk_channel = 88;
-    
+
     public static void init() {
         if (!DeltaChunk.enabled()) return;
         MaskLoader.loadMasks();

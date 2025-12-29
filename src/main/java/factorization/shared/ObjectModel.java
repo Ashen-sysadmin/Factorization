@@ -3,8 +3,6 @@ package factorization.shared;
 import java.io.IOException;
 import java.io.InputStream;
 
-import factorization.api.Quaternion;
-import factorization.util.SpaceUtil;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
@@ -20,17 +18,20 @@ import net.minecraftforge.client.model.obj.WavefrontObject;
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import factorization.api.Quaternion;
+import factorization.util.SpaceUtil;
 
 public class ObjectModel {
+
     private final ResourceLocation modelLocation;
-    
+
     private int render_list = -1;
-    
+
     public ObjectModel(ResourceLocation modelLocation) {
         this.modelLocation = modelLocation;
         Core.loadBus(this);
     }
-    
+
     public void render(IIcon icon) {
         if (render_list == 0) {
             // Loading failed. So nothing can happen.
@@ -117,7 +118,9 @@ public class ObjectModel {
     }
 
     public static final double modelScale = 1.0 / 16.0;
+
     private static class ModelTessellator extends Tessellator {
+
         final IIcon icon;
 
         private ModelTessellator(IIcon icon) {
@@ -131,7 +134,8 @@ public class ObjectModel {
 
         @Override
         public void addVertex(double x, double y, double z) {
-            Tessellator.instance.addVertex(x * modelScale + xOffset, y * modelScale + yOffset, z * modelScale + zOffset);
+            Tessellator.instance
+                .addVertex(x * modelScale + xOffset, y * modelScale + yOffset, z * modelScale + zOffset);
         }
 
         @Override
@@ -141,6 +145,7 @@ public class ObjectModel {
     }
 
     private static class RotatedModelTessellator extends Tessellator {
+
         final IIcon icon;
         final Quaternion quat;
         final Vec3 vec = SpaceUtil.newVec();
@@ -161,7 +166,10 @@ public class ObjectModel {
             vec.yCoord = y;
             vec.zCoord = z;
             quat.applyRotation(vec);
-            Tessellator.instance.addVertex(vec.xCoord * modelScale + xOffset, vec.yCoord * modelScale + yOffset, vec.zCoord * modelScale + zOffset);
+            Tessellator.instance.addVertex(
+                vec.xCoord * modelScale + xOffset,
+                vec.yCoord * modelScale + yOffset,
+                vec.zCoord * modelScale + zOffset);
         }
 
         @Override
@@ -170,16 +178,19 @@ public class ObjectModel {
             vec.yCoord = y;
             vec.zCoord = z;
             quat.applyRotation(vec);
-            Tessellator.instance.setNormal((float)vec.xCoord, (float)vec.yCoord, (float)vec.zCoord);
+            Tessellator.instance.setNormal((float) vec.xCoord, (float) vec.yCoord, (float) vec.zCoord);
         }
     }
-    
+
     private WavefrontObject readModel() {
         WavefrontObject objectModel = null;
         try {
             InputStream input = null;
             try {
-                input = Minecraft.getMinecraft().getResourceManager().getResource(modelLocation).getInputStream();
+                input = Minecraft.getMinecraft()
+                    .getResourceManager()
+                    .getResource(modelLocation)
+                    .getInputStream();
                 if (input == null) {
                     Core.logWarning("Missing 3D model: " + modelLocation);
                     render_list = 0;
@@ -204,23 +215,24 @@ public class ObjectModel {
         }
         return objectModel;
     }
-    
+
     private void recordModel(WavefrontObject objectModel, final IIcon icon) {
         if (objectModel == null) return;
         Tessellator subsetTessellator = new Tessellator() {
+
             @Override
             public void setTextureUV(double u, double v) {
-                super.setTextureUV(icon.getInterpolatedU(u*16), icon.getInterpolatedV(v*16));
+                super.setTextureUV(icon.getInterpolatedU(u * 16), icon.getInterpolatedV(v * 16));
             }
         };
-        
+
         render_list = GLAllocation.generateDisplayLists(1);
         GL11.glNewList(render_list, GL11.GL_COMPILE);
         GL11.glScaled(modelScale, modelScale, modelScale);
         subsetTessellator.startDrawingQuads();
         objectModel.tessellateAll(subsetTessellator);
         subsetTessellator.draw();
-        double s = 1/modelScale;
+        double s = 1 / modelScale;
         GL11.glScaled(s, s, s);
         GL11.glEndList();
     }
@@ -228,16 +240,16 @@ public class ObjectModel {
     private void recordModel(WavefrontObject objectModel) {
         render_list = GLAllocation.generateDisplayLists(1);
         GL11.glNewList(render_list, GL11.GL_COMPILE);
-        double modelScale = 1.0/16.0;
+        double modelScale = 1.0 / 16.0;
         GL11.glScaled(modelScale, modelScale, modelScale);
         Tessellator.instance.startDrawingQuads();
         objectModel.tessellateAll(Tessellator.instance);
         Tessellator.instance.draw();
-        modelScale = 1/modelScale;
+        modelScale = 1 / modelScale;
         GL11.glScaled(modelScale, modelScale, modelScale);
         GL11.glEndList();
     }
-    
+
     @SubscribeEvent
     public void resourcePackChanged(TextureStitchEvent.Post event) {
         if (render_list != -1 && render_list != 0) {

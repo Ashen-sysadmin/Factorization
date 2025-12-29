@@ -1,18 +1,21 @@
 package factorization.shared;
 
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.IDataSerializable;
+import java.io.IOException;
+import java.util.UUID;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 
-import java.io.IOException;
-import java.util.UUID;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.IDataSerializable;
 
 /**
  * A reference to an Entity by UUID. This allows tracking entities after deserialization.
  */
 public class EntityReference<E extends Entity> implements IDataSerializable {
+
     public static interface OnFound<E extends Entity> {
+
         void found(E ent);
     }
 
@@ -20,10 +23,10 @@ public class EntityReference<E extends Entity> implements IDataSerializable {
     private E tracked_entity;
     private UUID entity_uuid = null_uuid;
     private OnFound<E> onFind = null;
-    
+
     private static final UUID null_uuid = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
-    public EntityReference() { }
+    public EntityReference() {}
 
     public EntityReference(World world) {
         this.world = world;
@@ -46,7 +49,7 @@ public class EntityReference<E extends Entity> implements IDataSerializable {
     public void setWorld(World w) {
         world = w;
     }
-    
+
     public void trackEntity(E ent) {
         if (world == null && ent != null) {
             world = ent.worldObj;
@@ -59,13 +62,14 @@ public class EntityReference<E extends Entity> implements IDataSerializable {
             entity_uuid = ent.getUniqueID();
         }
     }
-    
+
     public boolean trackingEntity() {
         return !null_uuid.equals(entity_uuid);
     }
-    
+
     /**
-     * @return the tracked entity. May return null if the entity isn't loaded. If the entity becomes loaded, it may not return it immediately.
+     * @return the tracked entity. May return null if the entity isn't loaded. If the entity becomes loaded, it may not
+     *         return it immediately.
      */
     public E getEntity() {
         if (tracked_entity == null) {
@@ -78,11 +82,12 @@ public class EntityReference<E extends Entity> implements IDataSerializable {
     public E getLocatedEntity() {
         return tracked_entity;
     }
-    
+
     @Override
     public IDataSerializable serialize(String prefix, DataHelper data) throws IOException {
         UUID orig_id = entity_uuid;
-        entity_uuid = data.asSameShare(prefix + "entity_uuid").putUUID(entity_uuid);
+        entity_uuid = data.asSameShare(prefix + "entity_uuid")
+            .putUUID(entity_uuid);
         if (data.isReader() && tracked_entity != null && !orig_id.equals(entity_uuid)) {
             tracked_entity = null;
             fails = 0;
@@ -90,14 +95,14 @@ public class EntityReference<E extends Entity> implements IDataSerializable {
         return this;
     }
 
-    
     protected transient int fails = 0;
+
     protected void fetchEntity() {
         if (world == null) return;
         if (fails++ > 4) {
             if (fails % 40 != 0) return;
         }
-        for (Entity ent : (Iterable<Entity>)world.loadedEntityList) {
+        for (Entity ent : (Iterable<Entity>) world.loadedEntityList) {
             if (entity_uuid.equals(ent.getUniqueID())) {
                 tracked_entity = (E) ent;
                 fails = 0;

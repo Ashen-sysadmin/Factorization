@@ -1,6 +1,28 @@
 package factorization.truth;
 
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.resources.IResource;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Slot;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
+
+import org.lwjgl.input.Mouse;
+
 import com.google.common.io.Closeables;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
@@ -30,32 +52,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.base64.Base64;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Slot;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.ResourceLocation;
-import org.lwjgl.input.Mouse;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
-@Mod(
-        modid = DocumentationModule.modid,
-        name = "Truth",
-        version = Core.version
-)
+@Mod(modid = DocumentationModule.modid, name = "Truth", version = Core.version)
 public class DocumentationModule implements factorization.truth.api.IDocModule {
+
     public static final String modid = "factorization.truth";
     public static DocumentationModule instance;
 
@@ -77,11 +77,13 @@ public class DocumentationModule implements factorization.truth.api.IDocModule {
         DocReg.registerGenerator("worldgen", new WorldgenViewer());
         DocReg.registerGenerator("eventbus", new EventbusViewer());
         DocReg.registerGenerator("tesrs", new TesrViewer());
-        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+        if (FMLCommonHandler.instance()
+            .getSide() == Side.CLIENT) {
             Core.loadBus(new DocKeyListener());
         }
 
-        for (ModContainer mod : Loader.instance().getActiveModList()) {
+        for (ModContainer mod : Loader.instance()
+            .getActiveModList()) {
             DocReg.setVariable("mod:" + mod.getModId(), mod.getName());
         }
 
@@ -169,7 +171,8 @@ public class DocumentationModule implements factorization.truth.api.IDocModule {
 
     @Mod.EventHandler
     public void serverStarts(FMLServerStartingEvent event) {
-        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+        if (FMLCommonHandler.instance()
+            .getSide() == Side.CLIENT) {
             if (Core.dev_environ || Boolean.getBoolean("fz.registerDocCommands")) {
                 event.registerServerCommand(new FzdocSerialize());
                 event.registerServerCommand(new ExportHtml());
@@ -177,8 +180,8 @@ public class DocumentationModule implements factorization.truth.api.IDocModule {
         }
     }
 
-    //NBT write -> compress -> base64 encode
-    //base64 decode -> decompress -> NBT load
+    // NBT write -> compress -> base64 encode
+    // base64 decode -> decompress -> NBT load
 
     static String encodeNBT(NBTTagCompound tag) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -218,7 +221,9 @@ public class DocumentationModule implements factorization.truth.api.IDocModule {
 
     public static InputStream getDocumentResource(String domain, String name) {
         try {
-            IResourceManager irm = overrideResourceManager != null ? overrideResourceManager : Minecraft.getMinecraft().getResourceManager();
+            IResourceManager irm = overrideResourceManager != null ? overrideResourceManager
+                : Minecraft.getMinecraft()
+                    .getResourceManager();
             IResource src = irm.getResource(getResourceForName(domain, name));
             return src.getInputStream();
         } catch (Throwable e) {
@@ -240,7 +245,8 @@ public class DocumentationModule implements factorization.truth.api.IDocModule {
             for (StackTraceElement ste : e.getStackTrace()) {
                 txt += "\n\n    at " + ste.getFileName() + "(" + ste.getFileName() + ":" + ste.getLineNumber() + ")";
             }
-            return "\\5*5*5*2*2 Internal Server Error\n\nAn error was encountered while trying to execute your request.\n\n" + txt;
+            return "\\5*5*5*2*2 Internal Server Error\n\nAn error was encountered while trying to execute your request.\n\n"
+                + txt;
         }
     }
 
@@ -258,7 +264,7 @@ public class DocumentationModule implements factorization.truth.api.IDocModule {
     }
 
     private static String dispatchDocument(String domain, String name) throws IOException {
-        //NORELEASE: Okay. The document *really* needs to be cached. Things are getting expensive...
+        // NORELEASE: Okay. The document *really* needs to be cached. Things are getting expensive...
         if (name.startsWith("cgi/")) {
             return "\\generate{" + name.replace("cgi/", "") + "}";
         } else {
@@ -281,7 +287,7 @@ public class DocumentationModule implements factorization.truth.api.IDocModule {
         Minecraft mc = Minecraft.getMinecraft();
         if (!(mc.currentScreen instanceof GuiContainer)) return null;
         GuiContainer screen = (GuiContainer) mc.currentScreen;
-        //Copied from GuiScreen.handleMouseInput
+        // Copied from GuiScreen.handleMouseInput
         int mouseX = Mouse.getEventX() * screen.width / mc.displayWidth;
         int mouseY = screen.height - Mouse.getEventY() * screen.height / mc.displayHeight - 1;
         return screen.getSlotAtPosition(mouseX, mouseY);
@@ -295,7 +301,6 @@ public class DocumentationModule implements factorization.truth.api.IDocModule {
         openBookForItem(stack, false);
     }
 
-
     @Override
     @SideOnly(Side.CLIENT)
     public boolean openBookForItem(ItemStack is, boolean forceOpen) {
@@ -303,9 +308,7 @@ public class DocumentationModule implements factorization.truth.api.IDocModule {
         EntityPlayer player = mc.thePlayer;
         if (player == null) return false;
         String found_domain = DocReg.default_lookup_domain;
-        boolean found = forceOpen
-                || PlayerUtil.isPlayerCreative(player)
-                || !FzConfig.require_book_for_manual;
+        boolean found = forceOpen || PlayerUtil.isPlayerCreative(player) || !FzConfig.require_book_for_manual;
         if (!found) {
             for (ItemStack manual : player.inventory.mainInventory) {
                 if (manual == null) continue;
@@ -368,6 +371,7 @@ public class DocumentationModule implements factorization.truth.api.IDocModule {
     }
 
     public static class DocKeyListener {
+
         boolean hasNei = Loader.isModLoaded("NotEnoughItems");
 
         @SubscribeEvent
@@ -394,9 +398,11 @@ public class DocumentationModule implements factorization.truth.api.IDocModule {
         }
     }
 
-    private void handleImc(FMLInterModComms.IMCMessage message) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+    private void handleImc(FMLInterModComms.IMCMessage message)
+        throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         if (!message.key.equals("DocVar")) return;
-        String[] parts = message.getStringValue().split("=", 2);
+        String[] parts = message.getStringValue()
+            .split("=", 2);
         String key = parts[0];
         String val = parts[1];
         if (key.endsWith("+")) {

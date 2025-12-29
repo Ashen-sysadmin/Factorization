@@ -1,10 +1,11 @@
 package factorization.scrap;
 
-import com.google.common.base.Joiner;
-
 import java.util.ArrayList;
 
+import com.google.common.base.Joiner;
+
 public class CompileError extends RuntimeException {
+
     public CompileError(String msg) {
         super(msg);
     }
@@ -29,18 +30,20 @@ public class CompileError extends RuntimeException {
     }
 
     final ArrayList<String> traces = new ArrayList<String>();
-    //final ArrayList<StackTraceElement> traces = new ArrayList<StackTraceElement>();
+    // final ArrayList<StackTraceElement> traces = new ArrayList<StackTraceElement>();
 
     public void addTrace(String filename, int lineNumber, String src) {
         traces.add(filename + ":" + lineNumber + "  " + src);
-        //traces.add(new StackTraceElement(filename.replace(".scrap", ""), "scrap", "[" + src + "]", lineNumber));
+        // traces.add(new StackTraceElement(filename.replace(".scrap", ""), "scrap", "[" + src + "]", lineNumber));
     }
 
     @Override
     public StackTraceElement[] getStackTrace() {
         return super.getStackTrace();
-        /*StackTraceElement[] parent = super.getStackTrace();
-        final StackTraceElement[] traceArray = traces.toArray(new StackTraceElement[traces.size()]);
-        return ArrayUtils.addAll(traceArray, parent);*/
+        /*
+         * StackTraceElement[] parent = super.getStackTrace();
+         * final StackTraceElement[] traceArray = traces.toArray(new StackTraceElement[traces.size()]);
+         * return ArrayUtils.addAll(traceArray, parent);
+         */
     }
 }

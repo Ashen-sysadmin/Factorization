@@ -1,15 +1,19 @@
 package factorization.shared;
 
-import com.google.common.base.Splitter;
-import factorization.util.DataUtil;
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 
+import net.minecraft.block.Block;
+import net.minecraft.item.Item;
+
+import com.google.common.base.Splitter;
+
+import factorization.util.DataUtil;
+
 public class Graylist<E> {
+
     public interface Loader<L> {
+
         L load(String name);
     }
 
@@ -22,7 +26,8 @@ public class Graylist<E> {
         } else if (source.startsWith("-")) {
             defaultMode = true;
         } else {
-            throw new IllegalArgumentException("Graylist must start with either a + (meaning only the listed objects can be used) or a - (indicating that anything but the listed objects can be used)");
+            throw new IllegalArgumentException(
+                "Graylist must start with either a + (meaning only the listed objects can be used) or a - (indicating that anything but the listed objects can be used)");
         }
         this.comparator = comparator;
 
@@ -35,6 +40,7 @@ public class Graylist<E> {
 
     public static Graylist<Block> ofBlocks(String source) {
         return new Graylist<Block>(source, new Loader<Block>() {
+
             @Override
             public Block load(String name) {
                 return DataUtil.getBlockFromName(name);
@@ -44,6 +50,7 @@ public class Graylist<E> {
 
     public static Graylist<Item> ofItems(String source) {
         return new Graylist<Item>(source, new Loader<Item>() {
+
             @Override
             public Item load(String name) {
                 return DataUtil.getItemFromName(name);
@@ -61,6 +68,7 @@ public class Graylist<E> {
     }
 
     private static final Comparator identityComparator = new Comparator() {
+
         @Override
         public int compare(Object o1, Object o2) {
             return o1 == o2 ? 0 : 1;

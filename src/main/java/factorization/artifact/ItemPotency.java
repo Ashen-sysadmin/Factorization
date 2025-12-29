@@ -1,12 +1,5 @@
 package factorization.artifact;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import factorization.common.ItemIcons;
-import factorization.shared.Core;
-import factorization.shared.ItemCraftingComponent;
-import factorization.util.EvilUtil;
-import factorization.util.ItemUtil;
-import factorization.util.PlayerUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -23,7 +16,15 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.AnvilUpdateEvent;
 import net.minecraftforge.event.entity.player.AnvilRepairEvent;
 
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import factorization.common.ItemIcons;
+import factorization.shared.Core;
+import factorization.shared.ItemCraftingComponent;
+import factorization.util.ItemUtil;
+import factorization.util.PlayerUtil;
+
 public class ItemPotency extends ItemCraftingComponent {
+
     public ItemPotency() {
         super("potencyBottle");
         setMaxStackSize(3);
@@ -35,7 +36,9 @@ public class ItemPotency extends ItemCraftingComponent {
     public void onCreated(ItemStack stack, World world, EntityPlayer _player) {
         EntityPlayerMP player = (EntityPlayerMP) _player;
         NBTTagCompound tag = ItemUtil.getTag(stack);
-        String ownerId = player.getGameProfile().getId().toString();
+        String ownerId = player.getGameProfile()
+            .getId()
+            .toString();
         String ownerName = player.getCommandSenderName();
         StatisticsFile stats = PlayerUtil.getStatsFile(player);
         if (stats == null) return;
@@ -56,7 +59,9 @@ public class ItemPotency extends ItemCraftingComponent {
     public static int checkDamage(ItemStack stack, EntityPlayerMP player) {
         if (stack.getItemDamage() == 1) return 1; // It'll never change back! (Even for other players.)
         NBTTagCompound tag = ItemUtil.getTag(stack);
-        String ownerId = player.getGameProfile().getId().toString();
+        String ownerId = player.getGameProfile()
+            .getId()
+            .toString();
         String ownerName = player.getCommandSenderName();
         StatisticsFile stats = PlayerUtil.getStatsFile(player);
         if (stats == null) return stack.getItemDamage();

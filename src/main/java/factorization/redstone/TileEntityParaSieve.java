@@ -4,51 +4,52 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import factorization.api.datahelpers.DataHelper;
-import factorization.shared.*;
-import factorization.util.DataUtil;
-import factorization.util.InvUtil;
-import factorization.util.ItemUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.common.event.FMLModIdMappingEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
+import factorization.api.datahelpers.DataHelper;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
+import factorization.shared.*;
+import factorization.util.DataUtil;
+import factorization.util.InvUtil;
 import factorization.util.InvUtil.FzInv;
+import factorization.util.ItemUtil;
 
 public class TileEntityParaSieve extends TileEntityFactorization implements ISidedInventory {
+
     public ItemStack[] filters = new ItemStack[8];
     private boolean putting_nbt = false;
     private byte redstone_cache = -1;
-    
-    static short[] itemId2modIndex = new short[1024*2];
-    
+
+    static short[] itemId2modIndex = new short[1024 * 2];
+
     TileEntity cached_te = null;
     Entity cached_ent = null;
-    
+
     void dirtyCache() {
         cached_te = null;
         cached_ent = null;
     }
-    
+
     public TileEntityParaSieve() {
         facing_direction = 2;
     }
-    
+
     @Override
     public FactoryType getFactoryType() {
         return FactoryType.PARASIEVE;
@@ -69,7 +70,7 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
             putting_nbt = false;
         }
     }
-    
+
     @Override
     public void dropContents() {
         try {
@@ -79,12 +80,14 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
             putting_nbt = false;
         }
     }
-    
+
     public ForgeDirection getFacing() {
-        return ForgeDirection.getOrientation(facing_direction).getOpposite();
+        return ForgeDirection.getOrientation(facing_direction)
+            .getOpposite();
     }
 
     static Coord hereCache = new Coord(null, 0, 0, 0);
+
     private boolean isPowered() {
         if (redstone_cache == -1) {
             hereCache.set(this);
@@ -92,13 +95,13 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
         }
         return redstone_cache == 1;
     }
-    
+
     @Override
     public void neighborChanged() {
         redstone_cache = -1;
         dirtyCache();
     }
-    
+
     static boolean itemInRange(ItemStack a, ItemStack b, ItemStack stranger) {
         if (stranger == null) {
             return false;
@@ -113,19 +116,23 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
             return false;
         }
         if (a.getItem() != b.getItem()) {
-            //Compare on mods
+            // Compare on mods
             short aId = itemId2modIndex[DataUtil.getId(a)];
             short bId = itemId2modIndex[DataUtil.getId(b)];
             if (aId == bId && aId != 0) {
                 return itemId2modIndex[DataUtil.getId(stranger)] == aId;
             }
-            //Compare on Item class
-            Class ca = a.getItem().getClass(), cb = b.getItem().getClass();
-            Class c_stranger = stranger.getItem().getClass();
+            // Compare on Item class
+            Class ca = a.getItem()
+                .getClass(),
+                cb = b.getItem()
+                    .getClass();
+            Class c_stranger = stranger.getItem()
+                .getClass();
             if (ca == cb) {
                 return ca == c_stranger;
             }
-            //Broadest match: return true if the stranger starts with the common prefix
+            // Broadest match: return true if the stranger starts with the common prefix
             String na = ca.getName();
             String nb = cb.getName();
             String n_stranger = c_stranger.getName();
@@ -142,21 +149,22 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
                     return true;
                 }
             }
-            return true; //all 3 names were identical
+            return true; // all 3 names were identical
         }
         if (a.getItem() != stranger.getItem()) {
-            return false; //It doesn't match! How could we have been so silly as to not notice?
+            return false; // It doesn't match! How could we have been so silly as to not notice?
         }
         int mda = a.getItemDamage(), mdb = b.getItemDamage(), md_stranger = stranger.getItemDamage();
-        //Only check tag compounds if both items have one.
+        // Only check tag compounds if both items have one.
         if (a.hasTagCompound() == b.hasTagCompound()) {
             if (a.hasTagCompound()) {
-                //We aren't going to go all the way with this; that'd be too difficult & expensive
-                if (!a.getTagCompound().equals(stranger.getTagCompound())) {
+                // We aren't going to go all the way with this; that'd be too difficult & expensive
+                if (!a.getTagCompound()
+                    .equals(stranger.getTagCompound())) {
                     return false;
                 }
             } else if (stranger.hasTagCompound()) {
-                return false; //no a tag, no b tag, but stranger tag
+                return false; // no a tag, no b tag, but stranger tag
             }
         }
         if (mda < mdb) {
@@ -167,7 +175,7 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
             return mda == md_stranger;
         }
     }
-    
+
     boolean itemPassesFilter(ItemStack stranger) {
         boolean empty = true;
         boolean p = isPowered();
@@ -183,12 +191,16 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
         }
         return empty ^ p;
     }
-    
+
     private byte self_recursion = 0;
     private static ThreadLocal<Integer> stack_recursion = new ThreadLocal<Integer>() {
-        @Override protected Integer initialValue() {return 0;};
+
+        @Override
+        protected Integer initialValue() {
+            return 0;
+        };
     };
-    
+
     protected boolean _beginRecursion() {
         int sr = stack_recursion.get() + 1;
         stack_recursion.set(sr);
@@ -198,14 +210,15 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
         }
         return false;
     }
-    
+
     protected void endRecursion() {
         self_recursion = (byte) Math.max(0, self_recursion - 1);
         int sr = stack_recursion.get();
         stack_recursion.set(Math.max(0, sr - 1));
     }
-    
+
     AxisAlignedBB target_area = AxisAlignedBB.getBoundingBox(0, 0, 0, 0, 0, 0);
+
     AxisAlignedBB getTargetArea() {
         final ForgeDirection f = getFacing();
         target_area.minX = xCoord + f.offsetX;
@@ -216,12 +229,13 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
         target_area.maxZ = target_area.minZ + 1;
         return target_area;
     }
-    
+
     boolean isEntityInRange(Entity ent) {
         if (ent == null) return false;
-        return ent.getBoundingBox().intersectsWith(getTargetArea());
+        return ent.getBoundingBox()
+            .intersectsWith(getTargetArea());
     }
-    
+
     IInventory getRecursiveTarget() {
         if (_beginRecursion() || putting_nbt || getWorldObj() == null || getWorldObj().isRemote) {
             return null;
@@ -241,12 +255,13 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
             }
             cached_ent = null;
         }
-        TileEntity te = worldObj.getTileEntity(xCoord + facing.offsetX, yCoord + facing.offsetY, zCoord + facing.offsetZ);
+        TileEntity te = worldObj
+            .getTileEntity(xCoord + facing.offsetX, yCoord + facing.offsetY, zCoord + facing.offsetZ);
         if (te instanceof IInventory) {
             cached_te = te;
             return InvUtil.openDoubleChest((IInventory) te, true);
         }
-        for (Entity ent : (Iterable<Entity>)worldObj.getEntitiesWithinAABB(IInventory.class, getTargetArea())) {
+        for (Entity ent : worldObj.getEntitiesWithinAABB(Entity.class, getTargetArea())) {
             if (ent instanceof IInventory) {
                 cached_ent = ent;
                 return (IInventory) ent;
@@ -254,7 +269,7 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
         }
         return null;
     }
-    
+
     @Override
     public int getSizeInventory() {
         if (putting_nbt) {
@@ -334,7 +349,7 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
             }
             side = facing_direction;
             if (target instanceof ISidedInventory) {
-                int[] slotList = ((ISidedInventory)target).getAccessibleSlotsFromSide(side);
+                int[] slotList = ((ISidedInventory) target).getAccessibleSlotsFromSide(side);
                 int[] ret = java.util.Arrays.copyOf(slotList, slotList.length);
                 for (int i = 0; i < ret.length; i++) {
                     ret[i] += filters.length;
@@ -352,7 +367,7 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
             endRecursion();
         }
     }
-    
+
     @Override
     public boolean canInsertItem(int slot, ItemStack itemstack, int side) {
         if (slot < filters.length) {
@@ -364,14 +379,19 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
                 return true;
             }
             if (target instanceof ISidedInventory) {
-                return ((ISidedInventory) target).canInsertItem(slot - filters.length, itemstack, getFacing().getOpposite().ordinal()) && itemPassesFilter(itemstack);
+                return ((ISidedInventory) target).canInsertItem(
+                    slot - filters.length,
+                    itemstack,
+                    getFacing().getOpposite()
+                        .ordinal())
+                    && itemPassesFilter(itemstack);
             }
             return itemPassesFilter(itemstack);
         } finally {
             endRecursion();
         }
     }
-    
+
     @Override
     public boolean canExtractItem(int slot, ItemStack itemstack, int side) {
         if (slot < filters.length) {
@@ -383,16 +403,17 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
                 return true;
             }
             if (target instanceof ISidedInventory) {
-                return ((ISidedInventory) target).canExtractItem(slot - filters.length, itemstack, facing_direction) && itemPassesFilter(itemstack);
+                return ((ISidedInventory) target).canExtractItem(slot - filters.length, itemstack, facing_direction)
+                    && itemPassesFilter(itemstack);
             }
             return itemPassesFilter(itemstack);
         } finally {
             endRecursion();
         }
     }
-    
+
     @Override
-    protected void doLogic() { }
+    protected void doLogic() {}
 
     @Override
     public boolean canUpdate() {
@@ -411,7 +432,7 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
             return BlockIcons.parasieve_side;
         }
     }
-    
+
     @Override
     public int getComparatorValue(ForgeDirection side) {
         try {
@@ -425,18 +446,23 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
                 }
             }
             if (empty) {
-                return getCoord().add(getFacing()).getComparatorOverride(getFacing().getOpposite());
+                return getCoord().add(getFacing())
+                    .getComparatorOverride(getFacing().getOpposite());
             }
-            FzInv inv = InvUtil.openInventory(getCoord().add(getFacing()).getTE(IInventory.class), getFacing().getOpposite());
+            FzInv inv = InvUtil.openInventory(
+                getCoord().add(getFacing())
+                    .getTE(IInventory.class),
+                getFacing().getOpposite());
             if (inv == null) {
-                return getCoord().add(getFacing()).getComparatorOverride(getFacing().getOpposite());
+                return getCoord().add(getFacing())
+                    .getComparatorOverride(getFacing().getOpposite());
             }
             int custom_val = 0;
             {
                 for (int fidx = 0; fidx < filters.length; fidx += 2) {
                     final ItemStack low = filters[fidx];
                     if (low == null) continue;
-                    final ItemStack high = filters[fidx+1];
+                    final ItemStack high = filters[fidx + 1];
                     if (!ItemUtil.identical(low, high)) continue;
                     int min = Math.min(low.stackSize, high.stackSize);
                     int max = Math.max(low.stackSize, high.stackSize);
@@ -453,7 +479,7 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
                     } else if (count > max) {
                         res = 0xF;
                     } else {
-                        res = 1 + 0xE*(count - min)/max;
+                        res = 1 + 0xE * (count - min) / max;
                     }
                     custom_val = Math.max(custom_val, res);
                 }
@@ -461,7 +487,7 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
                     return 0xF;
                 }
             }
-            
+
             int filledSlots = 0;
             float fullness = 0;
             for (int i = 0; i < inv.size(); ++i) {
@@ -480,14 +506,14 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
         } finally {
             endRecursion();
         }
-        
+
     }
-    
+
     @Override
     public ForgeDirection[] getValidRotations() {
         return full_rotation_array;
     }
-    
+
     @Override
     public boolean rotate(ForgeDirection axis) {
         dirtyCache();
@@ -498,7 +524,7 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
         facing_direction = ao;
         return true;
     }
-    
+
     @Override
     public void markDirty() {
         super.markDirty();
@@ -512,11 +538,12 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
             endRecursion();
         }
     }
-    
+
     @Override
     public void onNeighborTileChanged(int tilex, int tiley, int tilez) {
         ForgeDirection facing = getFacing();
-        boolean isOurs = xCoord + facing.offsetX == tilex &&  yCoord + facing.offsetY == tiley &&  zCoord + facing.offsetZ == tilez;
+        boolean isOurs = xCoord + facing.offsetX == tilex && yCoord + facing.offsetY == tiley
+            && zCoord + facing.offsetZ == tilez;
         if (!isOurs) {
             return;
         }
@@ -530,18 +557,18 @@ public class TileEntityParaSieve extends TileEntityFactorization implements ISid
             endRecursion();
         }
     }
-    
+
     @Override
     public void representYoSelf() {
         super.representYoSelf();
         classifyItems();
     }
-    
+
     @Override
     public void mappingsChanged(FMLModIdMappingEvent event) {
         classifyItems();
     }
-    
+
     void classifyItems() {
         Core.logFine("[parasieve] Classifying items");
         HashMap<String, Short> modMap = new HashMap();

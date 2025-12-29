@@ -8,6 +8,7 @@ import factorization.shared.Core;
 import factorization.truth.DocumentationModule;
 
 public class Compat_erebus extends CompatBase {
+
     public static Iterable<Object> compost_recipes, offering_altar_recipes, smoothie_recipes;
 
     private Iterable<Object> find(String className, String fieldName) {
@@ -25,15 +26,24 @@ public class Compat_erebus extends CompatBase {
     public void init(FMLInitializationEvent event) {
         compost_recipes = find("erebus.recipes.ComposterRegistry", "registry");
         if (compost_recipes != null) {
-            FMLInterModComms.sendMessage(DocumentationModule.modid, "AddRecipeCategory", "container.composter|factorization.compat.erebus.Compat_erebus|compost_recipes");
+            FMLInterModComms.sendMessage(
+                DocumentationModule.modid,
+                "AddRecipeCategory",
+                "container.composter|factorization.compat.erebus.Compat_erebus|compost_recipes");
         }
         offering_altar_recipes = find("erebus.recipes.OfferingAltarRecipe", "list");
         if (offering_altar_recipes != null) {
-            FMLInterModComms.sendMessage(DocumentationModule.modid, "AddRecipeCategory", "tile.erebus.offeringAltar.name|factorization.compat.erebus.Compat_erebus|offering_altar_recipes");
+            FMLInterModComms.sendMessage(
+                DocumentationModule.modid,
+                "AddRecipeCategory",
+                "tile.erebus.offeringAltar.name|factorization.compat.erebus.Compat_erebus|offering_altar_recipes");
         }
         smoothie_recipes = find("erebus.recipes.SmoothieMakerRecipe", "recipes");
         if (smoothie_recipes != null) {
-            FMLInterModComms.sendMessage(DocumentationModule.modid, "AddRecipeCategory", "tile.erebus.smoothieMaker.name|factorization.compat.erebus.Compat_erebus|smoothie_recipes");
+            FMLInterModComms.sendMessage(
+                DocumentationModule.modid,
+                "AddRecipeCategory",
+                "tile.erebus.smoothieMaker.name|factorization.compat.erebus.Compat_erebus|smoothie_recipes");
         }
     }
 }

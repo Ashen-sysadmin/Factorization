@@ -1,11 +1,7 @@
 package factorization.truth;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.api.Coord;
-import factorization.api.DeltaCoord;
-import factorization.shared.Core;
-import factorization.util.DataUtil;
+import java.util.ArrayList;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -20,26 +16,38 @@ import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.Constants;
 
-import java.util.ArrayList;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.api.Coord;
+import factorization.api.DeltaCoord;
+import factorization.shared.Core;
+import factorization.util.DataUtil;
 
 public class DocWorld extends WorldClient {
+
     static final Minecraft mc = Minecraft.getMinecraft();
-    static final int LEN = 16*16*16;
+    static final int LEN = 16 * 16 * 16;
     int[] blockIds;
     int[] blockMetadatas;
     ArrayList<TileEntity> tileEntities = new ArrayList<TileEntity>();
     ArrayList<Entity> entities = new ArrayList<Entity>();
     public int diagonal = 32;
     Coord orig = new Coord(this, 0, 0, 0);
-    
+
     public DocWorld() {
-        super(mc.getNetHandler(), new WorldSettings(mc.theWorld.getWorldInfo()), 0, mc.theWorld.difficultySetting, mc.mcProfiler);
+        super(
+            mc.getNetHandler(),
+            new WorldSettings(mc.theWorld.getWorldInfo()),
+            0,
+            mc.theWorld.difficultySetting,
+            mc.mcProfiler);
         blockIds = new int[LEN];
         blockMetadatas = new int[LEN];
     }
-    
-    private static final String BLOCK_IDS = "i", BLOCK_METADATA = "m", TE_LIST = "t", ENTITY_LIST = "e", DIAGONAL = "d", ORIG_ENT_POS = "o";
-    
+
+    private static final String BLOCK_IDS = "i", BLOCK_METADATA = "m", TE_LIST = "t", ENTITY_LIST = "e", DIAGONAL = "d",
+        ORIG_ENT_POS = "o";
+
     public DocWorld(NBTTagCompound tag) {
         this();
         orig.readFromNBT(ORIG_ENT_POS, tag);
@@ -67,7 +75,7 @@ public class DocWorld extends WorldClient {
         }
         diagonal = tag.getInteger(DIAGONAL);
     }
-    
+
     void writeToTag(NBTTagCompound tag) {
         orig.writeToNBT(ORIG_ENT_POS, tag);
         tag.setIntArray(BLOCK_IDS, blockIds);
@@ -88,18 +96,18 @@ public class DocWorld extends WorldClient {
         tag.setTag(ENTITY_LIST, entList);
         tag.setInteger(DIAGONAL, diagonal);
     }
-    
+
     @Override
     protected boolean chunkExists(int chunkX, int chunkZ) {
         return chunkX == 0 && chunkZ == 0;
     }
-    
+
     private int getIndex(int x, int y, int z) {
         if (x < 0 || y < 0 || z < 0) return -1;
         if (x > 0xF || y > 0xF || z > 0xF) return -1;
         return x + (y << 4) + (z << 8);
     }
-    
+
     @Override
     public Block getBlock(int x, int y, int z) {
         int i = getIndex(x, y, z);
@@ -115,14 +123,14 @@ public class DocWorld extends WorldClient {
             return DataUtil.getBlock(id);
         }
     }
-    
+
     @Override
     public int getBlockMetadata(int x, int y, int z) {
         int i = getIndex(x, y, z);
         if (i == -1) return 0;
         return blockMetadatas[i];
     }
-    
+
     @Override
     public TileEntity getTileEntity(int x, int y, int z) {
         for (TileEntity te : tileEntities) {
@@ -132,18 +140,18 @@ public class DocWorld extends WorldClient {
         }
         return null;
     }
-    
+
     @Override
     public int getBlockLightValue(int par1, int par2, int par3) {
         return 0xF;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public int getSkyBlockTypeBrightness(EnumSkyBlock par1EnumSkyBlock, int par2, int par3, int par4) {
         return 0xF;
     }
-    
+
     void setIdMdTe(DeltaCoord dc, Block block, int md, TileEntity te) {
         int i = getIndex(dc.x, dc.y, dc.z);
         if (i == -1) return;
@@ -157,7 +165,7 @@ public class DocWorld extends WorldClient {
         }
         blockIds[i] = useId;
         blockMetadatas[i] = md;
-        
+
         if (te == null) return;
         TileEntity clone = DataUtil.cloneTileEntity(te);
         clone.xCoord = dc.x;
@@ -165,40 +173,41 @@ public class DocWorld extends WorldClient {
         clone.zCoord = dc.z;
         tileEntities.add(clone);
     }
-    
+
     void addEntity(Entity ent) {
         if (ent == null) return;
         entities.add(ent);
     }
-    
+
     Chunk myChunk = new Chunk(this, 0, 0) {
+
         @Override
         public Block getBlock(int x, int y, int z) {
             return DocWorld.this.getBlock(x, y, z);
         }
-        
+
         @Override
         public TileEntity func_150806_e(int x, int y, int z) {
             return DocWorld.this.getTileEntity(x, y, z);
         }
-        
+
         @Override
         public TileEntity getTileEntityUnsafe(int x, int y, int z) {
             return DocWorld.this.getTileEntity(x, y, z);
         }
-        
+
         @Override
         public boolean getAreLevelsEmpty(int par1, int par2) {
             return false;
         }
-        
+
         @Override
         public int getBlockMetadata(int x, int y, int z) {
             return DocWorld.this.getBlockMetadata(x, y, z);
-        }		
-        
+        }
+
     };
-    
+
     @Override
     public Chunk getChunkFromChunkCoords(int chunkX, int chunkZ) {
         if (chunkX != 0 || chunkZ != 0) {

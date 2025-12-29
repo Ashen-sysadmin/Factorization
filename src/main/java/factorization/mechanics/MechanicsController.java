@@ -1,5 +1,14 @@
 package factorization.mechanics;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
+
+import org.apache.commons.lang3.ArrayUtils;
+
 import factorization.api.Coord;
 import factorization.api.ICoordFunction;
 import factorization.api.Quaternion;
@@ -9,13 +18,6 @@ import factorization.fzds.interfaces.IDeltaChunk;
 import factorization.shared.Core;
 import factorization.shared.EntityReference;
 import factorization.util.SpaceUtil;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.World;
-import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Allows multiple controllers on an IDC. Nicely sets down the IDC when it has no more controllers.
@@ -35,7 +37,8 @@ public class MechanicsController implements IDCController {
     }
 
     /**
-     * Since the controllers aren't serialized, this is the mechanism to remind the IDC who the controllers are. Use with IDCRef.
+     * Since the controllers aren't serialized, this is the mechanism to remind the IDC who the controllers are. Use
+     * with IDCRef.
      *
      * Best used with autoJoin.
      *
@@ -49,7 +52,12 @@ public class MechanicsController implements IDCController {
         if (controller == IDCController.default_controller) {
             idc.setController(controller = new MechanicsController());
         } else if (!(controller instanceof MechanicsController)) {
-            throw new IllegalArgumentException("IDC already had a controller, and it is not a MechanicsController! IDC: " + idc + "; controller: " + controller + "; constraint: " + constraint);
+            throw new IllegalArgumentException(
+                "IDC already had a controller, and it is not a MechanicsController! IDC: " + idc
+                    + "; controller: "
+                    + controller
+                    + "; constraint: "
+                    + constraint);
         }
         MechanicsController sys = (MechanicsController) controller;
         sys.addConstraint(constraint);
@@ -64,7 +72,12 @@ public class MechanicsController implements IDCController {
     static void deregister(IDeltaChunk idc, IDCController constraint) {
         IDCController controller = idc.getController();
         if (!(controller instanceof MechanicsController)) {
-            Core.logWarning("Tried to deregister constraint for IDC that isn't a MechanicsController! IDC: " + idc + "; controller: " + controller + "; constraint: ", constraint);
+            Core.logWarning(
+                "Tried to deregister constraint for IDC that isn't a MechanicsController! IDC: " + idc
+                    + "; controller: "
+                    + controller
+                    + "; constraint: ",
+                constraint);
             return;
         }
         MechanicsController sys = (MechanicsController) controller;
@@ -94,13 +107,15 @@ public class MechanicsController implements IDCController {
     }
 
     private static void dropIDC(final IDeltaChunk idc) {
-        // TODO: check all forge directions (including UNKNOWN) to count how many clashes there are. Move to the minimal direction before dropping IF the # of clashes is > 10% of the block count
+        // TODO: check all forge directions (including UNKNOWN) to count how many clashes there are. Move to the minimal
+        // direction before dropping IF the # of clashes is > 10% of the block count
         idc.setRotation(new Quaternion());
         idc.setRotationalVelocity(new Quaternion());
         final Coord min = idc.getCorner();
         final Coord max = idc.getFarCorner();
         final Coord real = new Coord(idc);
         Coord.iterateCube(min, max, new ICoordFunction() {
+
             @Override
             public void handle(Coord shadow) {
                 if (shadow.isAir()) return;
@@ -118,6 +133,7 @@ public class MechanicsController implements IDCController {
             }
         });
         Coord.iterateCube(min, max, new ICoordFunction() {
+
             @Override
             public void handle(Coord here) {
                 here.setAir();
@@ -135,14 +151,16 @@ public class MechanicsController implements IDCController {
         for (IDCController constraint : controller.constraints) {
             if (constraint instanceof TileEntityHinge) { // Sound design!
                 TileEntityHinge hinge = (TileEntityHinge) constraint;
-                if (hinge.getCoord().isWeaklyPowered()) return;
+                if (hinge.getCoord()
+                    .isWeaklyPowered()) return;
                 hinge.applyForce(idc, at, force);
                 return;
             }
         }
 
         double mass = MassCalculator.calculateMass(idc);
-        /* Whereupon St. Isaac Newton did set down the Holy Law of Nature, that
+        /*
+         * Whereupon St. Isaac Newton did set down the Holy Law of Nature, that
          * the sum of the forces upon a body is equal to the mass of the body times
          * the acceleration of the body, and whereupon we have calculated the mass
          * of the body, let us therefor grant unto our idc an IMPULSE OF VELOCITY
@@ -229,16 +247,21 @@ public class MechanicsController implements IDCController {
             return;
         }
         if (idc.hasOrderedRotation()) return;
-        boolean anyMotion = idc.motionX != 0 || idc.motionY != 0 || idc.motionZ != 0 || !idc.getRotationalVelocity().isZero();
+        boolean anyMotion = idc.motionX != 0 || idc.motionY != 0
+            || idc.motionZ != 0
+            || !idc.getRotationalVelocity()
+                .isZero();
         if (!anyMotion) return;
-        /*if (anyMotion) {
-            // See EntityLivingBase.moveEntityWithHeading
-            //push(idc, MassCalculator.getComCoord(idc), Vec3.createVectorHelper(0, GRAVITY, 0));
-        }
-        if (decay_time > 0) {
-            decay_time--;
-            return;
-        }*/
+        /*
+         * if (anyMotion) {
+         * // See EntityLivingBase.moveEntityWithHeading
+         * //push(idc, MassCalculator.getComCoord(idc), Vec3.createVectorHelper(0, GRAVITY, 0));
+         * }
+         * if (decay_time > 0) {
+         * decay_time--;
+         * return;
+         * }
+         */
         idc.motionX *= LINEAR_DAMPENING;
         idc.motionY *= LINEAR_DAMPENING;
         idc.motionZ *= LINEAR_DAMPENING;
@@ -257,10 +280,13 @@ public class MechanicsController implements IDCController {
     }
 
     @Override
-    public boolean onAttacked(IDeltaChunk idc, DamageSource damageSource, float damage) { return false; }
+    public boolean onAttacked(IDeltaChunk idc, DamageSource damageSource, float damage) {
+        return false;
+    }
 
     @Override
-    public CollisionAction collidedWithWorld(World realWorld, AxisAlignedBB realBox, World shadowWorld, AxisAlignedBB shadowBox) {
+    public CollisionAction collidedWithWorld(World realWorld, AxisAlignedBB realBox, World shadowWorld,
+        AxisAlignedBB shadowBox) {
         return CollisionAction.STOP_BEFORE;
     }
 
@@ -269,12 +295,14 @@ public class MechanicsController implements IDCController {
      * {@code
      *     final EntityReference<IDeltaChunk> idcRef = MechanicsController.autoJoin(this);
      * }
+     * 
      * @param controller The controller that you want to rejoin.
      * @return The reference
      */
     static EntityReference<IDeltaChunk> autoJoin(final IDCController controller) {
         EntityReference<IDeltaChunk> ret = new EntityReference<IDeltaChunk>();
         ret.whenFound(new EntityReference.OnFound<IDeltaChunk>() {
+
             @Override
             public void found(IDeltaChunk ent) {
                 MechanicsController.rejoin(ent, controller);

@@ -1,10 +1,12 @@
 package factorization.api;
 
-import factorization.util.SpaceUtil;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import factorization.util.SpaceUtil;
+
 public enum FzOrientation {
+
     FACE_DOWN_POINT_SOUTH(ForgeDirection.DOWN, ForgeDirection.SOUTH),
     FACE_DOWN_POINT_NORTH(ForgeDirection.DOWN, ForgeDirection.NORTH),
     FACE_DOWN_POINT_EAST(ForgeDirection.DOWN, ForgeDirection.EAST),
@@ -35,59 +37,61 @@ public enum FzOrientation {
     FACE_EAST_POINT_SOUTH(ForgeDirection.EAST, ForgeDirection.SOUTH),
     FACE_EAST_POINT_NORTH(ForgeDirection.EAST, ForgeDirection.NORTH),
 
-
     FACE_UNKNOWN_POINT_UNKNOWN(ForgeDirection.UNKNOWN, ForgeDirection.UNKNOWN);
-    
+
     static public final FzOrientation UNKNOWN = FACE_UNKNOWN_POINT_UNKNOWN;
 
-    
-    //#Java is an excellent language. Hence, this python script.
-    //dirs = "DOWN UP NORTH SOUTH WEST EAST".split()
+    // #Java is an excellent language. Hence, this python script.
+    // dirs = "DOWN UP NORTH SOUTH WEST EAST".split()
     //
-    //RM = ( #Imported from ForgeDirection
-    //  (0, 1, 4, 5, 3, 2),
-    //  (0, 1, 5, 4, 2, 3),
-    //  (5, 4, 2, 3, 0, 1),
-    //  (4, 5, 2, 3, 1, 0),
-    //  (2, 3, 1, 0, 4, 5),
-    //  (3, 2, 0, 1, 4, 5),
-    //  (0, 1, 2, 3, 4, 5),
-    //)
+    // RM = ( #Imported from ForgeDirection
+    // (0, 1, 4, 5, 3, 2),
+    // (0, 1, 5, 4, 2, 3),
+    // (5, 4, 2, 3, 0, 1),
+    // (4, 5, 2, 3, 1, 0),
+    // (2, 3, 1, 0, 4, 5),
+    // (3, 2, 0, 1, 4, 5),
+    // (0, 1, 2, 3, 4, 5),
+    // )
     //
-    //for i in range(len(RM)):
-    //  data = RM[i]
-    //  for j in data:
-    //	    if data[j] == j:
-    //	      continue
-    //	    face = dirs[i]
-    //	    point = dirs[data[j]]
-    //	    name = "FACE_{0}_POINT_{1}".format(face, point)
-    //	    print("{0}(ForgeDirection.{1}, ForgeDirection.{2}),".format(name, face, point))
-    //  print()
-    //print("FACE_UNKNOWN_POINT_UNKNOWN(ForgeDirection.UNKNOWN, ForgeDirection.UNKNOWN);")
-    
+    // for i in range(len(RM)):
+    // data = RM[i]
+    // for j in data:
+    // if data[j] == j:
+    // continue
+    // face = dirs[i]
+    // point = dirs[data[j]]
+    // name = "FACE_{0}_POINT_{1}".format(face, point)
+    // print("{0}(ForgeDirection.{1}, ForgeDirection.{2}),".format(name, face, point))
+    // print()
+    // print("FACE_UNKNOWN_POINT_UNKNOWN(ForgeDirection.UNKNOWN, ForgeDirection.UNKNOWN);")
+
     /**
      * This value is what a Dispenser has. It can point in any of the 6 directions.
      */
     public final ForgeDirection facing;
-    
+
     /**
-     * This is what various RedPower-style machines add. It can only point in 4 directions. It can not point in the facing direction, nor in the opposite direction.
+     * This is what various RedPower-style machines add. It can only point in 4 directions. It can not point in the
+     * facing direction, nor in the opposite direction.
      */
     public final ForgeDirection top;
-    
+
     private FzOrientation nextFaceRotation, prevFaceRotation;
     private int rotation;
     private FzOrientation swapped;
-    private ForgeDirection[] dirRotations = new ForgeDirection[ForgeDirection.values().length]; // Admitedly we could just use values() here. But that's ugly.
-    
+    private ForgeDirection[] dirRotations = new ForgeDirection[ForgeDirection.values().length]; // Admitedly we could
+                                                                                                // just use values()
+                                                                                                // here. But that's
+                                                                                                // ugly.
+
     private static FzOrientation[] valuesCache = values();
-    
+
     FzOrientation(ForgeDirection facing, ForgeDirection top) {
         this.facing = facing;
         this.top = top;
     }
-    
+
     static {
         for (FzOrientation o : values()) {
             o.setup();
@@ -116,9 +120,13 @@ public enum FzOrientation {
             nextFaceRotation = prevFaceRotation = this;
         }
         nextFaceRotation = find(facing, top.getRotation(facing));
-        prevFaceRotation = find(facing, top.getRotation(facing).getRotation(facing).getRotation(facing));
+        prevFaceRotation = find(
+            facing,
+            top.getRotation(facing)
+                .getRotation(facing)
+                .getRotation(facing));
     }
-    
+
     private void setupRotation() {
         if (this == UNKNOWN) {
             return;
@@ -137,11 +145,12 @@ public enum FzOrientation {
     private void setupDirectionRotation() {
         for (ForgeDirection dir : ForgeDirection.values()) {
             Vec3 v = SpaceUtil.fromDirection(dir);
-            Quaternion.fromOrientation(this).applyRotation(v);
+            Quaternion.fromOrientation(this)
+                .applyRotation(v);
             dirRotations[dir.ordinal()] = SpaceUtil.round(v, ForgeDirection.UNKNOWN);
         }
     }
-    
+
     private static FzOrientation find(ForgeDirection f, ForgeDirection t) {
         for (FzOrientation o : values()) {
             if (o.facing == f && o.top == t) {
@@ -150,8 +159,7 @@ public enum FzOrientation {
         }
         return UNKNOWN;
     }
-    
-    
+
     public FzOrientation rotateOnFace(int count) {
         count = count % 4;
         if (count > 0) {
@@ -172,44 +180,48 @@ public enum FzOrientation {
             return this;
         }
     }
-    
+
     public FzOrientation getNextRotationOnFace() {
         return nextFaceRotation;
     }
-    
+
     public FzOrientation getPrevRotationOnFace() {
         return prevFaceRotation;
     }
-    
+
     public FzOrientation getNextRotationOnTop() {
-        return getSwapped().getNextRotationOnFace().getSwapped();
+        return getSwapped().getNextRotationOnFace()
+            .getSwapped();
     }
-    
+
     public FzOrientation getPrevRotationOnTop() {
-        return getSwapped().getPrevRotationOnFace().getSwapped();
+        return getSwapped().getPrevRotationOnFace()
+            .getSwapped();
     }
-    
+
     public FzOrientation rotateOnTop(int count) {
-        return getSwapped().rotateOnFace(count).getSwapped();
+        return getSwapped().rotateOnFace(count)
+            .getSwapped();
     }
-    
+
     public static FzOrientation getOrientation(int index) {
         if (index >= 0 && index < valuesCache.length) {
             return valuesCache[index];
         }
         return UNKNOWN;
     }
-    
+
     public static FzOrientation fromDirection(ForgeDirection dir) {
         if (dir == ForgeDirection.UNKNOWN) {
             return UNKNOWN;
         }
-        return valuesCache[dir.ordinal()*4];
+        return valuesCache[dir.ordinal() * 4];
     }
-    
+
     /**
      * @param newTop
-     * @return {@link FzOrientation} with the same direction, but facing newTop. If the top can't be change to that direction because it is already facing that direction, it returns UNKNOWN.
+     * @return {@link FzOrientation} with the same direction, but facing newTop. If the top can't be change to that
+     *         direction because it is already facing that direction, it returns UNKNOWN.
      */
     public FzOrientation pointTopTo(ForgeDirection newTop) {
         FzOrientation fzo = this;
@@ -221,11 +233,11 @@ public enum FzOrientation {
         }
         return UNKNOWN;
     }
-    
+
     public int getRotation() {
         return rotation;
     }
-    
+
     public void setDiagonalVector(Vec3 vec) {
         vec.xCoord = facing.offsetX;
         vec.yCoord = facing.offsetY;
@@ -234,13 +246,13 @@ public enum FzOrientation {
         vec.yCoord += top.offsetY;
         vec.zCoord += top.offsetZ;
     }
-    
+
     public Vec3 getDiagonalVector() {
         Vec3 ret = Vec3.createVectorHelper(0, 0, 0);
         setDiagonalVector(ret);
         return ret;
     }
-    
+
     public FzOrientation getSwapped() {
         return swapped;
     }

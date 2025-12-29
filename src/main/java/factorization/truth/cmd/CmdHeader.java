@@ -1,10 +1,12 @@
 package factorization.truth.cmd;
 
-import factorization.truth.WordPage;
-import factorization.truth.api.*;
 import net.minecraft.util.EnumChatFormatting;
 
+import factorization.truth.WordPage;
+import factorization.truth.api.*;
+
 public class CmdHeader implements ITypesetCommand {
+
     @Override
     public void callClient(IClientTypesetter out, ITokenizer tokenizer) throws TruthError {
         String val = tokenizer.getParameter("No header title");

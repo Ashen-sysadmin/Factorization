@@ -4,6 +4,7 @@ import factorization.truth.api.*;
 import factorization.truth.word.URIWord;
 
 public class CmdUrl implements ITypesetCommand {
+
     @Override
     public void callClient(IClientTypesetter out, ITokenizer tokenizer) throws TruthError {
         String uriLink = tokenizer.getParameter("\\url missing parameter: uriLink");

@@ -1,24 +1,18 @@
 package factorization.ceramics;
 
-import factorization.oreprocessing.TileEntityGrinderRender;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
-import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.client.IItemRenderer;
 
 import org.lwjgl.opengl.GL11;
 
-import factorization.common.BlockIcons;
 import factorization.shared.Core;
-
 
 public class ItemRenderGlazeBucket implements IItemRenderer {
 
@@ -31,7 +25,7 @@ public class ItemRenderGlazeBucket implements IItemRenderer {
             return false;
         }
         if (type == ItemRenderType.EQUIPPED) {
-            //return true;
+            // return true;
             return false;
         }
         return false;
@@ -43,6 +37,7 @@ public class ItemRenderGlazeBucket implements IItemRenderer {
     }
 
     private static RenderItem itemRenderer = new RenderItem();
+
     @Override
     public void renderItem(ItemRenderType type, ItemStack is, Object... data) {
         Minecraft mc = Minecraft.getMinecraft();
@@ -53,11 +48,19 @@ public class ItemRenderGlazeBucket implements IItemRenderer {
         if (type == ItemRenderType.EQUIPPED) {
             IIcon bi = bucket.getIcon(is, 0);
             GL11.glPushMatrix();
-            float s = 1F/16F;
+            float s = 1F / 16F;
             GL11.glScalef(s, s, s);
             renderGlaze(is, tess, re, bucket, glaze);
             GL11.glPopMatrix();
-            ItemRenderer.renderItemIn2D(tess, bi.getMinU(), bi.getMinV(), bi.getMaxU(), bi.getMaxV(), bi.getIconWidth(), bi.getIconHeight(), 0.0625F);
+            ItemRenderer.renderItemIn2D(
+                tess,
+                bi.getMinU(),
+                bi.getMinV(),
+                bi.getMaxU(),
+                bi.getMaxV(),
+                bi.getIconWidth(),
+                bi.getIconHeight(),
+                0.0625F);
         } else {
             if (type == ItemRenderType.INVENTORY) {
                 RenderHelper.enableGUIStandardItemLighting();

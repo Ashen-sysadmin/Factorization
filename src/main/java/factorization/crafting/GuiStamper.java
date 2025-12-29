@@ -8,10 +8,11 @@ import factorization.shared.Core;
 import factorization.shared.FactorizationGui;
 
 public class GuiStamper extends FactorizationGui {
+
     public GuiStamper(ContainerFactorization container) {
         super(container);
     }
-    
+
     @Override
     protected void drawGuiContainerBackgroundLayer(float f, int i, int j) {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);

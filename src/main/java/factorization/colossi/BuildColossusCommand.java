@@ -7,10 +7,12 @@ import net.minecraft.tileentity.TileEntityCommandBlock;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChunkCoordinates;
+
 import factorization.api.Coord;
 import factorization.shared.Core;
 
 public class BuildColossusCommand extends CommandBase {
+
     @Override
     public String getCommandName() {
         return "build-colossus";
@@ -20,12 +22,12 @@ public class BuildColossusCommand extends CommandBase {
     public String getCommandUsage(ICommandSender player) {
         return "/build-colossus ([spam] SEED)|reload-masks";
     }
-    
+
     @Override
     public int getRequiredPermissionLevel() {
         return 2;
     }
-    
+
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender player) {
         return super.canCommandSenderUseCommand(player);
@@ -43,8 +45,9 @@ public class BuildColossusCommand extends CommandBase {
         }
         ChunkCoordinates cc = player.getPlayerCoordinates();
         Coord at = new Coord(player.getEntityWorld(), cc.posX, cc.posY, cc.posZ);
-        if (player.getCommandSenderName().startsWith("@")) {
-            at = at.add(0, 6, 0);		    
+        if (player.getCommandSenderName()
+            .startsWith("@")) {
+            at = at.add(0, 6, 0);
         }
         if (args[0].equalsIgnoreCase("spam") || args[0].equals("$")) {
             int randSeed;
@@ -67,12 +70,12 @@ public class BuildColossusCommand extends CommandBase {
             doGen(at, randSeed);
         }
     }
-    
+
     ColossalBuilder doGen(Coord at, int randSeed) {
         Coord signAt = at.copy();
         ColossalBuilder builder = new ColossalBuilder(randSeed, at);
         builder.construct();
-        
+
         if (signAt.getTE(TileEntityCommandBlock.class) != null) {
             signAt.setIdMd(Blocks.standing_sign, 12, true);
             TileEntitySign sign = signAt.getTE(TileEntitySign.class);

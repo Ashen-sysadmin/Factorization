@@ -1,6 +1,7 @@
 package factorization.truth.api;
 
 public abstract class AgnosticCommand implements ITypesetCommand {
+
     protected abstract void call(ITypesetter out, ITokenizer tokenizer) throws TruthError;
 
     @Override

@@ -1,28 +1,8 @@
 package factorization.weird;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.api.Coord;
-import factorization.api.FzOrientation;
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.Share;
-import factorization.common.FactoryType;
-import factorization.notify.Notice;
-import factorization.notify.NoticeUpdater;
-import factorization.rendersorting.ISortableRenderer;
-import factorization.rendersorting.RenderSorter;
-import factorization.shared.*;
-import factorization.shared.NetworkFactorization.MessageType;
-import factorization.util.*;
-import factorization.util.InvUtil.FzInv;
-import gnu.trove.iterator.TIntIterator;
-import gnu.trove.set.TIntSet;
-import gnu.trove.set.hash.TIntHashSet;
-import io.netty.buffer.ByteBuf;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRailBase;
 import net.minecraft.block.material.Material;
@@ -49,12 +29,35 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.ChunkEvent;
+
 import org.lwjgl.opengl.GL11;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
+import cpw.mods.fml.common.network.internal.FMLProxyPacket;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.api.Coord;
+import factorization.api.FzOrientation;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.Share;
+import factorization.common.FactoryType;
+import factorization.notify.Notice;
+import factorization.notify.NoticeUpdater;
+import factorization.rendersorting.ISortableRenderer;
+import factorization.rendersorting.RenderSorter;
+import factorization.shared.*;
+import factorization.shared.NetworkFactorization.MessageType;
+import factorization.util.*;
+import factorization.util.InvUtil.FzInv;
+import gnu.trove.iterator.TIntIterator;
+import gnu.trove.set.TIntSet;
+import gnu.trove.set.hash.TIntHashSet;
+import io.netty.buffer.ByteBuf;
 
 public class TileEntityDayBarrel extends TileEntityFactorization implements ISortableRenderer<TileEntityDayBarrel> {
+
     public ItemStack item;
     private ItemStack topStack;
     private int middleCount;
@@ -65,57 +68,70 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
     int display_list = 0;
     byte warmup_time = 0;
     boolean should_use_display_list = true;
-    
+
     public FzOrientation orientation = FzOrientation.FACE_UP_POINT_NORTH;
     public Type type = Type.NORMAL;
     Object notice_target = this;
-    
-    private static final int maxStackDrop = 64*64*2;
+
+    private static final int maxStackDrop = 64 * 64 * 2;
 
     public static enum Type {
-        NORMAL, SILKY, HOPPING, LARGER, STICKY, CREATIVE;
-        
+
+        NORMAL,
+        SILKY,
+        HOPPING,
+        LARGER,
+        STICKY,
+        CREATIVE;
+
         private static Type[] value_list = values();
+
         public static Type valueOf(int ordinal) {
             if (ordinal < 0 || ordinal >= value_list.length) {
                 return NORMAL;
             }
             return value_list[ordinal];
         }
-        
+
         public static final int TYPE_COUNT = values().length;
     }
+
     private int last_mentioned_count = -1;
-    
-    //Factoryish stuff
+
+    // Factoryish stuff
     @Override
     public FactoryType getFactoryType() {
         return FactoryType.DAYBARREL;
     }
-    
+
     @Override
     public BlockClass getBlockClass() {
         return BlockClass.Barrel;
     }
 
-    
     @Override
     public void putData(DataHelper data) throws IOException {
-        item = data.as(Share.VISIBLE, "item").putItemStack(item);
+        item = data.as(Share.VISIBLE, "item")
+            .putItemStack(item);
         int count;
         try {
-            count = data.as(Share.VISIBLE, "count").putInt(getItemCount());
+            count = data.as(Share.VISIBLE, "count")
+                .putInt(getItemCount());
         } catch (Throwable t) {
             t.printStackTrace();
             count = 0;
         }
-        orientation = data.as(Share.VISIBLE, "dir").putFzOrientation(orientation);
+        orientation = data.as(Share.VISIBLE, "dir")
+            .putFzOrientation(orientation);
         if (data.isReader()) {
             setItemCount(count);
         }
-        woodLog = data.as(Share.VISIBLE, "log").putItemStack(woodLog);
-        woodSlab = data.as(Share.VISIBLE, "slab").putItemStack(woodSlab);
-        type = data.as(Share.VISIBLE, "type").putEnum(type);
+        woodLog = data.as(Share.VISIBLE, "log")
+            .putItemStack(woodLog);
+        woodSlab = data.as(Share.VISIBLE, "slab")
+            .putItemStack(woodSlab);
+        type = data.as(Share.VISIBLE, "type")
+            .putEnum(type);
         if (woodLog == null) {
             woodLog = DEFAULT_LOG;
         }
@@ -126,22 +142,20 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             last_mentioned_count = getItemCount();
         }
     }
-    
-    
-    
-    //Barrel-type Code
+
+    // Barrel-type Code
     @Override
     public boolean canUpdate() {
         return type == Type.HOPPING;
     }
-    
+
     @Override
     protected void doLogic() {
         if (type != Type.HOPPING) {
             return;
         }
         needLogic();
-        
+
         if (orientation == FzOrientation.UNKNOWN) {
             return;
         }
@@ -155,7 +169,7 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             here.adjust(orientation.top);
             IInventory upi = here.getTE(IInventory.class);
             FzInv upinv = InvUtil.openInventory(upi, orientation.top.getOpposite());
-            
+
             if (upinv != null) {
                 ItemStack got = upinv.pull(item, 1, true);
                 if (got != null) {
@@ -172,7 +186,7 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             here.adjust(orientation.top.getOpposite());
             IInventory downi = here.getTE(IInventory.class);
             FzInv downinv = InvUtil.openInventory(downi, orientation.top);
-            
+
             if (downinv != null) {
                 ItemStack bottom_item = getStackInSlot(1);
                 if (bottom_item != null) {
@@ -193,12 +207,12 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             markDirty();
         }
     }
-    
+
     @Override
     protected int getLogicSpeed() {
-        return 8; //To match vanilla hoppers
+        return 8; // To match vanilla hoppers
     }
-    
+
     @Override
     public void neighborChanged() {
         super.neighborChanged();
@@ -206,13 +220,13 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             needLogic();
         }
     }
-    
+
     public int getItemCount() {
         if (item == null) {
             return 0;
         }
         if (type == Type.CREATIVE) {
-            return 32*item.getMaxStackSize();
+            return 32 * item.getMaxStackSize();
         }
         if (topStack == null || !itemMatch(topStack)) {
             topStack = item.copy();
@@ -225,7 +239,7 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         int ret = bottomStack.stackSize + middleCount + topStack.stackSize;
         return ret;
     }
-    
+
     public int getItemCountSticky() {
         int count = getItemCount();
         if (type == Type.STICKY) {
@@ -234,25 +248,25 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         }
         return count;
     }
-    
+
     public int getMaxSize() {
-        int size = 64*64;
+        int size = 64 * 64;
         if (item != null) {
-            size = item.getMaxStackSize()*64;
+            size = item.getMaxStackSize() * 64;
         }
         if (type == Type.LARGER) {
             size *= 2;
         }
         return size;
     }
-    
+
     public boolean itemMatch(ItemStack is) {
         if (is == null || item == null) {
             return false;
         }
         return ItemUtil.couldMerge(item, is);
     }
-    
+
     boolean taint(ItemStack is) {
         if (is == null && item == null) {
             return true;
@@ -267,30 +281,31 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         }
         return ItemUtil.couldMerge(item, is);
     }
-    
+
     boolean isTop(ForgeDirection d) {
         return d == orientation.top;
     }
-    
+
     boolean isTopOrBack(ForgeDirection d) {
         return d == orientation.top || d == orientation.facing.getOpposite();
     }
-    
+
     boolean isBottom(ForgeDirection d) {
         return d == orientation.top.getOpposite();
     }
-    
+
     boolean isBack(ForgeDirection d) {
         return d == orientation.facing.getOpposite();
     }
-    
+
     public void setItemCount(int val) {
         topStack = bottomStack = null;
         middleCount = val;
         changeItemCount(0);
     }
-    
+
     private boolean spammed = false;
+
     public void changeItemCount(int delta) {
         middleCount = getItemCount() + delta;
         if (middleCount < 0) {
@@ -319,14 +334,14 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         updateClients(MessageType.BarrelCount);
         markDirty();
     }
-    
+
     @Override
     public void onPlacedBy(EntityPlayer player, ItemStack is, int side, float hitX, float hitY, float hitZ) {
         orientation = SpaceUtil.getOrientation(player, side, hitX, hitY, hitZ);
         loadFromStack(is);
         needLogic();
     }
-    
+
     @Override
     public void loadFromStack(ItemStack is) {
         super.loadFromStack(is);
@@ -345,28 +360,30 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             }
         }
     }
-    
+
     public static ItemStack getSilkedItem(ItemStack is) {
         if (is == null || !is.hasTagCompound()) {
             return null;
         }
         NBTTagCompound tag = is.getTagCompound();
         if (tag.hasKey("SilkItem")) {
-            return ItemStack.loadItemStackFromNBT(is.getTagCompound().getCompoundTag("SilkItem"));
+            return ItemStack.loadItemStackFromNBT(
+                is.getTagCompound()
+                    .getCompoundTag("SilkItem"));
         }
         return null;
     }
-    
+
     public static boolean isNested(ItemStack is) {
         return getSilkedItem(is) != null;
     }
-    
-    
-    //Network stuff
-    
+
+    // Network stuff
+
     FMLProxyPacket getPacket(MessageType messageType) {
         if (messageType == NetworkFactorization.MessageType.BarrelItem) {
-            return Core.network.TEmessagePacket(getCoord(), messageType, NetworkFactorization.nullItem(item), getItemCount());
+            return Core.network
+                .TEmessagePacket(getCoord(), messageType, NetworkFactorization.nullItem(item), getItemCount());
         } else if (messageType == NetworkFactorization.MessageType.BarrelCount) {
             return Core.network.TEmessagePacket(getCoord(), messageType, getItemCount());
         } else {
@@ -374,14 +391,14 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             return null;
         }
     }
-    
+
     void updateClients(MessageType messageType) {
         if (getWorldObj() == null || getWorldObj().isRemote) {
             return;
         }
         broadcastMessage(null, getPacket(messageType));
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public boolean handleMessageFromServer(MessageType messageType, ByteBuf input) throws IOException {
@@ -416,16 +433,16 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         }
         return false;
     }
-    
+
     void cleanBarrel() {
         if (getItemCount() == 0) {
             topStack = bottomStack = item = null;
             middleCount = 0;
         }
     }
-    
-    //Inventory code
-    
+
+    // Inventory code
+
     @Override
     public void markDirty() {
         super.markDirty();
@@ -433,8 +450,8 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         updateStacks();
         int c = getItemCount();
         if (c != last_mentioned_count) {
-            if (last_mentioned_count*c <= 0) {
-                //One of them was 0
+            if (last_mentioned_count * c <= 0) {
+                // One of them was 0
                 updateClients(MessageType.BarrelItem);
             } else {
                 updateClients(MessageType.BarrelCount);
@@ -445,12 +462,12 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             needLogic();
         }
     }
-    
+
     @Override
     public int getSizeInventory() {
         return 2;
     }
-    
+
     private void updateStacks() {
         if (item == null) {
             topStack = bottomStack = null;
@@ -491,7 +508,7 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             middleCount++;
         }
     }
-    
+
     @Override
     public ItemStack getStackInSlot(int i) {
         updateStacks();
@@ -546,15 +563,15 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         }
         return itemMatch(is);
     }
-    
+
     @Override
     public boolean canExtractItem(int slot, ItemStack itemstack, int side) {
         ForgeDirection d = ForgeDirection.getOrientation(side);
         return isTop(d.getOpposite());
     }
 
-    
-    private static final int[] top_slot = new int[] {0}, bottom_slot = new int[] {1}, no_slots = new int[] {};
+    private static final int[] top_slot = new int[] { 0 }, bottom_slot = new int[] { 1 }, no_slots = new int[] {};
+
     @Override
     public int[] getAccessibleSlotsFromSide(int i) {
         ForgeDirection d = ForgeDirection.getOrientation(i);
@@ -566,15 +583,15 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         }
         return no_slots;
     }
-    
-    //Interaction
-    
-    long lastClick = -1000; //NOTE: This really should be player-specific!
 
-    //* 			Left-Click		Right-Click
-    //* No Shift:	Remove stack	Add item
-    //* Shift:		Remove 1 item	Use item
-    //* Double:						Add all but 1 item
+    // Interaction
+
+    long lastClick = -1000; // NOTE: This really should be player-specific!
+
+    // * Left-Click Right-Click
+    // * No Shift: Remove stack Add item
+    // * Shift: Remove 1 item Use item
+    // * Double: Add all but 1 item
 
     @Override
     public boolean activate(EntityPlayer entityplayer, ForgeDirection side) {
@@ -593,12 +610,12 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             info(entityplayer);
             return true;
         }
-        
+
         if (!worldObj.isRemote && isNested(held) && (item == null || itemMatch(held))) {
             new Notice(notice_target, "No.").send(entityplayer);
             return true;
         }
-        
+
         NBTTagCompound tag = held.getTagCompound();
         if (tag != null && tag.hasKey("noFzBarrel")) {
             return false;
@@ -607,7 +624,8 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         boolean veryNew = taint(held);
 
         if (!itemMatch(held)) {
-            if (LangUtil.getTranslationKey(held.getItem()).equals(LangUtil.getTranslationKey(item))) {
+            if (LangUtil.getTranslationKey(held.getItem())
+                .equals(LangUtil.getTranslationKey(item))) {
                 new Notice(notice_target, "That item is different").send(entityplayer);
             } else {
                 info(entityplayer);
@@ -630,20 +648,22 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         }
         return true;
     }
-    
+
     void addAllItems(EntityPlayer entityplayer) {
         ItemStack held = entityplayer.getHeldItem();
         if (held != null) {
             taint(held);
         }
-        /*if (held != null && !itemMatch(held)) {
-            if (Core.getTranslationKey(held).equals(Core.getTranslationKey(item))) {
-                new Notice(notice_target, "That item is different").send(entityplayer);
-            } else {
-                info(entityplayer);
-            }
-            return;
-        }*/
+        /*
+         * if (held != null && !itemMatch(held)) {
+         * if (Core.getTranslationKey(held).equals(Core.getTranslationKey(item))) {
+         * new Notice(notice_target, "That item is different").send(entityplayer);
+         * } else {
+         * info(entityplayer);
+         * }
+         * return;
+         * }
+         */
         InventoryPlayer inv = entityplayer.inventory;
         int total_delta = 0;
         for (int i = 0; i < inv.getSizeInventory(); i++) {
@@ -673,9 +693,9 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             Core.proxy.updatePlayerInventory(entityplayer);
         }
     }
-    
-    
+
     private static int last_hit_side = -1;
+
     @SubscribeEvent
     public void clickEvent(PlayerInteractEvent event) {
         if (event.entityPlayer.worldObj.isRemote) {
@@ -702,13 +722,14 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         }
         return false;
     }
-    
+
     boolean punt(EntityPlayer player) {
         int distance = PlayerUtil.getPuntStrengthInt(player);
         if (distance <= 0) {
             return false;
         }
-        ForgeDirection dir = ForgeDirection.getOrientation(last_hit_side).getOpposite();
+        ForgeDirection dir = ForgeDirection.getOrientation(last_hit_side)
+            .getOpposite();
         if (dir == ForgeDirection.UNKNOWN) {
             return false;
         }
@@ -757,11 +778,12 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             if (!doRotation) {
                 rotateCount = 0;
             }
-            //When we roll a barrel, the side we punch should face up
+            // When we roll a barrel, the side we punch should face up
             for (int r = rotateCount; r > 0; r--) {
                 ForgeDirection nTop = newOrientation.top.getRotation(rotationAxis);
                 ForgeDirection nFace = newOrientation.facing.getRotation(rotationAxis);
-                newOrientation = FzOrientation.fromDirection(nFace).pointTopTo(nTop);
+                newOrientation = FzOrientation.fromDirection(nFace)
+                    .pointTopTo(nTop);
             }
         }
         if (src.equals(next)) {
@@ -792,10 +814,10 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
                 player.destroyCurrentEquippedItem();
             }
         }
-        //spillItems(spillage); // Meh!
+        // spillItems(spillage); // Meh!
         return true;
     }
-    
+
     @Override
     public void click(EntityPlayer entityplayer) {
         // left click: remove a stack, or punt if properly equipped
@@ -813,7 +835,7 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         if (ForgeHooks.canToolHarvestBlock(Blocks.log, 0, origHeldItem)) {
             return;
         }
-        
+
         int to_remove = Math.min(item.getMaxStackSize(), getItemCount());
         if (entityplayer.isSneaking() && to_remove >= 1) {
             to_remove = 1;
@@ -821,7 +843,11 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         if (to_remove > 1 && to_remove == getItemCount()) {
             to_remove--;
         }
-        Entity ent = ItemUtil.giveItem(entityplayer, new Coord(this), makeStack(to_remove), ForgeDirection.getOrientation(last_hit_side));
+        Entity ent = ItemUtil.giveItem(
+            entityplayer,
+            new Coord(this),
+            makeStack(to_remove),
+            ForgeDirection.getOrientation(last_hit_side));
         if (ent != null && ent.isDead && !(entityplayer instanceof FakePlayer)) {
             ItemStack newHeld = entityplayer.getHeldItem();
             if (newHeld != origHeldItem) {
@@ -832,23 +858,26 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         cleanBarrel();
         last_hit_side = -1;
     }
-    
+
     void info(final EntityPlayer entityplayer) {
         new Notice(notice_target, new NoticeUpdater() {
+
             @Override
             public void update(Notice msg) {
                 int itemCount = getItemCount();
-                
+
                 if (item == null && getItemCount() == 0) {
                     msg.setMessage("Empty");
                 } else if (getItemCount() >= getMaxSize()) {
-                    msg.withItem(item).setMessage("Full of {ITEM_NAME}{ITEM_INFOS_NEWLINE}");
+                    msg.withItem(item)
+                        .setMessage("Full of {ITEM_NAME}{ITEM_INFOS_NEWLINE}");
                 } else {
                     String count = "" + getItemCount();
                     if (type == Type.CREATIVE) {
                         count = "Infinite";
                     }
-                    msg.withItem(item).setMessage("%s {ITEM_NAME}{ITEM_INFOS_NEWLINE}", count);
+                    msg.withItem(item)
+                        .setMessage("%s {ITEM_NAME}{ITEM_INFOS_NEWLINE}", count);
                 }
             }
         }).send(entityplayer);
@@ -864,9 +893,8 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         return ret;
     }
 
+    // Misc junk
 
-    //Misc junk
-    
     @Override
     public int getComparatorValue(ForgeDirection side) {
         int count = getItemCount();
@@ -877,10 +905,10 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         if (count == max) {
             return 15;
         }
-        float v = count/(float)max;
-        return (int) Math.max(1, v*14);
+        float v = count / (float) max;
+        return (int) Math.max(1, v * 14);
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(ForgeDirection dir) {
@@ -889,21 +917,23 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             if (ws != null) {
                 return ws.getIcon(0, woodSlab.getItemDamage());
             }
-            return woodSlab.getItem().getIcon(woodSlab, 0);
+            return woodSlab.getItem()
+                .getIcon(woodSlab, 0);
         }
         Block wl = DataUtil.getBlock(woodLog);
         if (wl != null) {
             return wl.getIcon(2, woodLog.getItemDamage());
         }
-        return woodLog.getItem().getIcon(woodLog, 0);
+        return woodLog.getItem()
+            .getIcon(woodLog, 0);
     }
-    
+
     @Override
     public void dropContents() {
         if (type == Type.CREATIVE || (type == Type.SILKY && broken_with_silk_touch)) {
             return;
         }
-        if (item == null || getItemCount() <= 0 ) {
+        if (item == null || getItemCount() <= 0) {
             return;
         }
         int count = getItemCount();
@@ -920,36 +950,38 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         middleCount = 0;
         bottomStack = null;
     }
-    
+
     public boolean canLose() {
         return item != null && getItemCount() > maxStackDrop * item.getMaxStackSize();
     }
-    
+
     public static ItemStack makeBarrel(Type type, ItemStack log, ItemStack slab) {
         ItemStack barrel_item = new ItemStack(Core.registry.daybarrel);
         barrel_item = addUpgrade(barrel_item, type);
         NBTTagCompound tag = ItemUtil.getTag(barrel_item);
         tag.setTag("log", DataUtil.item2tag(log));
         tag.setTag("slab", DataUtil.item2tag(slab));
-        int dmg = DataUtil.getName(log).hashCode() * 16 + log.getItemDamage();
+        int dmg = DataUtil.getName(log)
+            .hashCode() * 16 + log.getItemDamage();
         dmg %= 1000;
         dmg *= 10;
         dmg += type.ordinal();
         barrel_item.setItemDamage(dmg);
         return barrel_item;
     }
-    
+
     public static ArrayList<ItemStack> barrel_items = new ArrayList();
+
     private static ItemStack make(Type type, ItemStack log, ItemStack slab) {
         ItemStack ret = makeBarrel(type, log, slab);
         barrel_items.add(ret);
         return ret;
     }
-    
+
     static {
         make(Type.CREATIVE, new ItemStack(Blocks.bedrock), new ItemStack(Blocks.diamond_block));
     }
-    
+
     public static void makeRecipe(Object objLog, Object objSlab) {
         ItemStack log, slab;
         if (objLog instanceof ItemStack) {
@@ -965,14 +997,9 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             if (slab == null) return; // Meep!
         }
         ItemStack normal = make(Type.NORMAL, log, slab);
-        Core.registry.oreRecipe(normal,
-                "W-W",
-                "W W",
-                "WWW",
-                'W', objLog,
-                '-', objSlab);
+        Core.registry.oreRecipe(normal, "W-W", "W W", "WWW", 'W', objLog, '-', objSlab);
     }
-    
+
     public static Type getUpgrade(ItemStack is) {
         if (is == null) {
             return Type.NORMAL;
@@ -994,15 +1021,15 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             return Type.NORMAL;
         }
     }
-    
+
     public static ItemStack getLog(ItemStack is) {
         return get(is, "log", DEFAULT_LOG);
     }
-    
+
     public static ItemStack getSlab(ItemStack is) {
         return get(is, "slab", DEFAULT_SLAB);
     }
-    
+
     private static ItemStack get(ItemStack is, String name, ItemStack default_) {
         NBTTagCompound tag = is.getTagCompound();
         if (tag == null) {
@@ -1014,7 +1041,7 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         }
         return DataUtil.tag2item(tag, default_);
     }
-    
+
     static ItemStack addUpgrade(ItemStack barrel, Type upgrade) {
         if (upgrade == Type.NORMAL) {
             return barrel;
@@ -1024,7 +1051,7 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         tag.setString("type", upgrade.toString());
         return barrel;
     }
-    
+
     @Override
     public boolean rotate(ForgeDirection axis) {
         if (axis == ForgeDirection.UNKNOWN) {
@@ -1041,7 +1068,7 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         orientation = FzOrientation.fromDirection(axis);
         return true;
     }
-    
+
     @Override
     public ItemStack getDroppedBlock() {
         ItemStack is = makeBarrel(type, woodLog, woodSlab);
@@ -1055,16 +1082,16 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         }
         return is;
     }
-    
+
     boolean broken_with_silk_touch = false;
-    
+
     @Override
     protected boolean removedByPlayer(EntityPlayer player, boolean willHarvest) {
         if (cancelRemovedByPlayer(player)) return false;
         broken_with_silk_touch = EnchantmentHelper.getSilkTouchModifier(player);
         return super.removedByPlayer(player, willHarvest);
     }
-    
+
     private boolean cancelRemovedByPlayer(EntityPlayer player) {
         if (item == null) {
             return false;
@@ -1081,14 +1108,14 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
     }
 
     static final TIntSet finalizedDisplayLists = new TIntHashSet();
-    
+
     public static void addFinalizedDisplayList(int display_list) {
         if (display_list == 0) return;
         synchronized (finalizedDisplayLists) {
             finalizedDisplayLists.add(display_list);
         }
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     protected void finalize() throws Throwable {
@@ -1101,7 +1128,7 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             display_list = 0;
         }
     }
-    
+
     @SideOnly(Side.CLIENT)
     final void freeDisplayList() {
         if (display_list != 0) {
@@ -1109,20 +1136,21 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             display_list = 0;
         }
     }
-    
+
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void removeUnloadedDisplayLists(ChunkEvent.Unload event) {
         if (!event.world.isRemote) return;
-        for (TileEntity te : (Iterable<TileEntity>)event.getChunk().chunkTileEntityMap.values()) {
+        for (TileEntity te : (Iterable<TileEntity>) event.getChunk().chunkTileEntityMap.values()) {
             if (te instanceof TileEntityDayBarrel) {
                 TileEntityDayBarrel me = (TileEntityDayBarrel) te;
                 me.freeDisplayList();
             }
         }
     }
-    
+
     private static int iterateDelay = 0;
+
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void iterateForFinalizedBarrels(ClientTickEvent event) {
@@ -1131,7 +1159,7 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             iterateDelay--;
             return;
         }
-        iterateDelay = 60*20;
+        iterateDelay = 60 * 20;
         synchronized (finalizedDisplayLists) {
             TIntIterator iterator = finalizedDisplayLists.iterator();
             while (iterator.hasNext()) {
@@ -1145,7 +1173,7 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
             finalizedDisplayLists.clear();
         }
     }
-    
+
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void renderHilightArrow(RenderWorldLastEvent event) {
@@ -1159,12 +1187,17 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         MovingObjectPosition mop = mc.objectMouseOver;
         if (mop == null || mop.hitVec == null || mop.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) return;
         Vec3 vec = mop.hitVec;
-        FzOrientation orientation = SpaceUtil.getOrientation(player, mop.sideHit, (float) (vec.xCoord - mop.blockX), (float) (vec.yCoord - mop.blockY), (float) (vec.zCoord - mop.blockZ));
+        FzOrientation orientation = SpaceUtil.getOrientation(
+            player,
+            mop.sideHit,
+            (float) (vec.xCoord - mop.blockX),
+            (float) (vec.yCoord - mop.blockY),
+            (float) (vec.zCoord - mop.blockZ));
         if (orientation.top.offsetY == 1) {
             /*
              * The purpose of this is two-fold:
-             * 		- It renders at the wrong spot when pointing upwards on a vertical face
-             * 		- You totally don't really need it in this case
+             * - It renders at the wrong spot when pointing upwards on a vertical face
+             * - You totally don't really need it in this case
              */
             return;
         }
@@ -1183,52 +1216,50 @@ public class TileEntityDayBarrel extends TileEntityFactorization implements ISor
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glLineWidth(2.0F);
-        
+
         {
             ForgeDirection face = orientation.facing;
             if (SpaceUtil.sign(face) == 1) {
                 GL11.glTranslated(face.offsetX, face.offsetY, face.offsetZ);
             }
             float d = -2F;
-            GL11.glTranslatef(d*fd.offsetX, d*fd.offsetY, d*fd.offsetZ);
+            GL11.glTranslatef(d * fd.offsetX, d * fd.offsetY, d * fd.offsetZ);
             GL11.glTranslated(
-                    0.5*(1 - Math.abs(face.offsetX)), 
-                    0.5*(1 - Math.abs(face.offsetY)), 
-                    0.5*(1 - Math.abs(face.offsetZ))
-                    );
-            
+                0.5 * (1 - Math.abs(face.offsetX)),
+                0.5 * (1 - Math.abs(face.offsetY)),
+                0.5 * (1 - Math.abs(face.offsetZ)));
+
             GL11.glBegin(GL11.GL_LINE_LOOP);
             float mid_x = orientation.facing.offsetX;
             float mid_y = orientation.facing.offsetY;
             float mid_z = orientation.facing.offsetZ;
-            
-            float top_x = mid_x + orientation.top.offsetX/2F;
-            float top_y = mid_y + orientation.top.offsetY/2F;
-            float top_z = mid_z + orientation.top.offsetZ/2F;
-            
-            float bot_x = mid_x - orientation.top.offsetX/2F;
-            float bot_y = mid_y - orientation.top.offsetY/2F;
-            float bot_z = mid_z - orientation.top.offsetZ/2F;
-            
+
+            float top_x = mid_x + orientation.top.offsetX / 2F;
+            float top_y = mid_y + orientation.top.offsetY / 2F;
+            float top_z = mid_z + orientation.top.offsetZ / 2F;
+
+            float bot_x = mid_x - orientation.top.offsetX / 2F;
+            float bot_y = mid_y - orientation.top.offsetY / 2F;
+            float bot_z = mid_z - orientation.top.offsetZ / 2F;
+
             ForgeDirection r = orientation.facing.getRotation(orientation.top);
-            float right_x = r.offsetX/2F;
-            float right_y = r.offsetY/2F;
-            float right_z = r.offsetZ/2F;
-            
-            
-            //GL11.glVertex3f(mid_x, mid_y, mid_z);
+            float right_x = r.offsetX / 2F;
+            float right_y = r.offsetY / 2F;
+            float right_z = r.offsetZ / 2F;
+
+            // GL11.glVertex3f(mid_x, mid_y, mid_z);
             GL11.glVertex3f(top_x, top_y, top_z);
             GL11.glVertex3f(mid_x + right_x, mid_y + right_y, mid_z + right_z);
             d = 0.25F;
-            GL11.glVertex3f(mid_x + right_x*d, mid_y + right_y*d, mid_z + right_z*d);
-            GL11.glVertex3f(bot_x + right_x*d, bot_y + right_y*d, bot_z + right_z*d);
+            GL11.glVertex3f(mid_x + right_x * d, mid_y + right_y * d, mid_z + right_z * d);
+            GL11.glVertex3f(bot_x + right_x * d, bot_y + right_y * d, bot_z + right_z * d);
             d = -0.25F;
-            GL11.glVertex3f(bot_x + right_x*d, bot_y + right_y*d, bot_z + right_z*d);
-            GL11.glVertex3f(mid_x + right_x*d, mid_y + right_y*d, mid_z + right_z*d);
+            GL11.glVertex3f(bot_x + right_x * d, bot_y + right_y * d, bot_z + right_z * d);
+            GL11.glVertex3f(mid_x + right_x * d, mid_y + right_y * d, mid_z + right_z * d);
             GL11.glVertex3f(mid_x - right_x, mid_y - right_y, mid_z - right_z);
             GL11.glEnd();
         }
-        
+
         GL11.glPopMatrix();
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glEnable(GL11.GL_DEPTH_TEST);

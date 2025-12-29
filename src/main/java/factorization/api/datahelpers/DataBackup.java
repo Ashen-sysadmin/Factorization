@@ -5,14 +5,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DataBackup extends MergedDataHelper {
+
     Map<String, Object> fields = new HashMap<String, Object>();
-    boolean isReading = true; //Else: isRestoring
-    
+    boolean isReading = true; // Else: isRestoring
+
     @Override
     protected boolean shouldStore(Share share) {
         return share.is_public && share.client_can_edit;
     }
-    
+
     @Override
     protected <E> E putImplementation(E o) throws IOException {
         if (isReading) {
@@ -25,12 +26,12 @@ public class DataBackup extends MergedDataHelper {
             return o;
         }
     }
-    
+
     @Override
     public boolean isReader() {
         return isReading;
     }
-    
+
     public void restoring() {
         isReading = false;
     }

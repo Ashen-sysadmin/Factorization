@@ -51,8 +51,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
-public class BlockHelper
-{
+public class BlockHelper {
+
     public static enum BlockStyle {
         // No value has been cached. This is the default value.
         UNDECIDED,
@@ -78,85 +78,78 @@ public class BlockHelper
         BED
     }
 
-    static BlockStyle getBlockStyle(Block block)
-    {
+    static BlockStyle getBlockStyle(Block block) {
         return classifyBlock(block);
     }
 
-    private static BlockStyle classifyBlock(Block block)
-    {
+    private static BlockStyle classifyBlock(Block block) {
         // These blocks don't have a good way of extracting the item,
         // so no instanceof.
-        if (block == Blocks.cake)
-        {
+        if (block == Blocks.cake) {
             return CAKE;
         }
-        if (block == Blocks.redstone_ore || block == Blocks.lit_redstone_ore)
-        {
+        if (block == Blocks.redstone_ore || block == Blocks.lit_redstone_ore) {
             return REDSTONE_ORE;
         }
-        if (block == Blocks.piston_extension)
-        {
+        if (block == Blocks.piston_extension) {
             return PISTON_EXTENSION;
         }
-        if (block == Blocks.melon_stem || block == Blocks.pumpkin_stem)
-        {
+        if (block == Blocks.melon_stem || block == Blocks.pumpkin_stem) {
             return STEM;
         }
-        if (block instanceof BlockSign || block instanceof BlockFlowerPot || block instanceof BlockRedstoneWire || block instanceof BlockBrewingStand
-                || block instanceof BlockReed || block instanceof BlockTripWire || block instanceof BlockCauldron || block instanceof BlockRedstoneRepeater
-                || block instanceof BlockRedstoneComparator || block instanceof BlockRedstoneTorch || block instanceof BlockFarmland || block instanceof BlockFurnace
-                || block instanceof BlockHugeMushroom || block instanceof BlockRedstoneLight)
-        {
+        if (block instanceof BlockSign || block instanceof BlockFlowerPot
+            || block instanceof BlockRedstoneWire
+            || block instanceof BlockBrewingStand
+            || block instanceof BlockReed
+            || block instanceof BlockTripWire
+            || block instanceof BlockCauldron
+            || block instanceof BlockRedstoneRepeater
+            || block instanceof BlockRedstoneComparator
+            || block instanceof BlockRedstoneTorch
+            || block instanceof BlockFarmland
+            || block instanceof BlockFurnace
+            || block instanceof BlockHugeMushroom
+            || block instanceof BlockRedstoneLight) {
             return USE_ID_DROPPED;
         }
-        if (block instanceof BlockCocoa || block instanceof BlockNetherWart || block instanceof BlockSkull)
-        {
+        if (block instanceof BlockCocoa || block instanceof BlockNetherWart || block instanceof BlockSkull) {
             return USE_GET_BLOCK_DROPPED;
         }
-        if (block instanceof BlockPistonMoving || block instanceof BlockPortal || block instanceof BlockEndPortal || block instanceof BlockSilverfish
-                || block instanceof BlockMobSpawner)
-        {
+        if (block instanceof BlockPistonMoving || block instanceof BlockPortal
+            || block instanceof BlockEndPortal
+            || block instanceof BlockSilverfish
+            || block instanceof BlockMobSpawner) {
             return NOTHING;
         }
-        if (block instanceof BlockOre)
-        {
+        if (block instanceof BlockOre) {
             return CLONE_MD;
         }
         // Special blocks
-        if (block instanceof BlockSlab)
-        {
+        if (block instanceof BlockSlab) {
             return SLAB;
         }
-        if (block instanceof BlockCrops)
-        {
+        if (block instanceof BlockCrops) {
             return CROP;
         }
-        if (block instanceof BlockBed)
-        {
+        if (block instanceof BlockBed) {
             return BED;
         }
-        if (block instanceof BlockDoor)
-        {
+        if (block instanceof BlockDoor) {
             return DOOR;
         }
         return USE_GET_DAMAGE_VALUE;
     }
 
-    private static ItemStack makeItemStack(Item itemId, int stackSize, int damage)
-    {
-        if (itemId == null)
-        {
+    private static ItemStack makeItemStack(Item itemId, int stackSize, int damage) {
+        if (itemId == null) {
             return null;
         }
         return new ItemStack(itemId, stackSize, damage);
     }
 
-    public static ItemStack getPlacingItem(Block block, MovingObjectPosition target, World world, int x, int y, int z)
-    {
+    public static ItemStack getPlacingItem(Block block, MovingObjectPosition target, World world, int x, int y, int z) {
         int md;
-        switch (classifyBlock(block))
-        {
+        switch (classifyBlock(block)) {
             default:
             case UNDECIDED:
             case NOTHING:
@@ -171,8 +164,7 @@ public class BlockHelper
             case USE_GET_BLOCK_DROPPED:
                 md = world.getBlockMetadata(x, y, z);
                 ArrayList<ItemStack> drops = block.getDrops(world, x, y, z, md, 0);
-                if (drops.isEmpty())
-                {
+                if (drops.isEmpty()) {
                     return null;
                 }
                 return drops.get(0);
@@ -180,16 +172,11 @@ public class BlockHelper
                 md = world.getBlockMetadata(x, y, z);
                 return new ItemStack(block, 1, md);
             case STEM:
-                if (block == Blocks.pumpkin_stem)
-                {
+                if (block == Blocks.pumpkin_stem) {
                     return new ItemStack(Items.pumpkin_seeds);
-                }
-                else if (block == Blocks.melon_stem)
-                {
+                } else if (block == Blocks.melon_stem) {
                     return new ItemStack(Items.melon_seeds);
-                }
-                else
-                {
+                } else {
                     return null;
                 }
             case SLAB:
@@ -204,8 +191,7 @@ public class BlockHelper
             case DOOR:
                 md = world.getBlockMetadata(x, y, z);
                 Item doorId = block.getItemDropped(md, world.rand, 0);
-                if (doorId == null)
-                {
+                if (doorId == null) {
                     return null;
                 }
                 return new ItemStack(doorId, 1, 0);

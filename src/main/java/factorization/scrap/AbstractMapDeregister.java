@@ -3,6 +3,7 @@ package factorization.scrap;
 import java.util.Map;
 
 public abstract class AbstractMapDeregister implements IRevertible {
+
     protected final Map map;
     protected final Object key, value;
 
@@ -24,6 +25,11 @@ public abstract class AbstractMapDeregister implements IRevertible {
 
     @Override
     public String info() {
-        return this.getClass().getSimpleName() + " " + ((Class) key).getCanonicalName() + " # " + value.getClass().getCanonicalName();
+        return this.getClass()
+            .getSimpleName() + " "
+            + ((Class) key).getCanonicalName()
+            + " # "
+            + value.getClass()
+                .getCanonicalName();
     }
 }

@@ -1,9 +1,7 @@
 package factorization.truth;
 
-import factorization.shared.Core;
-import factorization.truth.api.AbstractPage;
-import factorization.util.RenderUtil;
-import factorization.weird.TileEntityDayBarrel;
+import java.util.ArrayList;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -13,40 +11,44 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.tileentity.TileEntity;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import java.util.ArrayList;
+import factorization.shared.Core;
+import factorization.truth.api.AbstractPage;
+import factorization.util.RenderUtil;
+import factorization.weird.TileEntityDayBarrel;
 
 public class FigurePage extends AbstractPage {
+
     DocWorld figure;
-    double rotationX = 90+45, rotationY = 45;
+    double rotationX = 90 + 45, rotationY = 45;
     int display_list = -1;
-    
+
     public FigurePage(DocWorld figure) {
         this.figure = figure;
         eyeball = new EntityLiving(figure) {};
     }
 
     double origRotationX, origRotationY;
-    
+
     @Override
     public void mouseDragStart() {
         origRotationX = rotationX;
         origRotationY = rotationY;
     }
-    
+
     @Override
     public void mouseDrag(int dx, int dy) {
         rotationX = origRotationX + dy;
         rotationY = origRotationY - dx;
     }
-    
-    
+
     WorldRenderer wr = null;
-    
+
     EntityLivingBase eyeball;
-    
+
     @Override
     public void draw(DocViewer doc, int ox, int oy, String hovered) {
         RenderUtil.checkGLError("FigurePage -- before render");
@@ -63,28 +65,26 @@ public class FigurePage extends AbstractPage {
         GL11.glColor4f(1, 1, 1, 1);
         GL11.glPushMatrix();
         GL11.glTranslatef(ox, oy, 200);
-        
-        GL11.glTranslated(doc.getPageWidth(0)/2, doc.getPageHeight(0)/2, 0);
-        
+
+        GL11.glTranslated(doc.getPageWidth(0) / 2, doc.getPageHeight(0) / 2, 0);
+
         float diag = figure.diagonal;
-        float s = doc.getPageWidth(0)/2/diag;
+        float s = doc.getPageWidth(0) / 2 / diag;
         GL11.glScalef(s, s, s);
-        
-        
+
         GL11.glScalef(1, -1, 1);
         GL11.glRotatef(180, 0, 0, 1);
-        
+
         GL11.glRotated(rotationX, 1, 0, 0);
         GL11.glRotated(rotationY, 0, 1, 0);
-        
-        s = -diag/2;
+
+        s = -diag / 2;
         GL11.glTranslated(s, s, s);
-        
+
         if (Minecraft.isAmbientOcclusionEnabled()) {
             GL11.glShadeModel(GL11.GL_SMOOTH);
         }
-        
-        
+
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
         GL11.glEnable(GL12.GL_RESCALE_NORMAL);
         GL11.glDisable(GL11.GL_LIGHTING);
@@ -105,7 +105,7 @@ public class FigurePage extends AbstractPage {
         GL11.glPopAttrib();
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
         RenderManager rm = RenderManager.instance;
-        //rm.renderPosX = rm.renderPosY = rm.renderPosZ = 0;
+        // rm.renderPosX = rm.renderPosY = rm.renderPosZ = 0;
         for (Entity ent : figure.entities) {
             double x = ent.posX - figure.orig.x;
             double y = ent.posY - figure.orig.y;
@@ -115,7 +115,7 @@ public class FigurePage extends AbstractPage {
             rm.renderPosZ = ent.posZ;
             GL11.glPushMatrix();
             GL11.glTranslated(x, y, z);
-            //GL11.glTranslated(ent.posX, ent.posY, ent.posZ);
+            // GL11.glTranslated(ent.posX, ent.posY, ent.posZ);
             rm.renderEntitySimple(ent, 0);
             GL11.glPopMatrix();
         }
@@ -123,7 +123,7 @@ public class FigurePage extends AbstractPage {
         GL11.glPopMatrix();
         RenderUtil.checkGLError("FigurePage -- after rendering everything");
     }
-    
+
     int getRenderList() {
         if (display_list == -1) {
             display_list = GLAllocation.generateDisplayLists(3);
@@ -133,7 +133,7 @@ public class FigurePage extends AbstractPage {
         }
         return display_list;
     }
-    
+
     @Override
     public void closed() {
         if (display_list == -1) {
@@ -142,7 +142,7 @@ public class FigurePage extends AbstractPage {
         GLAllocation.deleteDisplayLists(display_list);
         display_list = -1;
     }
-    
+
     @Override
     protected void finalize() throws Throwable {
         super.finalize();

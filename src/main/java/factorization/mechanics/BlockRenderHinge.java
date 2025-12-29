@@ -1,12 +1,14 @@
 package factorization.mechanics;
 
-import factorization.common.FactoryType;
-import factorization.shared.BlockRenderHelper;
-import factorization.shared.FactorizationBlockRender;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.init.Blocks;
 
+import factorization.common.FactoryType;
+import factorization.shared.BlockRenderHelper;
+import factorization.shared.FactorizationBlockRender;
+
 public class BlockRenderHinge extends FactorizationBlockRender {
+
     @Override
     public boolean render(RenderBlocks rb) {
         BlockRenderHelper block = BlockRenderHelper.instance;
@@ -16,7 +18,8 @@ public class BlockRenderHinge extends FactorizationBlockRender {
             hinge.setSlabBounds(block);
             block.render(rb, getCoord());
         } else {
-            getFactoryType().getRepresentative().setBlockBounds(block);
+            getFactoryType().getRepresentative()
+                .setBlockBounds(block);
             block.renderForInventory(rb);
             TileEntityHinge hinge = (TileEntityHinge) FactoryType.HINGE.getRepresentative();
             hinge.ticks = 20;

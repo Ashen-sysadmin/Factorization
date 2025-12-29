@@ -1,20 +1,22 @@
 package factorization.common;
 
-import cpw.mods.fml.client.IModGuiFactory;
-import cpw.mods.fml.client.config.GuiConfig;
-import cpw.mods.fml.client.config.IConfigElement;
-import factorization.shared.Core;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Property;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import cpw.mods.fml.client.IModGuiFactory;
+import cpw.mods.fml.client.config.GuiConfig;
+import cpw.mods.fml.client.config.IConfigElement;
+import factorization.shared.Core;
 
 public class FzConfigGuiFactory implements IModGuiFactory {
+
     @Override
     public void initialize(Minecraft minecraftInstance) {
 
@@ -36,8 +38,15 @@ public class FzConfigGuiFactory implements IModGuiFactory {
     }
 
     public static class ConfigGui extends GuiConfig {
+
         public ConfigGui(GuiScreen parent) {
-            super(parent, getConfigElements(), "Factorization", false, false, I18n.format("factorization.configgui.forgeConfigTitle"));
+            super(
+                parent,
+                getConfigElements(),
+                "Factorization",
+                false,
+                false,
+                I18n.format("factorization.configgui.forgeConfigTitle"));
         }
 
         private static List<IConfigElement> getConfigElements() {

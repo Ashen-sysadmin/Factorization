@@ -1,32 +1,36 @@
 package factorization.api.datahelpers;
 
-import factorization.api.FzOrientation;
-import factorization.util.DataUtil;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.UUID;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.fluids.FluidTank;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.UUID;
+import factorization.api.FzOrientation;
+import factorization.util.DataUtil;
 
 /**
  * The put* family of methods will save or load a value.
  * First call {@link DataHelper#as} to set the name that should be used and how it should be Shared.
  * For the {@link IDataSerializable}, the name will be used as a prefix.
  * If writing, the original will be returned. If reading, the loaded value will be returned.
- * Must be able to handle these types: Boolean, Byte, Short, Integer, Float, Double, String, ItemStack, IDataSerializable, Enum
+ * Must be able to handle these types: Boolean, Byte, Short, Integer, Float, Double, String, ItemStack,
+ * IDataSerializable, Enum
  * Each put* method takes some type of parameter. In most cases it can not be null.
  * Each put* method returns the original value if isWriter(), otherwise it reads the new value. In the case of putIDS,
  * the value may or may not be modified, depending on its semantics.
  * Each put* method may throw an IOException.
  */
 public abstract class DataHelper {
+
     /**
      * Set the name
-     * @param share Set the context for sharing (eg, does the data get sent to the client?)
+     * 
+     * @param share    Set the context for sharing (eg, does the data get sent to the client?)
      * @param set_name Set the name, (nearly always) used by NBT.
      * @return The object to be used with put*()
      */
@@ -44,6 +48,7 @@ public abstract class DataHelper {
 
     /**
      * Like {@link DataHelper#as(Share, String)}, but leaves the Share mode unchanged.
+     * 
      * @param set_name Set the name
      * @return The object to be used with put*()
      */
@@ -110,33 +115,45 @@ public abstract class DataHelper {
 
     /*
      * For compatability with old code:
-     *
-all_types = "IDataSerializable Boolean Byte Short Int Long Float Double String FzOrientation UUID ItemStack ItemList IntArray NBTTagCompound FluidTank AxisAlignedBB Vec3 Enum".split()
-for t in all_types:
-    print("""public final _ put%(_ value) throws IOException { return (_)put(value); }""".replace('_', t.lower()).replace('%', t))
+     * all_types =
+     * "IDataSerializable Boolean Byte Short Int Long Float Double String FzOrientation UUID ItemStack ItemList IntArray NBTTagCompound FluidTank AxisAlignedBB Vec3 Enum"
+     * .split()
+     * for t in all_types:
+     * print("""public final _ put%(_ value) throws IOException { return (_)put(value); }""".replace('_',
+     * t.lower()).replace('%', t))
      */
     public abstract boolean putBoolean(boolean value) throws IOException;
+
     public abstract byte putByte(byte value) throws IOException;
+
     public abstract short putShort(short value) throws IOException;
+
     public abstract int putInt(int value) throws IOException;
+
     public abstract long putLong(long value) throws IOException;
+
     public abstract float putFloat(float value) throws IOException;
+
     public abstract double putDouble(double value) throws IOException;
+
     public abstract String putString(String value) throws IOException;
+
     public abstract int[] putIntArray(int[] value) throws IOException;
+
     public abstract NBTTagCompound putTag(NBTTagCompound value) throws IOException;
+
     public abstract ItemStack[] putItemArray(ItemStack[] value) throws IOException;
 
     public ArrayList<ItemStack> putItemList(ArrayList<ItemStack> value) throws IOException {
         if (isReader() && hasLegacy(name + "_len")) {
-            //noinspection deprecation
+            // noinspection deprecation
             return putItemArray_legacy(value);
         }
         return putItemList_efficient(value);
     }
 
     protected ArrayList<ItemStack> putItemList_efficient(ArrayList<ItemStack> value) throws IOException {
-        //noinspection deprecation
+        // noinspection deprecation
         return putItemArray_legacy(value);
     }
 
@@ -228,7 +245,8 @@ for t in all_types:
         if (isWriter()) {
             return value;
         }
-        return (E) value.getDeclaringClass().getEnumConstants()[i];
+        return (E) value.getDeclaringClass()
+            .getEnumConstants()[i];
     }
 
     public Object putUnion(UnionEnumeration classes, Object val) throws IOException {
@@ -247,8 +265,8 @@ for t in all_types:
         }
         asSameShare(origName);
         /*
-for t in all_types:
-    print("""if (k == %.class) return put%((%) val);""".replace('_', t.lower()).replace('%', t))
+         * for t in all_types:
+         * print("""if (k == %.class) return put%((%) val);""".replace('_', t.lower()).replace('%', t))
          */
         if (val instanceof IDataSerializable) return putIDS((IDataSerializable) val);
         if (k == Boolean.class) return putBoolean((Boolean) val);

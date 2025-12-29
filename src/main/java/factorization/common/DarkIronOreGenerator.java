@@ -1,10 +1,7 @@
 package factorization.common;
 
-import cpw.mods.fml.common.IWorldGenerator;
-import factorization.api.Coord;
-import factorization.api.ICoordFunction;
-import factorization.shared.Core;
-import factorization.util.SpaceUtil;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.AxisAlignedBB;
@@ -12,9 +9,14 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.NoiseGeneratorOctaves;
 
-import java.util.Random;
+import cpw.mods.fml.common.IWorldGenerator;
+import factorization.api.Coord;
+import factorization.api.ICoordFunction;
+import factorization.shared.Core;
+import factorization.util.SpaceUtil;
 
 public class DarkIronOreGenerator implements IWorldGenerator {
+
     static final int minMeteorR = 1, maxMeteorR = 2;
     static final int maxWidth = maxMeteorR * 2;
     static final int minBlastR = 20, maxBlastR = 28;
@@ -22,7 +24,7 @@ public class DarkIronOreGenerator implements IWorldGenerator {
     static final NoiseGeneratorOctaves noise = new NoiseGeneratorOctaves(new Random(0), 2);
 
     boolean base(int x, int z) {
-        boolean a = (x/4 + z/4) % 3 == 0;
+        boolean a = (x / 4 + z / 4) % 3 == 0;
         boolean b = (x % 4 == 0) && (z % 4 == 0);
         return a && b;
     }
@@ -31,7 +33,7 @@ public class DarkIronOreGenerator implements IWorldGenerator {
         if (x < 0) x = -x;
         if (z < 0) z = -z;
         byte n = -1;
-        int N = ((x-1)/8 + (z+1)/8) % 4;
+        int N = ((x - 1) / 8 + (z + 1) / 8) % 4;
         if (base(x, z)) n = 0;
         else if (base(x + 1, z)) n = 1;
         else if (base(x, z + 1)) n = 2;
@@ -42,10 +44,10 @@ public class DarkIronOreGenerator implements IWorldGenerator {
         return N == n;
     }
 
-
     @Override
-    public void generate(Random UNUSABLE_rng, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider) {
-        //Simple pre-reqs
+    public void generate(Random UNUSABLE_rng, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator,
+        IChunkProvider chunkProvider) {
+        // Simple pre-reqs
         if (!FzConfig.gen_dark_iron_ore) {
             return;
         }
@@ -77,6 +79,7 @@ public class DarkIronOreGenerator implements IWorldGenerator {
     static double[] samples = new double[maxWidth * maxWidth * maxWidth];
 
     static class BlitGen {
+
         final Coord min, max;
         final int chunkX, chunkZ;
         final Random random;
@@ -119,6 +122,7 @@ public class DarkIronOreGenerator implements IWorldGenerator {
         double rSq, rSqEnd;
         Coord origin, corner;
         int blobSize;
+
         void meteorBlob(Coord origin, int r) {
             Coord blobMin = origin.add(-r, -r, -r);
             Coord blobMax = origin.add(+r, +r, +r);
@@ -130,12 +134,23 @@ public class DarkIronOreGenerator implements IWorldGenerator {
             rSqEnd = (r + 1) * (r + 1);
             blobSize = r * 2;
             int d = r;
-            samples = noise.generateNoiseOctaves(samples, origin.x, origin.y, origin.z, blobSize, blobSize, blobSize, origin.x + d, origin.y + d, origin.z + d);
+            samples = noise.generateNoiseOctaves(
+                samples,
+                origin.x,
+                origin.y,
+                origin.z,
+                blobSize,
+                blobSize,
+                blobSize,
+                origin.x + d,
+                origin.y + d,
+                origin.z + d);
             corner = blobMin;
             Coord.iterateCube(blobMin, blobMax, paintMeteor);
         }
 
         ICoordFunction paintMeteor = new ICoordFunction() {
+
             @Override
             public void handle(Coord here) {
                 if (!here.inside(min, max)) return;
@@ -160,6 +175,7 @@ public class DarkIronOreGenerator implements IWorldGenerator {
         };
 
         Coord blastOrigin;
+
         void meteorBlast(Coord origin, int r) {
             int blastHeight = 7;
             blastOrigin = origin.add(0, r - 2, 0);
@@ -175,6 +191,7 @@ public class DarkIronOreGenerator implements IWorldGenerator {
         }
 
         ICoordFunction paintBlast = new ICoordFunction() {
+
             @Override
             public void handle(Coord here) {
                 if (!here.inside(min, max)) return;
@@ -187,6 +204,7 @@ public class DarkIronOreGenerator implements IWorldGenerator {
         };
 
         ICoordFunction burnBlast = new ICoordFunction() {
+
             @Override
             public void handle(Coord here) {
                 if (!here.inside(min, max)) return;

@@ -1,10 +1,12 @@
 package factorization.coremodhooks;
 
-import cpw.mods.fml.common.eventhandler.Event;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 
+import cpw.mods.fml.common.eventhandler.Event;
+
 public class UnhandledGuiKeyEvent extends Event {
+
     public final char chr;
     public final int keysym;
     public final EntityPlayer player;

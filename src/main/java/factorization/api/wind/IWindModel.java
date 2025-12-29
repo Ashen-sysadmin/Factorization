@@ -6,11 +6,13 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 public interface IWindModel {
+
     /**
      * @param mill The windmill making the query, which should not obstruct itself. May be null.
-     * @return the wind power at the location. The 'default' value is Vec3(-1, 0, 0), since vanilla clouds blow westward.
-     * (What are the units? Probably some ratio of IC2's 'MCW', which are, uhm...)
-     * The model may or may not take obstruction from other windmills into account; it's totally optional.
+     * @return the wind power at the location. The 'default' value is Vec3(-1, 0, 0), since vanilla clouds blow
+     *         westward.
+     *         (What are the units? Probably some ratio of IC2's 'MCW', which are, uhm...)
+     *         The model may or may not take obstruction from other windmills into account; it's totally optional.
      */
     Vec3 getWindPower(World w, int x, int y, int z, IWindmill mill);
 
@@ -22,7 +24,8 @@ public interface IWindModel {
 
     /**
      * When a windmill is removed/dies, it should call this method.
-     * If the windmodel needs to respond to windmills being unloaded, then it will have to subscribe to chunk unload events.
+     * If the windmodel needs to respond to windmills being unloaded, then it will have to subscribe to chunk unload
+     * events.
      */
     <T extends TileEntity & IWindmill> void deregisterWindmillTileEntity(T mill);
 

@@ -1,17 +1,19 @@
 package factorization.servo.stepper;
 
-import factorization.algos.FastBag;
-import factorization.api.Coord;
-import factorization.shared.BlockClass;
-import factorization.shared.Core;
+import java.util.Collection;
+import java.util.HashSet;
+
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.util.Collection;
-import java.util.HashSet;
+import factorization.algos.FastBag;
+import factorization.api.Coord;
+import factorization.shared.BlockClass;
+import factorization.shared.Core;
 
 public class GrabConnector {
+
     final Coord start;
     int avail;
     Block primary;
@@ -29,18 +31,8 @@ public class GrabConnector {
         frontier.add(start);
     }
 
-    Block[] natch = new Block[] {
-            Blocks.stone,
-            Blocks.sand,
-            Blocks.dirt,
-            Blocks.grass,
-            Blocks.netherrack,
-            Blocks.end_stone,
-            Blocks.water,
-            Blocks.flowing_water,
-            Blocks.lava,
-            Blocks.flowing_lava
-    };
+    Block[] natch = new Block[] { Blocks.stone, Blocks.sand, Blocks.dirt, Blocks.grass, Blocks.netherrack,
+        Blocks.end_stone, Blocks.water, Blocks.flowing_water, Blocks.lava, Blocks.flowing_lava };
 
     Coord glueCheck(Coord at, ForgeDirection dir) {
         // Temporary. Counts as glued if it's the primary block, or two identical not-worldgen blocks

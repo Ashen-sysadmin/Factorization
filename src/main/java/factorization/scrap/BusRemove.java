@@ -1,24 +1,28 @@
 package factorization.scrap;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.*;
-import cpw.mods.fml.relauncher.ReflectionHelper;
-import net.minecraftforge.common.MinecraftForge;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
-@Help({"Deregisters an event handler from the EventBusses",
-        "BusRemove EventClassname EventHandlerClassname"})
+import net.minecraftforge.common.MinecraftForge;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.*;
+import cpw.mods.fml.relauncher.ReflectionHelper;
+
+@Help({ "Deregisters an event handler from the EventBusses", "BusRemove EventClassname EventHandlerClassname" })
 public class BusRemove implements IRevertible {
-    static final List<EventBus> busses = Arrays.asList(MinecraftForge.EVENT_BUS,
-            MinecraftForge.ORE_GEN_BUS,
-            MinecraftForge.TERRAIN_GEN_BUS,
-            FMLCommonHandler.instance().bus());
+
+    static final List<EventBus> busses = Arrays.asList(
+        MinecraftForge.EVENT_BUS,
+        MinecraftForge.ORE_GEN_BUS,
+        MinecraftForge.TERRAIN_GEN_BUS,
+        FMLCommonHandler.instance()
+            .bus());
 
     final Class<?> handlerClass;
     final Class<? extends Event> eventClass;
@@ -29,7 +33,8 @@ public class BusRemove implements IRevertible {
         String methodName = in.next();
         Class<? extends Event> foundEvent = null;
         for (Method method : handlerClass.getMethods()) {
-            if (method.getName().equals(methodName)) {
+            if (method.getName()
+                .equals(methodName)) {
                 Class<?>[] params = method.getParameterTypes();
                 if (params.length != 1) continue;
                 if (Event.class.isAssignableFrom(params[0])) {
@@ -40,7 +45,8 @@ public class BusRemove implements IRevertible {
         }
 
         if (foundEvent == null) {
-            throw new CompileError("Didn't find method in class: " + handlerClass.getCanonicalName() + "::" + methodName);
+            throw new CompileError(
+                "Didn't find method in class: " + handlerClass.getCanonicalName() + "::" + methodName);
         }
 
         eventClass = foundEvent;
@@ -61,8 +67,10 @@ public class BusRemove implements IRevertible {
             int busID = ReflectionHelper.getPrivateValue(EventBus.class, bus, "busID");
             for (IEventListener listener : listeners.getListeners(busID)) {
                 if (listener instanceof ASMEventHandler) {
-                    Object handler = ReflectionHelper.getPrivateValue(ASMEventHandler.class, (ASMEventHandler) listener, "handler");
-                    Field instanceField = handler.getClass().getField("instance");
+                    Object handler = ReflectionHelper
+                        .getPrivateValue(ASMEventHandler.class, (ASMEventHandler) listener, "handler");
+                    Field instanceField = handler.getClass()
+                        .getField("instance");
                     instanceField.setAccessible(true);
                     Object instance = instanceField.get(handler);
                     if (instance.getClass() == handlerClass) {
@@ -97,7 +105,13 @@ public class BusRemove implements IRevertible {
         for (Object x : map.values()) {
             reg++;
         }
-        return "BusRemove " + eventClass.getCanonicalName() + " " + handlerClass.getCanonicalName()
-                + " # "  + reg + " registered on " + map.size() + " busses";
+        return "BusRemove " + eventClass.getCanonicalName()
+            + " "
+            + handlerClass.getCanonicalName()
+            + " # "
+            + reg
+            + " registered on "
+            + map.size()
+            + " busses";
     }
 }

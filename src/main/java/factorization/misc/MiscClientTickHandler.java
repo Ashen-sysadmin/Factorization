@@ -3,10 +3,6 @@ package factorization.misc;
 import java.text.DateFormat;
 import java.util.*;
 
-import factorization.api.ICoordFunction;
-import factorization.util.FzUtil;
-import factorization.util.ItemUtil;
-import factorization.util.PlayerUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiMainMenu;
@@ -18,18 +14,24 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import factorization.api.Coord;
+import factorization.api.ICoordFunction;
 import factorization.common.FzConfig;
-import net.minecraft.world.chunk.Chunk;
+import factorization.util.FzUtil;
+import factorization.util.ItemUtil;
+import factorization.util.PlayerUtil;
 
 public class MiscClientTickHandler {
+
     private final Minecraft mc = Minecraft.getMinecraft();
-    
+
     @SubscribeEvent
     public void clientTicks(ClientTickEvent event) {
         if (event.phase != Phase.START) return;
@@ -41,15 +43,17 @@ public class MiscClientTickHandler {
         notifyTimeOnFullScreen();
         fix_mc2713();
     }
-    
+
     int count = 0;
     boolean hit = false;
+
     private void emitLoadAlert() {
         if (hit) return;
         if (count == 40) {
-            //playing any earlier doesn't seem to work (sound is probably loaded in a separate thread?)
+            // playing any earlier doesn't seem to work (sound is probably loaded in a separate thread?)
             if (mc.currentScreen instanceof GuiMainMenu) {
-                mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
+                mc.getSoundHandler()
+                    .playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
             }
             hit = true;
             LagssieWatchDog.start();
@@ -61,6 +65,7 @@ public class MiscClientTickHandler {
     private ItemStack[] swaps = new ItemStack[9];
 
     boolean was_activated = true;
+
     private void checkPickBlockKey() {
         if (!FzConfig.fix_middle_click) return;
         EntityPlayer player = mc.thePlayer;
@@ -117,7 +122,7 @@ public class MiscClientTickHandler {
         }
 
         final ItemStack held = player.getHeldItem();
-        for (Iterator<ItemStack> it = validItems.iterator(); it.hasNext(); ) {
+        for (Iterator<ItemStack> it = validItems.iterator(); it.hasNext();) {
             // Don't match items that you're holding.
             if (ItemUtil.identical(it.next(), held)) it.remove();
         }
@@ -193,6 +198,7 @@ public class MiscClientTickHandler {
     }
 
     boolean prevState = false;
+
     private void checkSprintKey() {
         if (mc.currentScreen != null) {
             return;
@@ -216,19 +222,20 @@ public class MiscClientTickHandler {
         }
         prevState = state;
     }
-    
+
     long old_now = -1;
     long interval = 30;
+
     long getNow() {
         World world = Minecraft.getMinecraft().theWorld;
         if (world == null) return -1;
         Calendar cal = world.getCurrentDate();
         return cal.get(Calendar.MINUTE) / interval;
     }
-    
+
     String last_msg = null;
     boolean mentioned_disabling = false;
-    
+
     public void notifyTimeOnFullScreen() {
         if (!FzConfig.show_time_on_fullscreen) return;
         if (interval <= 0) return;
@@ -243,12 +250,15 @@ public class MiscClientTickHandler {
             msg += " (via FZ)";
             mentioned_disabling = true;
         }
-        ChatStyle style = new ChatStyle().setItalic(true).setColor(EnumChatFormatting.GRAY);
-        mc.ingameGUI.getChatGUI().printChatMessageWithOptionalDeletion(new ChatComponentText(msg).setChatStyle(style), 20392);
+        ChatStyle style = new ChatStyle().setItalic(true)
+            .setColor(EnumChatFormatting.GRAY);
+        mc.ingameGUI.getChatGUI()
+            .printChatMessageWithOptionalDeletion(new ChatComponentText(msg).setChatStyle(style), 20392);
         last_msg = msg;
     }
 
     int last_chunk_x = Integer.MAX_VALUE, last_chunk_z = Integer.MAX_VALUE;
+
     boolean chunkChanged() {
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
         if (player == null) return false;
@@ -266,6 +276,7 @@ public class MiscClientTickHandler {
         final HashSet<Entity> properly_known_entities = new HashSet<Entity>();
         Coord at = new Coord(mc.thePlayer);
         Coord.iterateChunks(at.add(-d, -d, -d), at.add(d, d, d), new ICoordFunction() {
+
             @Override
             public void handle(Coord here) {
                 final Chunk chunk = here.getChunk();
@@ -276,8 +287,7 @@ public class MiscClientTickHandler {
                 }
             }
         });
-        nextEntity:
-        for (Entity ent : (Iterable<Entity>) world.loadedEntityList) {
+        nextEntity: for (Entity ent : (Iterable<Entity>) world.loadedEntityList) {
             int ecx = MathHelper.floor_double(ent.posX / 16.0D);
             int ecz = MathHelper.floor_double(ent.posZ / 16.0D);
             int dx = (last_chunk_x - ecx);

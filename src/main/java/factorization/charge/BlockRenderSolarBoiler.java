@@ -1,14 +1,16 @@
 package factorization.charge;
 
+import net.minecraft.client.renderer.RenderBlocks;
+import net.minecraft.client.renderer.Tessellator;
+
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.shared.BlockRenderHelper;
 import factorization.shared.FactorizationBlockRender;
 import factorization.shared.TileEntityCommon;
-import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraft.client.renderer.Tessellator;
 
 public class BlockRenderSolarBoiler extends FactorizationBlockRender {
+
     @Override
     public boolean render(RenderBlocks rb) {
         if (world_mode) {

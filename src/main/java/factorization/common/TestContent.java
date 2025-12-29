@@ -1,12 +1,5 @@
 package factorization.common;
 
-import factorization.api.Coord;
-import factorization.api.crafting.CraftingManagerGeneric;
-import factorization.api.crafting.IVexatiousCrafting;
-import factorization.crafting.TileEntityMixer;
-import factorization.notify.Notice;
-import factorization.oreprocessing.TileEntityCrystallizer;
-import factorization.util.DataUtil;
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityTNTPrimed;
 import net.minecraft.init.Blocks;
@@ -14,36 +7,53 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import factorization.api.Coord;
+import factorization.api.crafting.CraftingManagerGeneric;
+import factorization.api.crafting.IVexatiousCrafting;
+import factorization.crafting.TileEntityMixer;
+import factorization.notify.Notice;
+import factorization.oreprocessing.TileEntityCrystallizer;
+import factorization.util.DataUtil;
+
 public class TestContent {
+
     public static void add() {
         CraftingManagerGeneric<TileEntityCrystallizer> crys = CraftingManagerGeneric.get(TileEntityCrystallizer.class);
-        crys.add(new TileEntityCrystallizer.CrystalRecipe(new ItemStack(Items.gunpowder), new ItemStack(Items.gunpowder), 1, new ItemStack(Items.lava_bucket)) {
-            {
-                heat_amount = 1200;
-                cool_time = 60;
-            }
-            @Override
-            public boolean matches(TileEntityCrystallizer machine) {
-                return super.matches(machine);
-            }
+        crys.add(
+            new TileEntityCrystallizer.CrystalRecipe(
+                new ItemStack(Items.gunpowder),
+                new ItemStack(Items.gunpowder),
+                1,
+                new ItemStack(Items.lava_bucket)) {
 
-            @Override
-            public void onCraftingStart(TileEntityCrystallizer machine) {
-                super.onCraftingStart(machine);
-                new Notice(machine, "Warning! Explosions incoming!").sendToAll();
-            }
+                {
+                    heat_amount = 1200;
+                    cool_time = 60;
+                }
 
-            @Override
-            public void onCraftingComplete(TileEntityCrystallizer machine) {
-                EntityTNTPrimed tnt = new EntityTNTPrimed(machine.getWorldObj());
-                machine.getCoord().setAsEntityLocation(tnt);
-                tnt.worldObj.spawnEntityInWorld(tnt);
-            }
-        });
+                @Override
+                public boolean matches(TileEntityCrystallizer machine) {
+                    return super.matches(machine);
+                }
 
+                @Override
+                public void onCraftingStart(TileEntityCrystallizer machine) {
+                    super.onCraftingStart(machine);
+                    new Notice(machine, "Warning! Explosions incoming!").sendToAll();
+                }
+
+                @Override
+                public void onCraftingComplete(TileEntityCrystallizer machine) {
+                    EntityTNTPrimed tnt = new EntityTNTPrimed(machine.getWorldObj());
+                    machine.getCoord()
+                        .setAsEntityLocation(tnt);
+                    tnt.worldObj.spawnEntityInWorld(tnt);
+                }
+            });
 
         CraftingManagerGeneric<TileEntityMixer> mix = CraftingManagerGeneric.get(TileEntityMixer.class);
         mix.add(new IVexatiousCrafting<TileEntityMixer>() {
+
             boolean is(ItemStack is, Block b) {
                 if (is == null) return false;
                 return DataUtil.getBlock(is) == b;

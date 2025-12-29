@@ -1,5 +1,20 @@
 package factorization.beauty;
 
+import java.io.IOException;
+import java.util.HashSet;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockLog;
+import net.minecraft.block.material.Material;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.inventory.ISidedInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.IIcon;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.algos.FastBag;
 import factorization.api.Coord;
 import factorization.api.ICoordFunction;
@@ -15,23 +30,9 @@ import factorization.shared.TileEntityCommon;
 import factorization.util.FzUtil;
 import factorization.util.InvUtil;
 import factorization.util.ItemUtil;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockLog;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.IIcon;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.IOException;
-import java.util.HashSet;
 
 public class TileEntitySapTap extends TileEntityCommon implements ISidedInventory {
+
     ItemStack sap = new ItemStack(Core.registry.sap, 0, 0);
     int log_count = 0, leaf_count = 0;
     long sap_rate = 0;
@@ -123,11 +124,16 @@ public class TileEntitySapTap extends TileEntityCommon implements ISidedInventor
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        sap = data.as(Share.PRIVATE, "sap").putItemStack(sap);
-        log_count = data.as(Share.PRIVATE, "logCount").putInt(log_count);
-        leaf_count = data.as(Share.PRIVATE, "leafCount").putInt(leaf_count);
-        sap_rate = data.as(Share.PRIVATE, "sapRate").putLong(sap_rate);
-        ticks = data.as(Share.PRIVATE, "ticks").putInt(ticks);
+        sap = data.as(Share.PRIVATE, "sap")
+            .putItemStack(sap);
+        log_count = data.as(Share.PRIVATE, "logCount")
+            .putInt(log_count);
+        leaf_count = data.as(Share.PRIVATE, "leafCount")
+            .putInt(leaf_count);
+        sap_rate = data.as(Share.PRIVATE, "sapRate")
+            .putLong(sap_rate);
+        ticks = data.as(Share.PRIVATE, "ticks")
+            .putInt(ticks);
     }
 
     @Override
@@ -149,11 +155,15 @@ public class TileEntitySapTap extends TileEntityCommon implements ISidedInventor
     }
 
     static final int search_radius = 16;
+
     void scanTree(EntityPlayer player) {
         if (worldObj.isRemote) return;
         try {
             Coord level = getCoord();
-            TreeCounter ruler = new TreeCounter(level.add(-search_radius, -8, -search_radius), level.add(search_radius, 32, search_radius), getCoord());
+            TreeCounter ruler = new TreeCounter(
+                level.add(-search_radius, -8, -search_radius),
+                level.add(search_radius, 32, search_radius),
+                getCoord());
             ruler.calculate(1000);
             log_count = ruler.logs;
             leaf_count = ruler.leaves;
@@ -175,8 +185,14 @@ public class TileEntitySapTap extends TileEntityCommon implements ISidedInventor
         }
         if (player != null) {
             String sap_units = sap_rate <= 0 ? "∞" : FzUtil.unitTranslateTimeTicks(sap_rate, 2);
-            new Notice(this, "factorization.factoryBlock.SAP_TAP.info",
-                    "" + log_count, "" + leaf_count, "" + effective_logs, sap_units).withStyle(Style.LONG).sendTo(player);
+            new Notice(
+                this,
+                "factorization.factoryBlock.SAP_TAP.info",
+                "" + log_count,
+                "" + leaf_count,
+                "" + effective_logs,
+                sap_units).withStyle(Style.LONG)
+                    .sendTo(player);
         }
     }
 
@@ -226,8 +242,10 @@ public class TileEntitySapTap extends TileEntityCommon implements ISidedInventor
         Coord.iterateChunks(min, max, cc);
         if (cc.crowd != null) {
             if (!worldObj.isRemote) {
-                new Notice(at, "factorization.factoryBlock.SAP_TAP.crowded").withStyle(Style.FORCE).sendTo(player);
-                new Notice(cc.crowd, "factorization.factoryBlock.SAP_TAP.thecrowd").withStyle(Style.FORCE).sendTo(player);
+                new Notice(at, "factorization.factoryBlock.SAP_TAP.crowded").withStyle(Style.FORCE)
+                    .sendTo(player);
+                new Notice(cc.crowd, "factorization.factoryBlock.SAP_TAP.thecrowd").withStyle(Style.FORCE)
+                    .sendTo(player);
             }
             return false;
         }
@@ -236,7 +254,7 @@ public class TileEntitySapTap extends TileEntityCommon implements ISidedInventor
 
     @Override
     public int[] getAccessibleSlotsFromSide(int side) {
-        if (side == ForgeDirection.DOWN.ordinal()) return new int[] {0};
+        if (side == ForgeDirection.DOWN.ordinal()) return new int[] { 0 };
         return new int[0];
     }
 
@@ -251,8 +269,10 @@ public class TileEntitySapTap extends TileEntityCommon implements ISidedInventor
     }
 
     private class CrowdedCheck implements ICoordFunction {
+
         Coord at;
         TileEntity crowd = null;
+
         @Override
         public void handle(Coord here) {
             Chunk chunk = here.getChunk();
@@ -285,6 +305,7 @@ public class TileEntitySapTap extends TileEntityCommon implements ISidedInventor
     }
 
     private class TreeCounter {
+
         final Coord start, min, max;
         final FastBag<Coord> frontier = new FastBag<Coord>();
         final HashSet<Coord> visited = new HashSet<Coord>();

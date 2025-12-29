@@ -1,12 +1,14 @@
 package factorization.truth.cmd;
 
-import factorization.truth.api.*;
-import factorization.truth.word.ImgWord;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 
+import factorization.truth.api.*;
+import factorization.truth.word.ImgWord;
+
 public class CmdImg implements ITypesetCommand {
+
     ImgWord getImg(ITypesetter out, ITokenizer tokenizer) throws TruthError {
         String imgName = tokenizer.getParameter("domain:path/to/image.png");
         String scaleOrWidth = tokenizer.getOptionalParameter();
@@ -15,7 +17,8 @@ public class CmdImg implements ITypesetCommand {
         ResourceLocation rl = new ResourceLocation(imgName);
         try {
             Minecraft mc = Minecraft.getMinecraft();
-            IResource r = mc.getResourceManager().getResource(rl);
+            IResource r = mc.getResourceManager()
+                .getResource(rl);
             if (r == null) {
                 throw new TruthError("Not found: " + imgName);
             }

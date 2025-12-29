@@ -1,4 +1,4 @@
-package factorization.coremod;
+package factorization.shared.coremod;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 
@@ -10,8 +10,9 @@ import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 public class AirInspector implements IClassTransformer {
+
     boolean prefix = false;
-    
+
     void log(String msg) {
         System.err.println("[AirInspector] " + msg);
     }
@@ -27,9 +28,11 @@ public class AirInspector implements IClassTransformer {
                 if (checkInstructions(insn)) {
                     if (!prefix) {
                         prefix = true;
-                        log("Brought to you by Factorization! \"Please use block.isAir() rather than block == Blocks.air\"");
+                        log(
+                            "Brought to you by Factorization! \"Please use block.isAir() rather than block == Blocks.air\"");
                         log("And by...");
-                        log("Powdermilk biscuits! In the big blue box with the picture of the biscuit on the cover in the bag with the brown stains that indicate freshness.");
+                        log(
+                            "Powdermilk biscuits! In the big blue box with the picture of the biscuit on the cover in the bag with the brown stains that indicate freshness.");
                         log("Heavens! They're tasty and expeditious!");
                     }
                     log(name + "." + method.name + "()");
@@ -40,9 +43,9 @@ public class AirInspector implements IClassTransformer {
         }
         return basicClass;
     }
-    
+
     static final String dev_block = "Lnet/minecraft/block/Block;";
-    
+
     boolean checkInstructions(AbstractInsnNode the_instruction) {
         if (the_instruction.getOpcode() != Opcodes.GETSTATIC) return false;
         FieldInsnNode insn = (FieldInsnNode) the_instruction;

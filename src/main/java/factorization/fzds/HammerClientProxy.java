@@ -1,26 +1,7 @@
 package factorization.fzds;
 
-import cpw.mods.fml.client.registry.RenderingRegistry;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.Phase;
-import cpw.mods.fml.common.network.FMLNetworkEvent;
-import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
-import cpw.mods.fml.relauncher.Side;
-import factorization.api.Coord;
-import factorization.api.Quaternion;
-import factorization.coremodhooks.HookTargetsClient;
-import factorization.coremodhooks.IExtraChunkData;
-import factorization.fzds.gui.ProxiedGuiContainer;
-import factorization.fzds.gui.ProxiedGuiScreen;
-import factorization.fzds.interfaces.IDeltaChunk;
-import factorization.fzds.network.WrapperAdapter;
-import factorization.shared.BlockRenderHelper;
-import factorization.shared.Core;
-import factorization.util.NumUtil;
-import factorization.util.SpaceUtil;
+import java.util.WeakHashMap;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
@@ -46,11 +27,33 @@ import net.minecraft.world.storage.WorldInfo;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+
 import org.lwjgl.opengl.GL11;
 
-import java.util.WeakHashMap;
+import cpw.mods.fml.client.registry.RenderingRegistry;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.Phase;
+import cpw.mods.fml.common.network.FMLNetworkEvent;
+import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
+import cpw.mods.fml.relauncher.Side;
+import factorization.api.Coord;
+import factorization.api.Quaternion;
+import factorization.coremodhooks.HookTargetsClient;
+import factorization.coremodhooks.IExtraChunkData;
+import factorization.fzds.gui.ProxiedGuiContainer;
+import factorization.fzds.gui.ProxiedGuiScreen;
+import factorization.fzds.interfaces.IDeltaChunk;
+import factorization.fzds.network.WrapperAdapter;
+import factorization.shared.BlockRenderHelper;
+import factorization.shared.Core;
+import factorization.util.NumUtil;
+import factorization.util.SpaceUtil;
 
 public class HammerClientProxy extends HammerProxy {
+
     static HammerClientProxy instance;
 
     public HammerClientProxy() {
@@ -59,33 +62,36 @@ public class HammerClientProxy extends HammerProxy {
         Core.loadBus(rwe);
         HammerClientProxy.instance = this;
     }
-    
-    //These two classes below make it easy to see in a debugger.
+
+    // These two classes below make it easy to see in a debugger.
     public static class HammerChunkProviderClient extends ChunkProviderClient {
+
         public HammerChunkProviderClient(World par1World) {
             super(par1World);
         }
     }
-    
+
     public static class HammerWorldClient extends WorldClient {
-        public HammerWorldClient(NetHandlerPlayClient par1NetClientHandler, WorldSettings par2WorldSettings, int par3, EnumDifficulty par4, Profiler par5Profiler) {
+
+        public HammerWorldClient(NetHandlerPlayClient par1NetClientHandler, WorldSettings par2WorldSettings, int par3,
+            EnumDifficulty par4, Profiler par5Profiler) {
             super(par1NetClientHandler, par2WorldSettings, par3, par4, par5Profiler);
         }
-        
+
         @Override
         public void playSoundAtEntity(Entity par1Entity, String par2Str, float par3, float par4) {
             super.playSoundAtEntity(par1Entity, par2Str, par3, par4);
         }
-        
+
         public void clearAccesses() {
             worldAccesses.clear();
         }
-        
+
         public void shadowTick() {
             clientChunkProvider.unloadQueuedChunks();
         }
     }
-    
+
     @Override
     public World getClientRealWorld() {
         if (real_world == null) {
@@ -93,9 +99,10 @@ public class HammerClientProxy extends HammerProxy {
         }
         return real_world;
     }
-    
+
     private static World lastWorld = null;
     static ShadowRenderGlobal shadowRenderGlobal = null;
+
     void checkForWorldChange() {
         WorldClient currentWorld = Minecraft.getMinecraft().theWorld;
         if (currentWorld == null) {
@@ -105,12 +112,12 @@ public class HammerClientProxy extends HammerProxy {
         if (currentWorld != lastWorld) {
             lastWorld = currentWorld;
             if (Hammer.worldClient != null) {
-                ((HammerWorldClient)Hammer.worldClient).clearAccesses();
+                ((HammerWorldClient) Hammer.worldClient).clearAccesses();
                 Hammer.worldClient.addWorldAccess(shadowRenderGlobal = new ShadowRenderGlobal(currentWorld));
             }
         }
     }
-    
+
     @SubscribeEvent
     public void tick(ClientTickEvent event) {
         if (event.phase == Phase.END) return;
@@ -120,7 +127,7 @@ public class HammerClientProxy extends HammerProxy {
             shadowRenderGlobal.removeStaleDamage();
         }
     }
-    
+
     @Override
     public void createClientShadowWorld() {
         final Minecraft mc = Minecraft.getMinecraft();
@@ -136,18 +143,18 @@ public class HammerClientProxy extends HammerProxy {
         WorldInfo wi = world.getWorldInfo();
         try {
             HookTargetsClient.clientWorldLoadEventAbort.set(Boolean.TRUE);
-            Hammer.worldClient = new HammerWorldClient(send_queue,
-                    new WorldSettings(wi),
-                    DeltaChunk.getDimensionId(),
-                    world.difficultySetting,
-                    Core.proxy.getProfiler());
+            Hammer.worldClient = new HammerWorldClient(
+                send_queue,
+                new WorldSettings(wi),
+                DeltaChunk.getDimensionId(),
+                world.difficultySetting,
+                Core.proxy.getProfiler());
         } finally {
             HookTargetsClient.clientWorldLoadEventAbort.remove();
         }
         Hammer.worldClient.addWorldAccess(shadowRenderGlobal = new ShadowRenderGlobal(mc.theWorld));
     }
-    
-    
+
     @SubscribeEvent
     public void onClientLogout(ClientDisconnectionFromServerEvent event) {
         cleanupClientWorld();
@@ -155,12 +162,13 @@ public class HammerClientProxy extends HammerProxy {
 
     @Override
     public void cleanupClientWorld() {
-        //TODO: what else we can do here to cleanup?
-        if (FMLCommonHandler.instance().getEffectiveSide() != Side.CLIENT) {
+        // TODO: what else we can do here to cleanup?
+        if (FMLCommonHandler.instance()
+            .getEffectiveSide() != Side.CLIENT) {
             return;
         }
         if (Hammer.worldClient != null) {
-            ((HammerWorldClient)Hammer.worldClient).clearAccesses();
+            ((HammerWorldClient) Hammer.worldClient).clearAccesses();
         }
         Hammer.worldClient = null;
         send_queue = null;
@@ -180,6 +188,7 @@ public class HammerClientProxy extends HammerProxy {
 
     private static NetHandlerPlayClient send_queue;
     private boolean send_queue_spam = false;
+
     private void setSendQueueWorld(WorldClient wc) {
         if (send_queue == null) {
             if (!send_queue_spam) {
@@ -196,7 +205,7 @@ public class HammerClientProxy extends HammerProxy {
         if (wc == null || player == null) {
             throw new NullPointerException("Tried setting world/player to null!");
         }
-        //For logic
+        // For logic
         if (mc.renderViewEntity == mc.thePlayer) {
             mc.renderViewEntity = player;
         }
@@ -204,8 +213,8 @@ public class HammerClientProxy extends HammerProxy {
         mc.thePlayer = player;
         mc.thePlayer.worldObj = wc;
         setSendQueueWorld(wc);
-        
-        //For rendering
+
+        // For rendering
         mc.renderViewEntity = player;
         if (TileEntityRendererDispatcher.instance.field_147550_f != null) {
             TileEntityRendererDispatcher.instance.field_147550_f = wc;
@@ -221,6 +230,7 @@ public class HammerClientProxy extends HammerProxy {
     }
 
     private final WeakHashMap<World, RenderGlobal> renderglobal_cache = new WeakHashMap<World, RenderGlobal>();
+
     private RenderGlobal getRenderGlobalForWorld(WorldClient wc) {
         RenderGlobal cached = renderglobal_cache.get(wc);
         if (cached != null) return cached;
@@ -247,12 +257,12 @@ public class HammerClientProxy extends HammerProxy {
         if (real_player != null) return fake_player;
         return null;
     }
-    
+
     private EntityClientPlayerMP real_player = null;
     private WorldClient real_world = null;
     private EntityClientPlayerMP fake_player = null;
     private RenderGlobal real_renderglobal = null;
-    
+
     @Override
     public void setShadowWorld() {
         Minecraft mc = Minecraft.getMinecraft();
@@ -272,10 +282,11 @@ public class HammerClientProxy extends HammerProxy {
         real_player.worldObj = w;
         if (fake_player == null || w != fake_player.worldObj) {
             fake_player = new EntityClientPlayerMP(
-                    mc,
-                    mc.theWorld /* why is this real world? NORELEASE: world leakage? */,
-                    mc.getSession(), real_player.sendQueue /* not sure about this one. */,
-                    real_player.getStatFileWriter());
+                mc,
+                mc.theWorld /* why is this real world? NORELEASE: world leakage? */,
+                mc.getSession(),
+                real_player.sendQueue /* not sure about this one. */,
+                real_player.getStatFileWriter());
             fake_player.movementInput = real_player.movementInput;
         }
         real_renderglobal = mc.renderGlobal;
@@ -283,7 +294,7 @@ public class HammerClientProxy extends HammerProxy {
         WrapperAdapter.setShadow(true);
         fake_player.inventory = real_player.inventory;
     }
-    
+
     @Override
     public void restoreRealWorld() {
         setWorldAndPlayer(real_world, real_player);
@@ -292,12 +303,12 @@ public class HammerClientProxy extends HammerProxy {
         real_renderglobal = null;
         WrapperAdapter.setShadow(false);
     }
-    
+
     @Override
     public boolean isInShadowWorld() {
         return real_world != null;
     }
-    
+
     void runShadowTick() {
         final Minecraft mc = Minecraft.getMinecraft();
         if (mc.isGamePaused()) {
@@ -324,7 +335,7 @@ public class HammerClientProxy extends HammerProxy {
         setShadowWorld();
         Core.profileStart("FZDStick");
         try {
-            //Inspired by Minecraft.runTick()
+            // Inspired by Minecraft.runTick()
             w.updateEntities();
             Vec3 playerPos = Vec3.createVectorHelper(mcPlayer.posX, mcPlayer.posY, mcPlayer.posZ);
             for (IDeltaChunk idc : nearbyChunks) {
@@ -337,24 +348,26 @@ public class HammerClientProxy extends HammerProxy {
             restoreRealWorld();
         }
     }
-    
+
     @Override
     public void clientInit() {
-        
+
     }
-    
+
     final Minecraft mc = Minecraft.getMinecraft();
-    
+
     @SubscribeEvent
     public void resetTracing(ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
-        /*_shadowSelected = null;
-        _rayTarget = null;
-        _selectionBlockBounds = null;
-        _hitSlice = null;*/
+        /*
+         * _shadowSelected = null;
+         * _rayTarget = null;
+         * _selectionBlockBounds = null;
+         * _hitSlice = null;
+         */
         _distance = Double.POSITIVE_INFINITY;
     }
-    
+
     public void offerHit(MovingObjectPosition mop, DseRayTarget rayTarget, AxisAlignedBB moppedBounds) {
         double d = rayTarget.getDistanceSqToEntity(mc.thePlayer);
         if (d > _distance) return;
@@ -364,13 +377,13 @@ public class HammerClientProxy extends HammerProxy {
         _hitSlice = rayTarget.parent;
         _distance = d;
     }
-    
+
     double _distance;
     MovingObjectPosition _shadowSelected;
     DseRayTarget _rayTarget;
     AxisAlignedBB _selectionBlockBounds;
     DimensionSliceEntity _hitSlice;
-    
+
     @SubscribeEvent
     public void renderSelection(DrawBlockHighlightEvent event) {
         if (!(event.target.entityHit instanceof DseRayTarget)) {
@@ -384,14 +397,21 @@ public class HammerClientProxy extends HammerProxy {
         if (event.isCanceled()) {
             return;
         }
-        Coord here = new Coord(DeltaChunk.getClientShadowWorld(), shadowSelected.blockX, shadowSelected.blockY, shadowSelected.blockZ);
-        Block hereBlock = BlockRenderHelper.instance; //here.getBlock();
+        Coord here = new Coord(
+            DeltaChunk.getClientShadowWorld(),
+            shadowSelected.blockX,
+            shadowSelected.blockY,
+            shadowSelected.blockZ);
+        Block hereBlock = BlockRenderHelper.instance; // here.getBlock();
         hereBlock.setBlockBounds(
-                (float) (box.minX - here.x), (float) (box.minY - here.y), (float) (box.minZ - here.z),
-                (float) (box.maxX - here.x), (float) (box.maxY - here.y), (float) (box.maxZ - here.z)
-        );
+            (float) (box.minX - here.x),
+            (float) (box.minY - here.y),
+            (float) (box.minZ - here.z),
+            (float) (box.maxX - here.x),
+            (float) (box.maxY - here.y),
+            (float) (box.maxZ - here.z));
         EntityPlayer player = event.player;
-        //RenderGlobal rg = event.context;
+        // RenderGlobal rg = event.context;
         ItemStack is = event.currentItem;
         float partialTicks = event.partialTicks;
         DimensionSliceEntity dse = _hitSlice;
@@ -403,27 +423,30 @@ public class HammerClientProxy extends HammerProxy {
             setShadowWorld();
             RenderGlobal rg = mc.renderGlobal;
             GL11.glDisable(GL11.GL_ALPHA_TEST);
-            /*if (Core.dev_environ) {
-                GL11.glDisable(GL11.GL_DEPTH_TEST);
-                GL11.glColorMask(false, true, true, true);
-            }*/
+            /*
+             * if (Core.dev_environ) {
+             * GL11.glDisable(GL11.GL_DEPTH_TEST);
+             * GL11.glColorMask(false, true, true, true);
+             * }
+             */
             GL11.glTranslated(
-                    NumUtil.interp(dse.lastTickPosX - player.lastTickPosX, dse.posX - player.posX, partialTicks),
-                    NumUtil.interp(dse.lastTickPosY - player.lastTickPosY, dse.posY - player.posY, partialTicks),
-                    NumUtil.interp(dse.lastTickPosZ - player.lastTickPosZ, dse.posZ - player.posZ, partialTicks));
+                NumUtil.interp(dse.lastTickPosX - player.lastTickPosX, dse.posX - player.posX, partialTicks),
+                NumUtil.interp(dse.lastTickPosY - player.lastTickPosY, dse.posY - player.posY, partialTicks),
+                NumUtil.interp(dse.lastTickPosZ - player.lastTickPosZ, dse.posZ - player.posZ, partialTicks));
             rotation.glRotate();
             Vec3 centerOffset = dse.getRotationalCenterOffset();
             GL11.glTranslated(
-                    -centerOffset.xCoord - corner.x,
-                    -centerOffset.yCoord - corner.y,
-                    -centerOffset.zCoord - corner.z);
-            
+                -centerOffset.xCoord - corner.x,
+                -centerOffset.yCoord - corner.y,
+                -centerOffset.zCoord - corner.z);
+
             double savePlayerX = player.posX;
             double savePlayerY = player.posY;
             double savePlayerZ = player.posZ;
             partialTicks = 1;
             player.posX = player.posY = player.posZ = 0;
-            if (!ForgeHooksClient.onDrawBlockHighlight(rg, player, shadowSelected, shadowSelected.subHit, is, partialTicks)) {
+            if (!ForgeHooksClient
+                .onDrawBlockHighlight(rg, player, shadowSelected, shadowSelected.subHit, is, partialTicks)) {
                 rg.drawSelectionBox(player, shadowSelected, 0, partialTicks);
             }
             player.posX = savePlayerX;
@@ -433,26 +456,28 @@ public class HammerClientProxy extends HammerProxy {
             GL11.glEnable(GL11.GL_ALPHA_TEST);
             restoreRealWorld();
             GL11.glPopMatrix();
-            /*if (Core.dev_environ) {
-                GL11.glColorMask(true, true, true, true);
-                GL11.glEnable(GL11.GL_DEPTH_TEST);
-            }*/
+            /*
+             * if (Core.dev_environ) {
+             * GL11.glColorMask(true, true, true, true);
+             * GL11.glEnable(GL11.GL_DEPTH_TEST);
+             * }
+             */
         }
     }
-    
+
     @Override
     void updateRayPosition(DseRayTarget ray) {
         if (ray.parent.metaAABB == null) return;
         // If we didn't care about entities, we could call:
-        //    mc.renderViewEntity.rayTrace(reachDistance, partialTicks)
+        // mc.renderViewEntity.rayTrace(reachDistance, partialTicks)
         // But we need entities, so we'll just invoke MC's ray trace code.
-        
+
         // Save values
         MovingObjectPosition origMouseOver = mc.objectMouseOver;
         mc.objectMouseOver = null; // The ray trace function will do the wrong thing if this isn't nulled.
-        
+
         boolean got_hit = false;
-        
+
         try {
             MovingObjectPosition mop = null;
             AxisAlignedBB mopBox = null;
@@ -474,15 +499,16 @@ public class HammerClientProxy extends HammerProxy {
                     return;
                 }
                 switch (mop.typeOfHit) {
-                case ENTITY:
-                    mopBox = mop.entityHit.boundingBox;
-                    break;
-                case BLOCK:
-                    World w = DeltaChunk.getClientShadowWorld();
-                    Block block = w.getBlock(mop.blockX, mop.blockY, mop.blockZ);
-                    mopBox = block.getSelectedBoundingBoxFromPool(w, mop.blockX, mop.blockY, mop.blockZ);
-                    break;
-                default: return;
+                    case ENTITY:
+                        mopBox = mop.entityHit.boundingBox;
+                        break;
+                    case BLOCK:
+                        World w = DeltaChunk.getClientShadowWorld();
+                        Block block = w.getBlock(mop.blockX, mop.blockY, mop.blockZ);
+                        mopBox = block.getSelectedBoundingBoxFromPool(w, mop.blockX, mop.blockY, mop.blockZ);
+                        break;
+                    default:
+                        return;
                 }
             } finally {
                 restoreRealWorld();
@@ -507,10 +533,13 @@ public class HammerClientProxy extends HammerProxy {
                     max.zCoord = Math.max(c.zCoord, max.zCoord);
                 }
             }
-            ray.setPosition((min.xCoord + max.xCoord) / 2, (min.yCoord + max.yCoord) / 2, (min.zCoord + max.zCoord) / 2);
+            ray.setPosition(
+                (min.xCoord + max.xCoord) / 2,
+                (min.yCoord + max.yCoord) / 2,
+                (min.zCoord + max.zCoord) / 2);
             SpaceUtil.setMin(ray.boundingBox, min);
             SpaceUtil.setMax(ray.boundingBox, max);
-            //AabbDebugger.addBox(ray.boundingBox); // It's always nice to see this.
+            // AabbDebugger.addBox(ray.boundingBox); // It's always nice to see this.
             offerHit(mop, ray, mopBox);
             got_hit = true;
         } finally {
@@ -520,17 +549,17 @@ public class HammerClientProxy extends HammerProxy {
             }
         }
     }
-    
+
     @Override
     public MovingObjectPosition getShadowHit() {
         return _shadowSelected;
     }
-    
+
     @Override
     IDeltaChunk getHitIDC() {
         return _hitSlice;
     }
-    
+
     @SubscribeEvent
     public void showUniversalCollidersInfo(RenderGameOverlayEvent.Text event) {
         if (mc.thePlayer == null) return;
@@ -558,9 +587,11 @@ public class HammerClientProxy extends HammerProxy {
             GuiScreen wrap = Minecraft.getMinecraft().currentScreen;
             if (wrap instanceof GuiContainer) {
                 GuiContainer gc = (GuiContainer) wrap;
-                Minecraft.getMinecraft().displayGuiScreen(new ProxiedGuiContainer(gc.inventorySlots, gc));
+                Minecraft.getMinecraft()
+                    .displayGuiScreen(new ProxiedGuiContainer(gc.inventorySlots, gc));
             } else if (wrap != null) {
-                Minecraft.getMinecraft().displayGuiScreen(new ProxiedGuiScreen(wrap));
+                Minecraft.getMinecraft()
+                    .displayGuiScreen(new ProxiedGuiScreen(wrap));
             }
         }
     }

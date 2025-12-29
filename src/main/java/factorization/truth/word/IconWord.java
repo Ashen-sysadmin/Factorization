@@ -1,21 +1,24 @@
 package factorization.truth.word;
 
-import factorization.common.BlockIcons;
-import factorization.shared.Core;
-import factorization.truth.WordPage;
-import factorization.truth.api.IHtmlTypesetter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
+
 import org.lwjgl.opengl.GL11;
 
+import factorization.common.BlockIcons;
+import factorization.shared.Core;
+import factorization.truth.WordPage;
+import factorization.truth.api.IHtmlTypesetter;
+
 public class IconWord extends Word {
+
     public static final int BLOCK_TEXTURE = 234, ITEM_TEXTURE = 567;
-    
+
     private final IIcon icon;
     private final boolean isBlock;
-    
+
     public IconWord(IIcon icon, int texture) {
         if (icon == null) icon = BlockIcons.error;
         this.icon = icon;
@@ -47,20 +50,20 @@ public class IconWord extends Word {
     @Override
     public void writeHtml(IHtmlTypesetter out) {
         out.html(icon.getIconName()); // TODO?
-        //final String imgPath = out.img(resource.toString());
-        //out.html(String.format("<img width=%s height=%s src=\"%s\" />", width, height, imgPath));
+        // final String imgPath = out.img(resource.toString());
+        // out.html(String.format("<img width=%s height=%s src=\"%s\" />", width, height, imgPath));
     }
 
     @Override
     public int getWidth(FontRenderer font) {
         return 16;
     }
-    
+
     @Override
     public int getPaddingAbove() {
         return (16 - WordPage.TEXT_HEIGHT) / 2;
     }
-    
+
     @Override
     public int getWordHeight() {
         return WordPage.TEXT_HEIGHT + getPaddingAbove();

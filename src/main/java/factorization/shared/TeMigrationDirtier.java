@@ -1,16 +1,16 @@
 package factorization.shared;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.relauncher.Side;
-import net.minecraft.nbt.NBTTagCompound;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.relauncher.Side;
+
 public class TeMigrationDirtier {
+
     public static final TeMigrationDirtier instance = new TeMigrationDirtier();
 
     private TeMigrationDirtier() {
@@ -18,11 +18,13 @@ public class TeMigrationDirtier {
     }
 
     public void register(TileEntityCommon tec) {
-        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) return;
+        if (FMLCommonHandler.instance()
+            .getEffectiveSide() == Side.CLIENT) return;
         queue.add(new Entry(tec));
     }
 
     static class Entry {
+
         final WeakReference<TileEntityCommon> ref;
         int visits = 0;
 
@@ -33,10 +35,9 @@ public class TeMigrationDirtier {
 
     ArrayList<Entry> queue = new ArrayList<Entry>();
 
-
     @SubscribeEvent
     public void tick(TickEvent.ServerTickEvent event) {
-        for (Iterator<Entry> iterator = queue.iterator(); iterator.hasNext(); ) {
+        for (Iterator<Entry> iterator = queue.iterator(); iterator.hasNext();) {
             Entry entry = iterator.next();
             TileEntityCommon tec = entry.ref.get();
             if (tec == null) {
@@ -44,7 +45,9 @@ public class TeMigrationDirtier {
                 continue;
             }
             if (tec.hasWorldObj()) {
-                tec.getCoord().getChunk().setChunkModified();
+                tec.getCoord()
+                    .getChunk()
+                    .setChunkModified();
                 iterator.remove();
             }
             if (entry.visits++ > 400) {

@@ -1,22 +1,9 @@
 package factorization.misc;
 
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.common.network.FMLEventChannel;
-import cpw.mods.fml.common.network.FMLNetworkEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.api.Coord;
-import factorization.common.FzConfig;
-import factorization.util.DataUtil;
-import factorization.util.FzUtil;
-import factorization.util.ItemUtil;
-import factorization.util.PlayerUtil;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.enchantment.Enchantment;
@@ -34,14 +21,30 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.BlockEvent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.network.ByteBufUtils;
+import cpw.mods.fml.common.network.FMLEventChannel;
+import cpw.mods.fml.common.network.FMLNetworkEvent;
+import cpw.mods.fml.common.network.NetworkRegistry;
+import cpw.mods.fml.common.network.internal.FMLProxyPacket;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.api.Coord;
+import factorization.common.FzConfig;
+import factorization.util.DataUtil;
+import factorization.util.FzUtil;
+import factorization.util.ItemUtil;
+import factorization.util.PlayerUtil;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 public class BlockUndo {
+
     public static final String channelName = "FZ|blockundo";
     public static final FMLEventChannel channel = NetworkRegistry.INSTANCE.newEventDrivenChannel(channelName);
     public static final BlockUndo instance = new BlockUndo();
+
     private BlockUndo() {
         channel.register(this);
     }
@@ -62,6 +65,7 @@ public class BlockUndo {
     }
 
     private static class PlacedBlock {
+
         final int w, x, y, z, idmd;
         final ItemStack orig;
 
@@ -89,8 +93,13 @@ public class BlockUndo {
         }
 
         static PlacedBlock read(ByteBuf in) {
-            return new PlacedBlock(in.readInt(), in.readInt(), in.readInt(), in.readInt(), in.readInt(),
-                    ByteBufUtils.readItemStack(in));
+            return new PlacedBlock(
+                in.readInt(),
+                in.readInt(),
+                in.readInt(),
+                in.readInt(),
+                in.readInt(),
+                ByteBufUtils.readItemStack(in));
         }
     }
 
@@ -120,7 +129,7 @@ public class BlockUndo {
         } else {
             coords = recentlyPlaced.get(playerName);
         }
-        for (Iterator<PlacedBlock> it = coords.iterator(); it.hasNext(); ) {
+        for (Iterator<PlacedBlock> it = coords.iterator(); it.hasNext();) {
             PlacedBlock c = it.next();
             World w = DimensionManager.getWorld(c.w);
             if (w == null || w.isAirBlock(c.x, c.y, c.z)) {
@@ -142,10 +151,18 @@ public class BlockUndo {
         if (event.player instanceof FakePlayer) return;
         if (event.block.getBlockHardness(event.world, event.x, event.y, event.z) <= 0F) return;
         if (PlayerUtil.isPlayerCreative(event.player)) return;
-        int md = event.world.getBlockMetadata(event.x, event.y, event.z); // Notable for NOT being the same as event.blockMetadata for Railcraft quarried stone! :|
-        int idmd = (DataUtil.getId(event.block) << 4) /*+ event.blockMetadata*/;
+        int md = event.world.getBlockMetadata(event.x, event.y, event.z); // Notable for NOT being the same as
+                                                                          // event.blockMetadata for Railcraft quarried
+                                                                          // stone! :|
+        int idmd = (DataUtil.getId(event.block) << 4) /* + event.blockMetadata */;
         final ItemStack theItem = toItem(event.block, event.world, event.x, event.y, event.z, md);
-        final PlacedBlock at = new PlacedBlock(FzUtil.getWorldDimension(event.world), event.x, event.y, event.z, idmd, theItem);
+        final PlacedBlock at = new PlacedBlock(
+            FzUtil.getWorldDimension(event.world),
+            event.x,
+            event.y,
+            event.z,
+            idmd,
+            theItem);
         markPlacement(event.player, at);
         if (!event.world.isRemote && event.player instanceof EntityPlayerMP) {
             send((EntityPlayerMP) event.player, at);
@@ -153,6 +170,7 @@ public class BlockUndo {
     }
 
     private ThreadLocal<Boolean> working = new ThreadLocal<Boolean>();
+
     @SubscribeEvent
     public void boostBreakSpeed(PlayerEvent.BreakSpeed event) {
         if (working.get() != null) {
@@ -167,6 +185,7 @@ public class BlockUndo {
     }
 
     private HashMap<Integer, Long> playerBreakage = new HashMap<Integer, Long>();
+
     private boolean stillBusy(EntityPlayer player) {
         Integer code = player.hashCode();
         Long last = playerBreakage.get(code);
@@ -180,7 +199,6 @@ public class BlockUndo {
         playerBreakage.put(code, player.worldObj.getTotalWorldTime());
     }
 
-
     private void determineBreakSpeed(PlayerEvent.BreakSpeed event) {
         final int y = event.y;
         if (y == -1) return; // Event specifies that 'y' might be -1 for unknown usage?
@@ -191,7 +209,8 @@ public class BlockUndo {
         final EntityPlayer player = event.entityPlayer;
         if (stillBusy(player)) return;
         if (!canUndo(event, x, y, z, block, md)) return;
-        // Duplicate logic to figure out what the *actual* break speed will be, so that we don't make this actual break speed too fast
+        // Duplicate logic to figure out what the *actual* break speed will be, so that we don't make this actual break
+        // speed too fast
         float hardness = block.getBlockHardness(player.worldObj, x, y, z);
         if (hardness < 0.0F) {
             // Block is invulnerable
@@ -221,7 +240,7 @@ public class BlockUndo {
         int w = FzUtil.getWorldDimension(player.worldObj);
         for (PlacedBlock hot : coords) {
             if (hot.w == w && hot.x == x && hot.y == y && hot.z == z) {
-                int idmd = (DataUtil.getId(block) << 4) /*+ metadata*/;
+                int idmd = (DataUtil.getId(block) << 4) /* + metadata */;
                 if (idmd != hot.idmd) {
                     continue;
                 }
@@ -231,7 +250,8 @@ public class BlockUndo {
         return false;
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGH) // Cancel before most things, but permission-handlers can cancel before us
+    @SubscribeEvent(priority = EventPriority.HIGH) // Cancel before most things, but permission-handlers can cancel
+                                                   // before us
     public void playerRemovedBlock(BlockEvent.BreakEvent event) {
         EntityPlayer thePlayer = event.getPlayer();
         markBusy(thePlayer);
@@ -246,7 +266,7 @@ public class BlockUndo {
         final int md = event.blockMetadata;
         int wDim = FzUtil.getWorldDimension(w);
         if (PlayerUtil.isPlayerCreative(thePlayer)) return;
-        for (Iterator<PlacedBlock> iterator = coords.iterator(); iterator.hasNext(); ) {
+        for (Iterator<PlacedBlock> iterator = coords.iterator(); iterator.hasNext();) {
             PlacedBlock hot = iterator.next();
             if (hot.w == wDim && hot.x == x && hot.y == y && hot.z == z) {
                 heat = hot;
@@ -313,8 +333,8 @@ public class BlockUndo {
         PlayerUtil.recycleFakePlayer(fake_player);
     }
 
-
     private final HashMap<String, Item> cache = new HashMap<String, Item>();
+
     private Item findAppropriateTool(String tool, int level) {
         if (tool == null && level == -1) {
             return Items.diamond_pickaxe;
@@ -328,7 +348,8 @@ public class BlockUndo {
         for (Object obj : Item.itemRegistry) {
             Item item = (Item) obj;
             final ItemStack dummy = new ItemStack(item);
-            if (item.getToolClasses(dummy).contains(tool)) {
+            if (item.getToolClasses(dummy)
+                .contains(tool)) {
                 if (item.getHarvestLevel(dummy, tool) >= level) {
                     cache.put(name, item);
                     return item;

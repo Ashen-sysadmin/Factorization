@@ -1,10 +1,7 @@
 package factorization.artifact;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.common.BlockIcons;
-import factorization.common.FactoryType;
-import factorization.shared.Core;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAnvil;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -16,17 +13,24 @@ import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
-import java.util.List;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.common.BlockIcons;
+import factorization.common.FactoryType;
+import factorization.shared.Core;
 
 public class BlockForge extends BlockAnvil {
+
     public BlockForge() {
         Core.tab(this, Core.TabType.ARTIFACT);
         setBlockName("factorization:artifactForge");
         setHardness(5.0F).setResistance(2000.0F);
         setStepSound(new Block.SoundType("anvil", 1.0F, 0.125F) {
+
             public String getBreakSound() {
                 return "dig.stone";
             }
+
             public String func_150496_b() {
                 return "random.anvil_land";
             }
@@ -34,12 +38,14 @@ public class BlockForge extends BlockAnvil {
     }
 
     @Override
-    public boolean onBlockActivated(World w, int x, int y, int z, EntityPlayer player, int side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(World w, int x, int y, int z, EntityPlayer player, int side, float vx, float vy,
+        float vz) {
         if (w.isRemote) return true;
         if (InspirationManager.canMakeArtifact(player)) {
             player.openGui(Core.instance, FactoryType.ARTIFACTFORGEGUI.gui, w, x, y, z);
         } else {
-            player.addChatMessage(new ChatComponentTranslation("factorization.forge.wait").setChatStyle(InspirationManager.aqua));
+            player.addChatMessage(
+                new ChatComponentTranslation("factorization.forge.wait").setChatStyle(InspirationManager.aqua));
         }
         return true;
     }
@@ -50,8 +56,7 @@ public class BlockForge extends BlockAnvil {
     }
 
     @SideOnly(Side.CLIENT)
-    public void registerBlockIcons(IIconRegister register) {
-    }
+    public void registerBlockIcons(IIconRegister register) {}
 
     @SideOnly(Side.CLIENT)
     public void getSubBlocks(Item item, CreativeTabs tab, List list) {

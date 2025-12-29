@@ -1,15 +1,9 @@
 package factorization.truth.minecraft;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.shared.Core;
-import factorization.truth.api.DocReg;
-import factorization.truth.api.IManwich;
-import factorization.util.EvilUtil;
-import factorization.util.ItemUtil;
-import factorization.util.LangUtil;
-import factorization.util.PlayerUtil;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
@@ -31,11 +25,19 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.shared.Core;
+import factorization.truth.api.DocReg;
+import factorization.truth.api.IManwich;
+import factorization.util.EvilUtil;
+import factorization.util.ItemUtil;
+import factorization.util.LangUtil;
+import factorization.util.PlayerUtil;
 
 public class ItemManSandwich extends ItemFood implements IManwich {
+
     StatBase manwhichStatus;
 
     public ItemManSandwich(int healAmount, float saturationModifier, String itemName) {
@@ -177,7 +179,6 @@ public class ItemManSandwich extends ItemFood implements IManwich {
         Collections.addAll(list, t.split("\\\\n"));
         Core.brand(stack, player, list, verbose);
     }
-
 
     @SideOnly(Side.CLIENT)
     IIcon spicy;

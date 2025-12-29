@@ -2,26 +2,28 @@ package factorization.servo.instructions;
 
 import java.io.IOException;
 
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.IDataSerializable;
 import factorization.common.BlockIcons;
-import factorization.servo.Executioner;
 import factorization.servo.Instruction;
 import factorization.servo.ServoMotor;
 
 public class IntegerValue extends Instruction {
+
     private int val = 1;
 
     @Override
     public IDataSerializable putData(String prefix, DataHelper data) throws IOException {
-        setVal(data.asSameShare(prefix + "val").putInt(getVal()));
+        setVal(
+            data.asSameShare(prefix + "val")
+                .putInt(getVal()));
         return this;
     }
 
@@ -32,7 +34,8 @@ public class IntegerValue extends Instruction {
 
     @Override
     public void motorHit(ServoMotor motor) {
-        motor.getArgStack().push(getVal());
+        motor.getArgStack()
+            .push(getVal());
     }
 
     @Override
@@ -52,7 +55,7 @@ public class IntegerValue extends Instruction {
     public String getName() {
         return "fz.instruction.integervalue";
     }
-    
+
     @Override
     public boolean onClick(EntityPlayer player, Coord block, ForgeDirection side) {
         if (playerHasProgrammer(player)) {
@@ -69,7 +72,7 @@ public class IntegerValue extends Instruction {
         }
         return false;
     }
-    
+
     @Override
     public String getInfo() {
         return "" + getVal();

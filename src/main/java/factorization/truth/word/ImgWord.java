@@ -1,25 +1,30 @@
 package factorization.truth.word;
 
-import factorization.truth.api.IHtmlTypesetter;
-import factorization.util.FzUtil;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+
+import javax.imageio.ImageIO;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
+import factorization.truth.api.IHtmlTypesetter;
+import factorization.util.FzUtil;
 
 public class ImgWord extends Word {
+
     public final ResourceLocation resource;
     public int width = 12, height = 12;
+
     public ImgWord(ResourceLocation resource) {
         this.resource = resource;
         autosize();
@@ -40,7 +45,7 @@ public class ImgWord extends Word {
     public String toString() {
         return resource + " ==> " + getLink();
     }
-    
+
     @Override
     public int getWidth(FontRenderer font) {
         return width;
@@ -76,7 +81,8 @@ public class ImgWord extends Word {
             return;
         }
 
-        IResourceManager resourceManager = Minecraft.getMinecraft().getResourceManager();
+        IResourceManager resourceManager = Minecraft.getMinecraft()
+            .getResourceManager();
         IResource iresource = null;
         InputStream is = null;
         try {

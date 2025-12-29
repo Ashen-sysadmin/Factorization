@@ -1,10 +1,7 @@
 package factorization.weird;
 
-import factorization.api.FzOrientation;
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.DataInNBT;
-import factorization.api.datahelpers.DataOutNBT;
-import factorization.shared.Core;
+import java.io.IOException;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,9 +13,14 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.io.IOException;
+import factorization.api.FzOrientation;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.DataInNBT;
+import factorization.api.datahelpers.DataOutNBT;
+import factorization.shared.Core;
 
 public class EntityMinecartDayBarrel extends EntityMinecart implements IInventory {
+
     protected TileEntityDayBarrel barrel;
     private int activatorRailTicks = 0;
     private boolean activatorRailPowered;
@@ -70,7 +72,8 @@ public class EntityMinecartDayBarrel extends EntityMinecart implements IInventor
         barrel.setWorldObj(worldObj);
         barrel.xCoord = barrel.yCoord = barrel.zCoord = 0;
         barrel.validate();
-        barrel.orientation = FzOrientation.fromDirection(ForgeDirection.WEST).pointTopTo(ForgeDirection.UP);
+        barrel.orientation = FzOrientation.fromDirection(ForgeDirection.WEST)
+            .pointTopTo(ForgeDirection.UP);
         barrel.notice_target = this;
     }
 
@@ -162,7 +165,8 @@ public class EntityMinecartDayBarrel extends EntityMinecart implements IInventor
             barrel.zCoord = MathHelper.floor_double(posZ);
             if (activatorRailTicks > 0) activatorRailTicks--;
 
-            if (barrel.canUpdate() && activatorRailTicks <= 0 && worldObj.getTotalWorldTime() % barrel.getLogicSpeed() == 0) {
+            if (barrel.canUpdate() && activatorRailTicks <= 0
+                && worldObj.getTotalWorldTime() % barrel.getLogicSpeed() == 0) {
                 barrel.doLogic();
                 updateDataWatcher(false);
             }
@@ -180,7 +184,8 @@ public class EntityMinecartDayBarrel extends EntityMinecart implements IInventor
             int oldItemCount = barrel.getItemCount();
             barrel.click((EntityPlayer) source.getEntity());
             updateDataWatcher(false);
-            if (source.getEntity().isSneaking()) {
+            if (source.getEntity()
+                .isSneaking()) {
                 return super.attackEntityFrom(source, f);
             }
             if (barrel.type == TileEntityDayBarrel.Type.CREATIVE) {
@@ -195,7 +200,8 @@ public class EntityMinecartDayBarrel extends EntityMinecart implements IInventor
 
     @Override
     public boolean interactFirst(EntityPlayer player) {
-        if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.entity.minecart.MinecartInteractEvent(this, player))) {
+        if (net.minecraftforge.common.MinecraftForge.EVENT_BUS
+            .post(new net.minecraftforge.event.entity.minecart.MinecartInteractEvent(this, player))) {
             return true;
         }
 

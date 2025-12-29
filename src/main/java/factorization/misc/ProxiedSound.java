@@ -4,6 +4,7 @@ import net.minecraft.client.audio.ISound;
 import net.minecraft.util.ResourceLocation;
 
 public class ProxiedSound implements ISound {
+
     private final ISound parent;
 
     public ProxiedSound(ISound parent) {

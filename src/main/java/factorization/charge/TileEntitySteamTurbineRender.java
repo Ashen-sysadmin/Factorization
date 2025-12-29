@@ -8,6 +8,7 @@ import org.lwjgl.opengl.GL11;
 import factorization.crafting.TileEntityMixerRenderer;
 
 public class TileEntitySteamTurbineRender extends TileEntitySpecialRenderer {
+
     @Override
     public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partial) {
         TileEntitySteamTurbine turbine = (TileEntitySteamTurbine) te;

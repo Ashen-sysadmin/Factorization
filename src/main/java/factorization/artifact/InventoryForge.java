@@ -1,28 +1,26 @@
 package factorization.artifact;
 
-import factorization.shared.Core;
-import factorization.util.ItemUtil;
-import factorization.util.NumUtil;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.regex.Pattern;
+
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerRepair;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.StringUtils;
 import net.minecraftforge.oredict.OreDictionary;
-import org.omg.IOP.TaggedComponent;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.regex.Pattern;
+import factorization.shared.Core;
+import factorization.util.ItemUtil;
+import factorization.util.NumUtil;
 
 public class InventoryForge implements IInventory {
+
     final EntityPlayer player;
     public String name, lore;
     final Container container;
@@ -76,7 +74,7 @@ public class InventoryForge implements IInventory {
         inv[slot] = stack;
         if (slot == SLOT_OUT && !player.worldObj.isRemote) {
             new ArtifactBuilder(false).buildArtifact(player, name, lore);
-            //container.detectAndSendChanges();
+            // container.detectAndSendChanges();
         }
     }
 
@@ -122,24 +120,9 @@ public class InventoryForge implements IInventory {
 
     }
 
-
-    static String[] dyes = {
-            "dyeBlack",
-            "dyeRed",
-            "dyeGreen",
-            "dyeBrown",
-            "dyeBlue",
-            "dyePurple",
-            "dyeCyan",
-            "dyeLightGray",
-            "dyeGray",
-            "dyePink",
-            "dyeLime",
-            "dyeYellow",
-            "dyeLightBlue",
-            "dyeMagenta",
-            "dyeOrange",
-            "dyeWhite"};
+    static String[] dyes = { "dyeBlack", "dyeRed", "dyeGreen", "dyeBrown", "dyeBlue", "dyePurple", "dyeCyan",
+        "dyeLightGray", "dyeGray", "dyePink", "dyeLime", "dyeYellow", "dyeLightBlue", "dyeMagenta", "dyeOrange",
+        "dyeWhite" };
     static ArrayList[] dyeList = new ArrayList[16];
     static {
         for (int i = 0; i < dyes.length; i++) {
@@ -186,6 +169,7 @@ public class InventoryForge implements IInventory {
     }
 
     class ArtifactBuilder {
+
         final boolean simulate;
 
         ArtifactBuilder(boolean simulate) {
@@ -245,7 +229,7 @@ public class InventoryForge implements IInventory {
         ItemStack buildArtifact(EntityPlayer player, String name, String lore) {
             if (player.worldObj.isRemote) return inv[SLOT_OUT];
             // warn on all slots
-            for (int i = 0; i < warnings.length; i++) warnings[i] = (byte)(inv[i] == null ? 0 : 1);
+            for (int i = 0; i < warnings.length; i++) warnings[i] = (byte) (inv[i] == null ? 0 : 1);
             error_message = null;
 
             // Make sure we've got 2 of the tool
@@ -260,7 +244,8 @@ public class InventoryForge implements IInventory {
             consume(SLOT_SECOND);
             boolean gave_unbreaking = false;
             {
-                Map<Integer, Integer> /* EnchantId -> enchantLevel */ enchants = EnchantmentHelper.getEnchantments(output);
+                Map<Integer, Integer> /* EnchantId -> enchantLevel */ enchants = EnchantmentHelper
+                    .getEnchantments(output);
                 ArrayList<Integer> enchantIds = new ArrayList<Integer>(enchants.keySet());
                 boolean any = false;
                 for (int id : enchantIds) {
@@ -301,7 +286,8 @@ public class InventoryForge implements IInventory {
                 anvil.putStackInSlot(0, output.copy());
                 anvil.putStackInSlot(1, ench.copy());
                 anvil.updateRepairOutput();
-                ItemStack upgraded = anvil.getSlot(2).getStack();
+                ItemStack upgraded = anvil.getSlot(2)
+                    .getStack();
                 if (upgraded == null) continue;
                 cleanWork(upgraded);
                 if (ItemUtil.couldMerge(output, upgraded)) continue;

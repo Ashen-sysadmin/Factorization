@@ -1,14 +1,5 @@
 package factorization.shared;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.relauncher.Side;
-import factorization.api.datahelpers.DataInByteBuf;
-import factorization.artifact.ContainerForge;
-import factorization.notify.Notice;
-import factorization.util.DataUtil;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-
 import java.io.IOException;
 import java.util.Random;
 
@@ -19,19 +10,29 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+
+import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
+import cpw.mods.fml.relauncher.Side;
 import factorization.api.Coord;
 import factorization.api.DeltaCoord;
 import factorization.api.IEntityMessage;
 import factorization.api.Quaternion;
 import factorization.api.VectorUV;
+import factorization.api.datahelpers.DataInByteBuf;
+import factorization.artifact.ContainerForge;
 import factorization.common.Command;
 import factorization.common.FactoryType;
+import factorization.notify.Notice;
+import factorization.util.DataUtil;
 import factorization.utiligoo.ItemGoo;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 public class NetworkFactorization {
+
     public static final ItemStack EMPTY_ITEMSTACK = new ItemStack(Blocks.air);
-    
+
     private void writeObjects(ByteBuf output, Object... items) throws IOException {
         for (Object item : items) {
             if (item == null) {
@@ -80,14 +81,14 @@ public class NetworkFactorization {
             }
         }
     }
-    
+
     public void prefixTePacket(ByteBuf output, Coord src, MessageType messageType) throws IOException {
         messageType.write(output);
         output.writeInt(src.x);
         output.writeInt(src.y);
         output.writeInt(src.z);
     }
-    
+
     public FMLProxyPacket TEmessagePacket(Coord src, MessageType messageType, Object... items) {
         try {
             ByteBuf output = Unpooled.buffer();
@@ -111,17 +112,17 @@ public class NetworkFactorization {
             return null;
         }
     }
-    
+
     public void prefixEntityPacket(ByteBuf output, Entity to, MessageType messageType) throws IOException {
         messageType.write(output);
         output.writeInt(to.getEntityId());
     }
-    
+
     public FMLProxyPacket entityPacket(ByteBuf output) throws IOException {
         return FzNetDispatch.generate(output);
     }
-    
-    public FMLProxyPacket entityPacket(Entity to, MessageType messageType, Object ...items) {
+
+    public FMLProxyPacket entityPacket(Entity to, MessageType messageType, Object... items) {
         try {
             ByteBuf output = Unpooled.buffer();
             prefixEntityPacket(output, to, messageType);
@@ -132,7 +133,7 @@ public class NetworkFactorization {
             return null;
         }
     }
-    
+
     public void sendCommand(EntityPlayer player, Command cmd, int arg) {
         ByteBuf out = Unpooled.buffer();
         MessageType.factorizeCmdChannel.write(out);
@@ -170,7 +171,7 @@ public class NetworkFactorization {
             int y = input.readInt();
             int z = input.readInt();
             Coord here = new Coord(world, x, y, z);
-            
+
             if (Core.debug_network) {
                 if (world.isRemote) {
                     new Notice(here, messageType.name()).sendTo(player);
@@ -184,7 +185,7 @@ public class NetworkFactorization {
                 // (Unless we can get a proper server-side check)
                 return;
             }
-            
+
             if (messageType == MessageType.DescriptionRequest && !world.isRemote) {
                 TileEntityCommon tec = here.getTE(TileEntityCommon.class);
                 if (tec != null) {
@@ -192,14 +193,14 @@ public class NetworkFactorization {
                 }
                 return;
             }
-            
+
             if (messageType == MessageType.RedrawOnClient && world.isRemote) {
                 world.markBlockForUpdate(x, y, z);
                 return;
             }
 
             if (messageType == MessageType.FactoryType && world.isRemote) {
-                //create a Tile Entity of that type there.
+                // create a Tile Entity of that type there.
 
                 byte ftId = input.readByte();
                 FactoryType ft = FactoryType.fromMd(ftId);
@@ -254,43 +255,47 @@ public class NetworkFactorization {
         }
     }
 
-    void handleForeignMessage(World world, int x, int y, int z, TileEntity ent, MessageType messageType, ByteBuf input) throws IOException {
+    void handleForeignMessage(World world, int x, int y, int z, TileEntity ent, MessageType messageType, ByteBuf input)
+        throws IOException {
         if (!world.isRemote) {
-            //Nothing for the server to deal with
+            // Nothing for the server to deal with
         } else {
             Coord here = new Coord(world, x, y, z);
             switch (messageType) {
-            case PlaySound:
-                Sound.receive(here, input);
-                break;
-            default:
-                if (here.blockExists()) {
-                    //Core.logFine("Got unhandled message: " + messageType + " for " + here);
-                } else {
-                    //XXX: Need to figure out how to keep the server from sending these things!
-                    Core.logFine("Got message to unloaded chunk: " + messageType + " for " + here);
-                }
-                break;
+                case PlaySound:
+                    Sound.receive(here, input);
+                    break;
+                default:
+                    if (here.blockExists()) {
+                        // Core.logFine("Got unhandled message: " + messageType + " for " + here);
+                    } else {
+                        // XXX: Need to figure out how to keep the server from sending these things!
+                        Core.logFine("Got message to unloaded chunk: " + messageType + " for " + here);
+                    }
+                    break;
             }
         }
 
     }
-    
+
     boolean handleForeignEntityMessage(Entity ent, MessageType messageType, ByteBuf input) throws IOException {
         if (messageType == MessageType.EntityParticles) {
             Random rand = new Random();
             double px = rand.nextGaussian() * 0.02;
             double py = rand.nextGaussian() * 0.02;
             double pz = rand.nextGaussian() * 0.02;
-            
+
             byte count = input.readByte();
             String type = ByteBufUtils.readUTF8String(input);
             for (int i = 0; i < count; i++) {
-                ent.worldObj.spawnParticle(type,
-                        ent.posX + rand.nextFloat() * ent.width * 2.0 - ent.width,
-                        ent.posY + 0.5 + rand.nextFloat() * ent.height,
-                        ent.posZ + rand.nextFloat() * ent.width * 2.0 - ent.width,
-                        px, py, pz);
+                ent.worldObj.spawnParticle(
+                    type,
+                    ent.posX + rand.nextFloat() * ent.width * 2.0 - ent.width,
+                    ent.posY + 0.5 + rand.nextFloat() * ent.height,
+                    ent.posZ + rand.nextFloat() * ent.width * 2.0 - ent.width,
+                    px,
+                    py,
+                    pz);
             }
             return true;
         } else if (messageType == MessageType.UtilityGooState) {
@@ -299,13 +304,13 @@ public class NetworkFactorization {
         }
         return false;
     }
-    
+
     void handleCmd(ByteBuf data, EntityPlayer player) {
         byte s = data.readByte();
         int arg = data.readInt();
         Command.fromNetwork(player, s, arg);
     }
-    
+
     void handleEntity(MessageType messageType, ByteBuf input, EntityPlayer player) {
         try {
             World world = player.worldObj;
@@ -317,7 +322,7 @@ public class NetworkFactorization {
                 }
                 return;
             }
-            
+
             if (!(to instanceof IEntityMessage)) {
                 if (!player.worldObj.isRemote) {
                     Core.logSevere("Sending the server messages to non-IEntityMessages is not allowed, %s!", player);
@@ -329,11 +334,11 @@ public class NetworkFactorization {
                 return;
             }
             IEntityMessage iem = (IEntityMessage) to;
-            
+
             if (Core.debug_network) {
                 Core.logFine("EntityNet: " + messageType + "      " + to);
             }
-            
+
             boolean handled;
             if (world.isRemote) {
                 handled = iem.handleMessageFromServer(messageType, input);
@@ -349,8 +354,7 @@ public class NetworkFactorization {
             e.printStackTrace();
         }
     }
-    
-    
+
     private static byte message_type_count = 0;
 
     public void handlePlayer(MessageType mt, ByteBuf input, EntityPlayer player) {
@@ -375,47 +379,76 @@ public class NetworkFactorization {
     }
 
     public enum MessageType {
+
         factorizeCmdChannel,
-        PlaySound, EntityParticles(true),
-        
-        DrawActive, FactoryType, DescriptionRequest, DataHelperEdit, RedrawOnClient, DataHelperEditOnEntity(true), OpenDataHelperGui, OpenDataHelperGuiOnEntity(true),
+        PlaySound,
+        EntityParticles(true),
+
+        DrawActive,
+        FactoryType,
+        DescriptionRequest,
+        DataHelperEdit,
+        RedrawOnClient,
+        DataHelperEditOnEntity(true),
+        OpenDataHelperGui,
+        OpenDataHelperGuiOnEntity(true),
         TileEntityMessageOnEntity(true),
-        BarrelDescription, BarrelItem, BarrelCount, BarrelDoubleClickHack,
-        BatteryLevel, LeydenjarLevel,
+        BarrelDescription,
+        BarrelItem,
+        BarrelCount,
+        BarrelDoubleClickHack,
+        BatteryLevel,
+        LeydenjarLevel,
         MirrorDescription,
-        TurbineWater, TurbineSpeed,
+        TurbineWater,
+        TurbineSpeed,
         HeaterHeat,
         LaceratorSpeed,
-        MixerSpeed, FanturpellerSpeed,
+        MixerSpeed,
+        FanturpellerSpeed,
         CrystallizerInfo,
         WireFace,
-        SculptDescription, SculptNew, SculptMove, SculptRemove, SculptState,
-        ExtensionInfo, RocketState,
-        ServoRailDecor, ServoRailEditComment,
-        CompressionCrafter, CompressionCrafterBeginCrafting, CompressionCrafterBounds,
+        SculptDescription,
+        SculptNew,
+        SculptMove,
+        SculptRemove,
+        SculptState,
+        ExtensionInfo,
+        RocketState,
+        ServoRailDecor,
+        ServoRailEditComment,
+        CompressionCrafter,
+        CompressionCrafterBeginCrafting,
+        CompressionCrafterBounds,
         ScissorState,
         GeneratorParticles,
         BoilerHeat,
         ShaftGenState,
         MillVelocity,
-        MisanthropicSpawn, MisanthropicCharge,
-        
+        MisanthropicSpawn,
+        MisanthropicCharge,
+
         // Messages to entities; (true) marks that they are entity messages.
-        servo_brief(true), servo_item(true), servo_complete(true), servo_stopped(true),
+        servo_brief(true),
+        servo_item(true),
+        servo_complete(true),
+        servo_stopped(true),
         entity_sync(true),
         UtilityGooState(true),
 
         // Messages to/from the player
-        ArtifactForgeName(false, true), ArtifactForgeError(false, true);
-        
+        ArtifactForgeName(false, true),
+        ArtifactForgeError(false, true);
+
         public boolean isEntityMessage, isPlayerMessage;
         private static final MessageType[] valuesCache = values();
-        
+
         private final byte id;
+
         MessageType() {
             this(false, false);
         }
-        
+
         MessageType(boolean isEntity, boolean isPlayer) {
             id = message_type_count++;
             if (id < 0) {
@@ -428,14 +461,14 @@ public class NetworkFactorization {
         MessageType(boolean isEntity) {
             this(true, false);
         }
-        
+
         private static MessageType fromId(byte id) {
             if (id < 0 || id >= valuesCache.length) {
                 return null;
             }
             return valuesCache[id];
         }
-        
+
         public static MessageType read(ByteBuf in) {
             byte b = in.readByte();
             return fromId(b);
@@ -444,13 +477,13 @@ public class NetworkFactorization {
         public void write(ByteBuf out) {
             out.writeByte(id);
         }
-        
+
     }
-    
+
     public static ItemStack nullItem(ItemStack is) {
         return is == null ? EMPTY_ITEMSTACK : is;
     }
-    
+
     public static ItemStack denullItem(ItemStack is) {
         if (is == null) return null;
         if (DataUtil.getId(is) == DataUtil.getId(Blocks.air)) return null;

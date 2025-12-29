@@ -1,5 +1,32 @@
 package factorization.ceramics;
 
+import java.io.DataInput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import net.minecraft.block.Block;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.IIcon;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
+import net.minecraftforge.client.event.DrawBlockHighlightEvent;
+import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.lwjgl.opengl.GL11;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -22,38 +49,14 @@ import factorization.util.DataUtil;
 import factorization.util.InvUtil;
 import factorization.util.SpaceUtil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.block.Block;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
-import net.minecraftforge.client.event.DrawBlockHighlightEvent;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.common.util.ForgeDirection;
-import org.lwjgl.opengl.GL11;
-
-import java.io.DataInput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHeatable {
+
     public static int MAX_PARTS = 32;
     ForgeDirection front = ForgeDirection.UNKNOWN;
     byte rotation = 0;
     Quaternion rotation_quat = Quaternion.getRotationQuaternionRadians(0, ForgeDirection.UP);
-    
+
     @Override
     public FactoryType getFactoryType() {
         return FactoryType.CERAMIC;
@@ -92,6 +95,7 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
     }
 
     public static class ClayLump {
+
         public byte minX, minY, minZ;
         public byte maxX, maxY, maxZ;
 
@@ -123,7 +127,7 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
             tag.setByte("hx", maxX);
             tag.setByte("hy", maxY);
             tag.setByte("hz", maxZ);
-            //tag.setShort("icon_id", (short) FzUtil.getId(icon_id));
+            // tag.setShort("icon_id", (short) FzUtil.getId(icon_id));
             String iname = DataUtil.getName(icon_id);
             if (iname != null) {
                 tag.setString("icon_idC", iname);
@@ -205,7 +209,13 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
         }
 
         public void toBlockBounds(Block b) {
-            b.setBlockBounds((minX - 16) / 16F, (minY - 16) / 16F, (minZ - 16) / 16F, (maxX - 16) / 16F, (maxY - 16) / 16F, (maxZ - 16) / 16F);
+            b.setBlockBounds(
+                (minX - 16) / 16F,
+                (minY - 16) / 16F,
+                (minZ - 16) / 16F,
+                (maxX - 16) / 16F,
+                (maxY - 16) / 16F,
+                (maxZ - 16) / 16F);
         }
 
         public void toRotatedBlockBounds(TileEntityGreenware gw, BlockRenderHelper b) {
@@ -214,13 +224,15 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
             b.rotateMiddle(quat);
             b.rotateCenter(gw.rotation_quat);
             b.setBlockBoundsBasedOnRotation();
-            
+
             // TODO: This doesn't work! Lame!
-            /*b.beginNoIIcons();
-            b.rotateMiddle(quat);
-            b.rotateCenter(gw.rotation_quat);
-            b.setBlockBoundsBasedOnRotation();
-            // */
+            /*
+             * b.beginNoIIcons();
+             * b.rotateMiddle(quat);
+             * b.rotateCenter(gw.rotation_quat);
+             * b.setBlockBoundsBasedOnRotation();
+             * //
+             */
         }
 
         public ClayLump copy() {
@@ -237,7 +249,6 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
             return ret;
         }
 
-
     }
 
     public ArrayList<ClayLump> parts = new ArrayList();
@@ -253,7 +264,13 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
     public boolean shouldRenderTesr = false;
 
     public static enum ClayState {
-        WET("Wet Clay"), DRY("Bone-Dry Greenware"), BISQUED("Bisqued"), UNFIRED_GLAZED("Glazed Bisqueware"), HIGHFIRED("Highfire Glazed");
+
+        WET("Wet Clay"),
+        DRY("Bone-Dry Greenware"),
+        BISQUED("Bisqued"),
+        UNFIRED_GLAZED("Glazed Bisqueware"),
+        HIGHFIRED("Highfire Glazed");
+
         public String english;
 
         ClayState(String en) {
@@ -261,8 +278,7 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
         }
     };
 
-    public TileEntityGreenware() {
-    }
+    public TileEntityGreenware() {}
 
     public ClayState getState() {
         if (totalHeat > highfireHeat) {
@@ -281,23 +297,23 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
     }
 
     public IIcon getIcon(ClayLump lump, int side) {
-        //NOTE: This isn't what's actually used for rendering.
+        // NOTE: This isn't what's actually used for rendering.
         switch (getState()) {
-        case WET:
-            return Blocks.clay.getBlockTextureFromSide(side);
-        case DRY:
-            return BlockIcons.ceramics$dry;
-        case BISQUED:
-        case UNFIRED_GLAZED:
-            return BlockIcons.error;
-        case HIGHFIRED:
-            Item it = DataUtil.getItem(lump.icon_id);
-            if (it == null || lump.icon_id == Blocks.air) {
+            case WET:
+                return Blocks.clay.getBlockTextureFromSide(side);
+            case DRY:
+                return BlockIcons.ceramics$dry;
+            case BISQUED:
+            case UNFIRED_GLAZED:
                 return BlockIcons.error;
-            }
-            return it.getIconFromDamage(lump.icon_md);
-        default:
-            return BlockIcons.error;
+            case HIGHFIRED:
+                Item it = DataUtil.getItem(lump.icon_id);
+                if (it == null || lump.icon_id == Blocks.air) {
+                    return BlockIcons.error;
+                }
+                return it.getIconFromDamage(lump.icon_md);
+            default:
+                return BlockIcons.error;
         }
     }
 
@@ -323,20 +339,28 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        lastTouched = data.as(Share.VISIBLE, "touch").putInt(lastTouched);
-        totalHeat = data.as(Share.VISIBLE, "heat").putInt(totalHeat);
-        glazesApplied = data.as(Share.PRIVATE, "glazed").putBoolean(glazesApplied);
-        front = data.as(Share.VISIBLE, "front").putEnum(front);
-        setRotation(data.as(Share.VISIBLE, "rot").putByte(rotation));
+        lastTouched = data.as(Share.VISIBLE, "touch")
+            .putInt(lastTouched);
+        totalHeat = data.as(Share.VISIBLE, "heat")
+            .putInt(totalHeat);
+        glazesApplied = data.as(Share.PRIVATE, "glazed")
+            .putBoolean(glazesApplied);
+        front = data.as(Share.VISIBLE, "front")
+            .putEnum(front);
+        setRotation(
+            data.as(Share.VISIBLE, "rot")
+                .putByte(rotation));
         if (data.isNBT()) {
             putParts(data, data.getTag());
         } else if (data.isReader()) {
-            NBTTagCompound tag = data.as(Share.VISIBLE, "partList").putTag(new NBTTagCompound());
+            NBTTagCompound tag = data.as(Share.VISIBLE, "partList")
+                .putTag(new NBTTagCompound());
             putParts(data, tag);
         } else {
             NBTTagCompound tag = new NBTTagCompound();
             putParts(data, tag);
-            tag = data.as(Share.VISIBLE, "partList").putTag(tag);
+            tag = data.as(Share.VISIBLE, "partList")
+                .putTag(tag);
         }
     }
 
@@ -378,7 +402,7 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
 
     public void setRotation(byte newRotation) {
         rotation = newRotation;
-        rotation_quat = Quaternion.getRotationQuaternionRadians(Math.PI*newRotation/2, ForgeDirection.UP);
+        rotation_quat = Quaternion.getRotationQuaternionRadians(Math.PI * newRotation / 2, ForgeDirection.UP);
     }
 
     @Override
@@ -430,7 +454,7 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
             e.printStackTrace();
         }
         setRotation(r);
-        tag.setByte("front", (byte)front.ordinal());
+        tag.setByte("front", (byte) front.ordinal());
         ret.setTagCompound(tag);
         if (customName != null) {
             ret.setStackDisplayName(customName);
@@ -477,7 +501,7 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
     }
 
     Item woolItem = Item.getItemFromBlock(Blocks.wool);
-    
+
     @Override
     public boolean activate(EntityPlayer player, ForgeDirection side) {
         ClayState state = getState();
@@ -593,25 +617,25 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
 
         // check bounds
         final int B = 16 * 3;
-        if (lump.minX < 0)
-            return false;
-        if (lump.minY < 0)
-            return false;
-        if (lump.minZ < 0)
-            return false;
-        if (lump.maxX > B)
-            return false;
-        if (lump.maxY > B)
-            return false;
-        if (lump.maxZ > B)
-            return false;
+        if (lump.minX < 0) return false;
+        if (lump.minY < 0) return false;
+        if (lump.minZ < 0) return false;
+        if (lump.maxX > B) return false;
+        if (lump.maxY > B) return false;
+        if (lump.maxZ > B) return false;
 
         // check for free space (needs to be last, as it can mutate the world)
         BlockRenderHelper block = Core.registry.serverTraceHelper;
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
                 for (int dz = -1; dz <= 1; dz++) {
-                    AxisAlignedBB ab = AxisAlignedBB.getBoundingBox(xCoord + dx, yCoord + dy, zCoord + dz, xCoord + dx + 1, yCoord + dy + 1, zCoord + dz + 1);
+                    AxisAlignedBB ab = AxisAlignedBB.getBoundingBox(
+                        xCoord + dx,
+                        yCoord + dy,
+                        zCoord + dz,
+                        xCoord + dx + 1,
+                        yCoord + dy + 1,
+                        zCoord + dz + 1);
                     Coord c = getCoord();
                     c.x += dx;
                     c.y += dy;
@@ -624,7 +648,8 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
                             c.setId(Core.registry.factory_block);
                             TileEntityExtension tex = new TileEntityExtension(this);
                             c.setTE(tex);
-                            tex.getBlockClass().enforce(c);
+                            tex.getBlockClass()
+                                .enforce(c);
                             continue;
                         }
                         TileEntity te = c.getTE();
@@ -703,35 +728,35 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
             return true;
         }
         switch (messageType) {
-        case SculptDescription:
-            readStateChange(input);
-            front = ForgeDirection.getOrientation(input.readByte());
-            setRotation(input.readByte());
-            parts.clear();
-            ArrayList<Object> args = new ArrayList();
-            while (true) {
-                try {
-                    parts.add(new ClayLump().read(input));
-                } catch (IOException e) {
-                    break;
+            case SculptDescription:
+                readStateChange(input);
+                front = ForgeDirection.getOrientation(input.readByte());
+                setRotation(input.readByte());
+                parts.clear();
+                ArrayList<Object> args = new ArrayList();
+                while (true) {
+                    try {
+                        parts.add(new ClayLump().read(input));
+                    } catch (IOException e) {
+                        break;
+                    }
                 }
-            }
-            shouldRenderTesr = getState() == ClayState.WET;
-            break;
-        case SculptMove:
-            updateLump(input.readInt(), new ClayLump().read(input));
-            break;
-        case SculptNew:
-            addLump();
-            break;
-        case SculptRemove:
-            removeLump(input.readInt());
-            break;
-        case SculptState:
-            readStateChange(input);
-            break;
-        default:
-            return false;
+                shouldRenderTesr = getState() == ClayState.WET;
+                break;
+            case SculptMove:
+                updateLump(input.readInt(), new ClayLump().read(input));
+                break;
+            case SculptNew:
+                addLump();
+                break;
+            case SculptRemove:
+                removeLump(input.readInt());
+                break;
+            case SculptState:
+                readStateChange(input);
+                break;
+            default:
+                return false;
         }
         if (renderEfficient()) {
             getCoord().redraw();
@@ -741,22 +766,22 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
 
     private void readStateChange(ByteBuf input) throws IOException {
         switch (ClayState.values()[input.readInt()]) {
-        case WET:
-            lastTouched = 0;
-            break;
-        case DRY:
-            lastTouched = dryTime + 10;
-            break;
-        case BISQUED:
-            totalHeat = bisqueHeat + 1;
-            break;
-        case UNFIRED_GLAZED:
-            totalHeat = bisqueHeat + 2;
-            glazesApplied = true;
-            break;
-        case HIGHFIRED:
-            totalHeat = highfireHeat + 1;
-            break;
+            case WET:
+                lastTouched = 0;
+                break;
+            case DRY:
+                lastTouched = dryTime + 10;
+                break;
+            case BISQUED:
+                totalHeat = bisqueHeat + 1;
+                break;
+            case UNFIRED_GLAZED:
+                totalHeat = bisqueHeat + 2;
+                glazesApplied = true;
+                break;
+            case HIGHFIRED:
+                totalHeat = highfireHeat + 1;
+                break;
         }
         getCoord().redraw();
     }
@@ -799,7 +824,8 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
     @Override
     public MovingObjectPosition collisionRayTrace(Vec3 startVec, Vec3 endVec) {
         BlockRenderHelper block;
-        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+        if (FMLCommonHandler.instance()
+            .getEffectiveSide() == Side.CLIENT) {
             block = Core.registry.clientTraceHelper;
         } else {
             block = Core.registry.serverTraceHelper;
@@ -874,7 +900,9 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
         double oX = player.lastTickPosX + (player.posX - player.lastTickPosX) * partial;
         double oY = player.lastTickPosY + (player.posY - player.lastTickPosY) * partial;
         double oZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partial;
-        AxisAlignedBB bb = block.getSelectedBoundingBoxFromPool(c.w, c.x, c.y, c.z).expand(widen, widen, widen).getOffsetBoundingBox(-oX, -oY, -oZ);
+        AxisAlignedBB bb = block.getSelectedBoundingBoxFromPool(c.w, c.x, c.y, c.z)
+            .expand(widen, widen, widen)
+            .getOffsetBoundingBox(-oX, -oY, -oZ);
 
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -926,7 +954,8 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        AxisAlignedBB bb = AxisAlignedBB.getBoundingBox(xCoord - 2, yCoord - 2, zCoord - 2, xCoord + 2, yCoord + 2, zCoord + 2);
+        AxisAlignedBB bb = AxisAlignedBB
+            .getBoundingBox(xCoord - 2, yCoord - 2, zCoord - 2, xCoord + 2, yCoord + 2, zCoord + 2);
         return bb;
     }
 
@@ -938,7 +967,9 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
 
     @Override
     public boolean addCollisionBoxesToList(Block ignore, AxisAlignedBB aabb, List list, Entity entity) {
-        boolean remote = (entity != null && entity.worldObj != null) ? entity.worldObj.isRemote : FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT;
+        boolean remote = (entity != null && entity.worldObj != null) ? entity.worldObj.isRemote
+            : FMLCommonHandler.instance()
+                .getEffectiveSide() == Side.CLIENT;
         BlockRenderHelper block = remote ? Core.registry.clientTraceHelper : Core.registry.serverTraceHelper;
         ClayState state = getState();
         if (state == ClayState.WET) {
@@ -976,7 +1007,7 @@ public class TileEntityGreenware extends TileEntityCommon implements IFurnaceHea
         }
         return getIcon(parts.get(0), dir.ordinal());
     }
-    
+
     @Override
     public ItemStack getDroppedBlock() {
         return getItem();

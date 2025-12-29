@@ -4,6 +4,7 @@ import factorization.truth.api.*;
 import factorization.truth.word.VerticalSpacerWord;
 
 public class CmdVpad implements ITypesetCommand {
+
     @Override
     public void callClient(IClientTypesetter out, ITokenizer tokenizer) throws TruthError {
         int height = Integer.parseInt(tokenizer.getParameter("\\vpad height"));

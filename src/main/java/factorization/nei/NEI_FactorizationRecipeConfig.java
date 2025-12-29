@@ -13,7 +13,7 @@ public class NEI_FactorizationRecipeConfig implements IConfigureNEI {
         put(new RecipeMixer());
         put(new RecipeSlagFurnace());
     }
-    
+
     void put(TemplateRecipeHandler it) {
         API.registerRecipeHandler(it);
         API.registerUsageHandler(it);

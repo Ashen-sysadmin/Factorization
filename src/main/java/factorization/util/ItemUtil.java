@@ -1,6 +1,8 @@
 package factorization.util;
 
-import factorization.api.Coord;
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -15,15 +17,14 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.oredict.OreDictionary;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
+import factorization.api.Coord;
 
 /**
  * Operations on ItemStack.
  */
 public final class ItemUtil {
-    //ItemStack handling
+
+    // ItemStack handling
     public static final int WILDCARD_DAMAGE = OreDictionary.WILDCARD_VALUE;
 
     public static ItemStack makeWildcard(Item item) {
@@ -89,7 +90,8 @@ public final class ItemUtil {
             return a == b;
         }
         if (a.getItem() != b.getItem()) return false;
-        if (a.getItem().isDamageable()) return true;
+        if (a.getItem()
+            .isDamageable()) return true;
         return a.getItemDamage() == b.getItemDamage();
     }
 
@@ -123,7 +125,7 @@ public final class ItemUtil {
             }
             return false;
         } else if (template instanceof List) {
-            for (Object o : (List)template) {
+            for (Object o : (List) template) {
                 if (oreDictionarySimilar(o, stranger)) {
                     return true;
                 }
@@ -162,9 +164,10 @@ public final class ItemUtil {
         long md = is.getItemDamage();
         long tg = 0;
         if (is.hasTagCompound()) {
-            tg = is.getTagCompound().hashCode();
+            tg = is.getTagCompound()
+                .hashCode();
         }
-        return (ih << 48) + (md << 32) + tg + is.stackSize*100;
+        return (ih << 48) + (md << 32) + tg + is.stackSize * 100;
     }
 
     public static String getCustomItemName(ItemStack is) {
@@ -222,7 +225,12 @@ public final class ItemUtil {
 
     public static List<ItemStack> getSubItems(ItemStack is) {
         ArrayList<ItemStack> out = new ArrayList();
-        is.getItem().getSubItems(is.getItem(), is.getItem().getCreativeTab(), out);
+        is.getItem()
+            .getSubItems(
+                is.getItem(),
+                is.getItem()
+                    .getCreativeTab(),
+                out);
         return out;
     }
 
@@ -284,7 +292,8 @@ public final class ItemUtil {
             }
             side = ForgeDirection.UP; // Last ditch attempt at picking a direction if all else fails
             for (ForgeDirection fd : ForgeDirection.VALID_DIRECTIONS) {
-                if (at.add(fd).isAir()) {
+                if (at.add(fd)
+                    .isAir()) {
                     side = fd;
                     break;
                 }
@@ -301,8 +310,8 @@ public final class ItemUtil {
         Vec3 move = SpaceUtil.scale(dir, 0.5);
         Vec3 newSpot = SpaceUtil.incrAdd(SpaceUtil.fromEntPos(ent), move);
         SpaceUtil.toEntPos(ent, newSpot);
-        //SpaceUtil.scale(dir, 0.002);
-        //SpaceUtil.toEntVel(ent, dir);
+        // SpaceUtil.scale(dir, 0.002);
+        // SpaceUtil.toEntVel(ent, dir);
         return ent;
     }
 }

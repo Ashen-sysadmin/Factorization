@@ -1,7 +1,9 @@
 package factorization.algos;
 
 public class TortoiseAndHare {
+
     public static interface Advancer<E> {
+
         E getNext(E node);
     }
 

@@ -1,9 +1,7 @@
 package factorization.mechanics;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import factorization.shared.Core;
-import factorization.algos.FastBag;
-import factorization.util.SpaceUtil;
+import java.lang.ref.WeakReference;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
@@ -17,11 +15,16 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.WorldEvent;
+
 import org.lwjgl.opengl.GL11;
 
-import java.lang.ref.WeakReference;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import factorization.algos.FastBag;
+import factorization.shared.Core;
+import factorization.util.SpaceUtil;
 
 public class ChainRender {
+
     public static final ChainRender instance = new ChainRender();
 
     private ChainRender() {
@@ -43,7 +46,8 @@ public class ChainRender {
         final int index = link.bagIndex;
         chains.remove(index);
         if (index >= chains.size()) return;
-        ChainLink newEntry = chains.get(index).get();
+        ChainLink newEntry = chains.get(index)
+            .get();
         if (newEntry == null) {
             rebag();
             return;
@@ -55,7 +59,8 @@ public class ChainRender {
         if (!needsRebag) return;
         needsRebag = false;
         for (int i = 0; i < chains.size(); i++) {
-            if (chains.get(i).get() != null) continue;
+            if (chains.get(i)
+                .get() != null) continue;
             chains.remove(i);
             i--;
         }
@@ -63,7 +68,8 @@ public class ChainRender {
             WeakReference<ChainLink> ref = chains.get(i);
             ChainLink chain = ref.get();
             if (chain == null) {
-                needsRebag = true; // That'd be pretty obnoxious! But would only happen if a GC happened to trigger while this function is running.
+                needsRebag = true; // That'd be pretty obnoxious! But would only happen if a GC happened to trigger
+                                   // while this function is running.
                 continue;
             }
             chain.bagIndex = i;
@@ -107,7 +113,7 @@ public class ChainRender {
         }
         if (!setup) return;
 
-        GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT );
+        GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT);
         textureManager.bindTexture(new ResourceLocation("factorization", "textures/chain.png"));
         er.enableLightmap(0);
         GL11.glEnable(GL11.GL_BLEND);
@@ -136,14 +142,13 @@ public class ChainRender {
         // Unfortunately we have to make our own Frustum.
         final Minecraft mc = Minecraft.getMinecraft();
         final EntityLivingBase eye = mc.renderViewEntity;
-        double eyeX = eye.lastTickPosX + (eye.posX - eye.lastTickPosX) * (double)partial;
-        double eyeY = eye.lastTickPosY + (eye.posY - eye.lastTickPosY) * (double)partial;
-        double eyeZ = eye.lastTickPosZ + (eye.posZ - eye.lastTickPosZ) * (double)partial;
+        double eyeX = eye.lastTickPosX + (eye.posX - eye.lastTickPosX) * (double) partial;
+        double eyeY = eye.lastTickPosY + (eye.posY - eye.lastTickPosY) * (double) partial;
+        double eyeZ = eye.lastTickPosZ + (eye.posZ - eye.lastTickPosZ) * (double) partial;
 
         Frustrum frustrum = new Frustrum(); // Notch can't spell
         frustrum.setPosition(eyeX, eyeY, eyeZ);
         return frustrum;
     }
-
 
 }

@@ -2,24 +2,25 @@ package factorization.fzds;
 
 import java.util.*;
 
-import factorization.fzds.network.InteractionLiason;
-import factorization.fzds.network.PacketProxyingPlayer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import factorization.api.Coord;
 import factorization.api.DeltaCoord;
 import factorization.fzds.interfaces.IDeltaChunk;
+import factorization.fzds.network.InteractionLiason;
+import factorization.fzds.network.PacketProxyingPlayer;
 import gnu.trove.set.hash.THashSet;
 
 public class DeltaChunk {
+
     public static boolean enabled() {
         return HammerEnabled.ENABLED;
     }
@@ -32,7 +33,8 @@ public class DeltaChunk {
 
     static DeltaChunkMap getSlices(World w) {
         if (w == null) {
-            if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+            if (FMLCommonHandler.instance()
+                .getEffectiveSide() == Side.CLIENT) {
                 return Hammer.clientSlices;
             } else {
                 return Hammer.serverSlices;
@@ -50,22 +52,23 @@ public class DeltaChunk {
         }
         return ret;
     }
-    
+
     public static IDeltaChunk[] getSlicesContainingPoint(Coord at) {
         return getSlices(at.w).get(at);
     }
-    
+
     static boolean addSlice(IDeltaChunk dse) {
         return getSlices(dse.worldObj).add(dse);
     }
-    
+
     static Set<IDeltaChunk> getSlicesInRange(World w, int lx, int ly, int lz, int hx, int hy, int hz) {
         THashSet<IDeltaChunk> found_deltachunks = new THashSet<IDeltaChunk>(10);
-        DeltaChunkMap map = DeltaChunk.getSlices(w); // NORELEASE: This guy keeps hold of dead DSEs? Such as after save reload.
+        DeltaChunkMap map = DeltaChunk.getSlices(w); // NORELEASE: This guy keeps hold of dead DSEs? Such as after save
+                                                     // reload.
         IDeltaChunk last_found = null;
         for (int x = lx; x <= hx; x += 16) {
             for (int z = lz; z <= hz; z += 16) {
-                IDeltaChunk new_idcs[] = map.get(x/16, z/16);
+                IDeltaChunk new_idcs[] = map.get(x / 16, z / 16);
                 for (IDeltaChunk idc : new_idcs) {
                     if (idc == last_found) continue;
                     found_deltachunks.add(idc);
@@ -75,7 +78,7 @@ public class DeltaChunk {
         }
         return found_deltachunks;
     }
-    
+
     public static World getClientShadowWorld() {
         World ret = Hammer.worldClient;
         if (ret == null) {
@@ -84,23 +87,25 @@ public class DeltaChunk {
         }
         return ret;
     }
-    
+
     public static World getServerShadowWorld() {
         return DimensionManager.getWorld(getDimensionId());
     }
-    
+
     public static World getClientRealWorld() {
         return Hammer.proxy.getClientRealWorld();
     }
-    
+
     /***
      * @return the thread-appropriate shadow world
      */
     public static World getWorld(World realWorld) {
-        boolean remote = realWorld == null ? FMLCommonHandler.instance().getEffectiveSide().isClient() : realWorld.isRemote;
+        boolean remote = realWorld == null ? FMLCommonHandler.instance()
+            .getEffectiveSide()
+            .isClient() : realWorld.isRemote;
         return remote ? getClientShadowWorld() : getServerShadowWorld();
     }
-    
+
     public static IDeltaChunk allocateSlice(World spawnWorld, int channel, DeltaCoord size) {
         if (spawnWorld.isRemote) throw new IllegalArgumentException("Attempted client-side DSE allocation!");
         Coord base = Hammer.hammerInfo.takeCell(channel, size);
@@ -108,7 +113,7 @@ public class DeltaChunk {
         wipeRegion(base, end);
         return new DimensionSliceEntity(spawnWorld, base, end);
     }
-    
+
     public static IDeltaChunk findClosest(Entity target, Coord pos) {
         if (target == null) {
             return null;
@@ -132,11 +137,11 @@ public class DeltaChunk {
         }
         return closest;
     }
-    
+
     private static Vec3 buffer = Vec3.createVectorHelper(0, 0, 0);
-    
+
     public static Vec3 shadow2nearestReal(Entity player, double x, double y, double z) {
-        //The JVM sometimes segfaults in this function.
+        // The JVM sometimes segfaults in this function.
         IDeltaChunk closest = findClosest(player, new Coord(player.worldObj, x, y, z));
         if (closest == null) {
             return null;
@@ -154,15 +159,17 @@ public class DeltaChunk {
     }
 
     public static interface AreaMap {
+
         void fillDse(DseDestination destination);
     }
-    
+
     public static interface DseDestination {
+
         void include(Coord c);
     }
-    
+
     private static Coord shadow = new Coord(null, 0, 0, 0);
-    
+
     public static void wipeRegion(final Coord min, final Coord max) {
         Coord.sort(min, max);
         Coord at = min.copy();
@@ -177,18 +184,19 @@ public class DeltaChunk {
             }
         }
     }
-    
+
     public static IDeltaChunk makeSlice(int channel, Coord min, Coord max, AreaMap mapper, final boolean wipeSrc) {
         min = min.copy();
         max = max.copy();
         DeltaCoord size = max.difference(min);
         final IDeltaChunk dse = allocateSlice(min.w, channel, size);
         Vec3 vrm = min.centerVec(max);
-        dse.posX = (int)vrm.xCoord;
-        dse.posY = (int)vrm.yCoord;
-        dse.posZ = (int)vrm.zCoord;
+        dse.posX = (int) vrm.xCoord;
+        dse.posY = (int) vrm.yCoord;
+        dse.posZ = (int) vrm.zCoord;
         final HashSet<Chunk> chunks = new HashSet();
         mapper.fillDse(new DseDestination() {
+
             @Override
             public void include(Coord real) {
                 shadow.set(real);
@@ -202,6 +210,7 @@ public class DeltaChunk {
         outsetChunks(chunks);
         outsetChunks(chunks);
         mapper.fillDse(new DseDestination() {
+
             @Override
             public void include(Coord real) {
                 if (wipeSrc) {
@@ -215,6 +224,7 @@ public class DeltaChunk {
         });
         if (wipeSrc) {
             mapper.fillDse(new DseDestination() {
+
                 @Override
                 public void include(Coord real) {
                     real.markBlockForUpdate();
@@ -224,37 +234,40 @@ public class DeltaChunk {
         }
         return dse;
     }
-    
+
     static void outsetChunks(Collection<Chunk> chunks) {
         ArrayList<Chunk> edges = new ArrayList();
         for (Chunk chunk : chunks) {
             for (ForgeDirection fd : ForgeDirection.VALID_DIRECTIONS) {
                 if (fd.offsetY != 0) continue;
-                edges.add(chunk.worldObj.getChunkFromChunkCoords(chunk.xPosition + fd.offsetX, chunk.zPosition + fd.offsetZ));
+                edges.add(
+                    chunk.worldObj.getChunkFromChunkCoords(chunk.xPosition + fd.offsetX, chunk.zPosition + fd.offsetZ));
             }
         }
         chunks.addAll(edges);
     }
-    
+
     public static IDeltaChunk construct(World inWorld, final Coord min, final Coord max) {
         return new DimensionSliceEntity(inWorld, min, max);
     }
-    
+
     public static void paste(IDeltaChunk selected, boolean overwriteDestination) {
         Coord a = new Coord(DeltaChunk.getServerShadowWorld(), 0, 0, 0);
         Coord b = a.copy();
         Vec3 vShadowMin = Vec3.createVectorHelper(0, 0, 0);
         Vec3 vShadowMax = Vec3.createVectorHelper(0, 0, 0);
-        selected.getCorner().setAsVector(vShadowMin);
-        selected.getFarCorner().setAsVector(vShadowMax);
+        selected.getCorner()
+            .setAsVector(vShadowMin);
+        selected.getFarCorner()
+            .setAsVector(vShadowMax);
         a.set(vShadowMin);
         b.set(vShadowMax);
         Coord dest = new Coord(selected);
         Coord c = new Coord(a.w, 0, 0, 0);
-        
+
         int minX = 0, minY = 0, minZ = 0, maxX = 0, maxY = 0, maxZ = 0;
         boolean first = true;
-        
+
         for (int x = a.x; x <= b.x; x++) {
             for (int y = a.y; y <= b.y; y++) {
                 for (int z = a.z; z <= b.z; z++) {
@@ -281,17 +294,19 @@ public class DeltaChunk {
             }
         }
     }
-    
+
     public static void clear(IDeltaChunk selected) {
         Coord a = new Coord(DeltaChunk.getServerShadowWorld(), 0, 0, 0);
         Coord b = a.copy();
         Vec3 vShadowMin = Vec3.createVectorHelper(0, 0, 0);
         Vec3 vShadowMax = Vec3.createVectorHelper(0, 0, 0);
-        selected.getCorner().setAsVector(vShadowMin);
-        selected.getFarCorner().setAsVector(vShadowMax);
+        selected.getCorner()
+            .setAsVector(vShadowMin);
+        selected.getFarCorner()
+            .setAsVector(vShadowMax);
         a.set(vShadowMin);
         b.set(vShadowMax);
-        
+
         Coord c = new Coord(a.w, 0, 0, 0);
         for (int x = a.x; x < b.x; x++) {
             for (int y = a.y; y < b.y; y++) {
@@ -303,13 +318,14 @@ public class DeltaChunk {
             }
         }
     }
-    
+
     public static HammerInfo getHammerRegistry() {
         return Hammer.hammerInfo;
     }
 
     /**
      * Attempts to get the real player behind a proxing player.
+     * 
      * @param player The player object
      * @return The true player. Might return null. Returns the argument if it is not an FZDS fake player
      */

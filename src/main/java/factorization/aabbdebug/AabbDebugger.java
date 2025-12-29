@@ -1,11 +1,9 @@
 package factorization.aabbdebug;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.Phase;
-import factorization.api.Coord;
-import factorization.shared.Core;
-import factorization.util.SpaceUtil;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.command.ICommand;
@@ -17,20 +15,27 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+
 import org.lwjgl.opengl.GL11;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.Phase;
+import factorization.api.Coord;
+import factorization.shared.Core;
+import factorization.util.SpaceUtil;
 
 public enum AabbDebugger {
+
     INSTANCE;
-    
+
     private AabbDebugger() {
         Core.loadBus(this);
         ClientCommandHandler.instance.registerCommand(new ICommand() {
+
             public int compareTo(ICommand other) {
-                return this.getCommandName().compareTo(other.getCommandName());
+                return this.getCommandName()
+                    .compareTo(other.getCommandName());
             }
 
             @Override
@@ -68,25 +73,37 @@ public enum AabbDebugger {
                 }
             }
 
-            @Override public boolean canCommandSenderUseCommand(ICommandSender p_71519_1_) { return true; }
-            @Override public List addTabCompletionOptions(ICommandSender p_71516_1_, String[] p_71516_2_) { return null; }
-            @Override public boolean isUsernameIndex(String[] p_82358_1_, int p_82358_2_) { return false; }
-            
+            @Override
+            public boolean canCommandSenderUseCommand(ICommandSender p_71519_1_) {
+                return true;
+            }
+
+            @Override
+            public List addTabCompletionOptions(ICommandSender p_71516_1_, String[] p_71516_2_) {
+                return null;
+            }
+
+            @Override
+            public boolean isUsernameIndex(String[] p_82358_1_, int p_82358_2_) {
+                return false;
+            }
+
         });
     }
-    
+
     private static class Line {
+
         Vec3 start, end;
     }
 
     static <T> List<T> list() {
         return Collections.synchronizedList(new ArrayList<T>());
     }
-    
+
     static final List<AxisAlignedBB> boxes = list(), frozen = list();
     static final List<Line> lines = list(), frozen_lines = list();
     public static boolean freeze = false;
-    
+
     public static void addBox(AxisAlignedBB box) {
         if (box == null) return;
         boxes.add(box.copy());
@@ -103,7 +120,7 @@ public enum AabbDebugger {
         line.end = SpaceUtil.copy(end);
         lines.add(line);
     }
-    
+
     @SubscribeEvent
     public void clearBox(ClientTickEvent event) {
         if (event.phase == Phase.START) {
@@ -119,11 +136,11 @@ public enum AabbDebugger {
             lines.clear();
         }
     }
-    
+
     boolean hasBoxes() {
         return !frozen.isEmpty() || !boxes.isEmpty() || !lines.isEmpty() || !frozen_lines.isEmpty();
     }
-    
+
     @SubscribeEvent
     public void drawBoxes(RenderWorldLastEvent event) {
         if (!hasBoxes()) return;
@@ -133,18 +150,18 @@ public enum AabbDebugger {
         double cx = eyePos.lastTickPosX + (eyePos.posX - eyePos.lastTickPosX) * (double) event.partialTicks;
         double cy = eyePos.lastTickPosY + (eyePos.posY - eyePos.lastTickPosY) * (double) event.partialTicks;
         double cz = eyePos.lastTickPosZ + (eyePos.posZ - eyePos.lastTickPosZ) * (double) event.partialTicks;
-        
+
         GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT);
         GL11.glPushMatrix();
-        
+
         GL11.glTranslated(-cx, -cy, -cz);
         GL11.glDepthMask(false);
-        //GL11.glDisable(GL11.GL_DEPTH_TEST);
+        // GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glColor4f(1, 1, 1, 0.5F);
-        
+
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glLineWidth(4);
         synchronized (boxes) {
@@ -181,7 +198,7 @@ public enum AabbDebugger {
         }
         GL11.glEnd();
         GL11.glDepthMask(true);
-        
+
         GL11.glPopMatrix();
         GL11.glPopAttrib();
     }

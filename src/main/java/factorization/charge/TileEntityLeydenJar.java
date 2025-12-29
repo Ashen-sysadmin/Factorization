@@ -3,43 +3,42 @@ package factorization.charge;
 import java.io.IOException;
 import java.util.Random;
 
-import factorization.shared.*;
-import factorization.util.ItemUtil;
-import factorization.util.NumUtil;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.ForgeDirection;
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Charge;
 import factorization.api.Coord;
 import factorization.api.IChargeConductor;
 import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.DataInNBT;
-import factorization.api.datahelpers.DataOutNBT;
 import factorization.api.datahelpers.Share;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
+import factorization.shared.*;
 import factorization.shared.NetworkFactorization.MessageType;
+import factorization.util.ItemUtil;
+import factorization.util.NumUtil;
+import io.netty.buffer.ByteBuf;
 
 public class TileEntityLeydenJar extends TileEntityCommon implements IChargeConductor {
+
     private Charge charge = new Charge(this);
     int storage = 0;
-    
+
     static final double max_efficiency = 0.50, min_efficiency = 1.00;
     static final int max_charge_threshold = 70, min_charge_threshold = 20;
     static final int max_discharge_threshold = 40, min_discharge_threshold = 10;
-    public static final int max_storage = 6400*200;
+    public static final int max_storage = 6400 * 200;
     static final int max_discharge_per_tick = 50;
 
     public ChargeSparks sparks = null;
-    
+
     char last_light = (char) -1;
-    
+
     @Override
     public FactoryType getFactoryType() {
         return FactoryType.LEYDENJAR;
@@ -49,14 +48,14 @@ public class TileEntityLeydenJar extends TileEntityCommon implements IChargeCond
     public BlockClass getBlockClass() {
         return BlockClass.MachineDynamicLightable;
     }
-    
+
     public double getLevel() {
-        return (((double)storage) / max_storage);
+        return (((double) storage) / max_storage);
     }
 
     @Override
     public String getInfo() {
-        String ret = "Storage: " + (int)(getLevel()*100) + "%";
+        String ret = "Storage: " + (int) (getLevel() * 100) + "%";
         if (Core.dev_environ) {
             ret += "\n" + storage + "/" + max_storage;
             ret += "\nCharges at: " + getChargeThreshold();
@@ -69,42 +68,46 @@ public class TileEntityLeydenJar extends TileEntityCommon implements IChargeCond
     public Charge getCharge() {
         return charge;
     }
-    
+
     public double getEfficiency() {
         double range = max_efficiency - min_efficiency;
-        return min_efficiency + range*(1 - getLevel());
+        return min_efficiency + range * (1 - getLevel());
     }
-    
+
     public int getChargeThreshold() {
         return (int) NumUtil.interp(min_charge_threshold, max_charge_threshold, (float) getLevel());
     }
-    
+
     public int getDischargeThreshold() {
         return (int) NumUtil.interp(min_discharge_threshold, max_discharge_threshold, (float) getLevel());
     }
-    
+
     private static Random rand = new Random();
+
     private static double randomizeDirection(int i) {
         if (i == 0) {
-            final double turn = 2*Math.PI;
-            double r = Math.cos(rand.nextDouble()*turn) - 1;
+            final double turn = 2 * Math.PI;
+            double r = Math.cos(rand.nextDouble() * turn) - 1;
             r += r < -1 ? 2 : 0;
-            return r*0.3 + 0.5;
+            return r * 0.3 + 0.5;
         }
-        return i*0.4 + 0.5;
+        return i * 0.4 + 0.5;
     }
-    
+
     public void updateSparks(ChargeSparks the_sparks) {
-        double level = getLevel()*4/5;
+        double level = getLevel() * 4 / 5;
         if (level > rand.nextDouble()) {
-            Vec3 src = Vec3.createVectorHelper(0.5, randomizeDirection(0)/2 + 0.2, 0.5);
+            Vec3 src = Vec3.createVectorHelper(0.5, randomizeDirection(0) / 2 + 0.2, 0.5);
             ForgeDirection fo = ForgeDirection.getOrientation(2 + rand.nextInt(4));
-            Vec3 dest = Vec3.createVectorHelper(randomizeDirection(fo.offsetX), randomizeDirection(fo.offsetY), randomizeDirection(fo.offsetZ));
-            the_sparks.spark(src, dest, 12, 1, 3, 2.0, 8.0, /*0xF0FF00*/ /*0xEEDB02*/ 0xEEE59D);
+            Vec3 dest = Vec3.createVectorHelper(
+                randomizeDirection(fo.offsetX),
+                randomizeDirection(fo.offsetY),
+                randomizeDirection(fo.offsetZ));
+            the_sparks.spark(src, dest, 12, 1, 3, 2.0, 8.0, /* 0xF0FF00 */ /* 0xEEDB02 */ 0xEEE59D);
         }
         the_sparks.update();
     }
-    
+
     @Override
     public void updateEntity() {
         charge.update();
@@ -138,9 +141,9 @@ public class TileEntityLeydenJar extends TileEntityCommon implements IChargeCond
             int free = max_storage - storage;
             int to_take = Math.min(charge_value - charge_threshold, max_charge_per_tick);
             to_take = Math.min(free, to_take);
-            int gain = (int) (to_take*efficiency);
+            int gain = (int) (to_take * efficiency);
             if (gain > 0) {
-                storage += charge.deplete(to_take)*efficiency;
+                storage += charge.deplete(to_take) * efficiency;
                 change = true;
             }
         } else if (charge_value < discharge_threshold) {
@@ -156,9 +159,9 @@ public class TileEntityLeydenJar extends TileEntityCommon implements IChargeCond
             updateClients();
         }
     }
-    
+
     int last_storage = -1;
-    
+
     void updateClients() {
         if (storage != last_storage) {
             if (NumUtil.significantChange(storage, last_storage, 0.05F)) {
@@ -167,7 +170,7 @@ public class TileEntityLeydenJar extends TileEntityCommon implements IChargeCond
             }
         }
     }
-    
+
     @Override
     public boolean handleMessageFromServer(MessageType messageType, ByteBuf input) throws IOException {
         if (super.handleMessageFromServer(messageType, input)) {
@@ -182,9 +185,10 @@ public class TileEntityLeydenJar extends TileEntityCommon implements IChargeCond
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        storage = data.as(Share.VISIBLE, "store").putInt(storage);
+        storage = data.as(Share.VISIBLE, "store")
+            .putInt(storage);
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(ForgeDirection dir) {
@@ -194,14 +198,15 @@ public class TileEntityLeydenJar extends TileEntityCommon implements IChargeCond
     @Override
     public void loadFromStack(ItemStack is) {
         super.loadFromStack(is);
-        storage = ItemUtil.getTag(is).getInteger("storage");
+        storage = ItemUtil.getTag(is)
+            .getInteger("storage");
     }
-    
+
     @Override
     public int getDynamicLight() {
-        return (int) (getLevel()*7);
+        return (int) (getLevel() * 7);
     }
-    
+
     @Override
     public ItemStack getDroppedBlock() {
         ItemStack is = new ItemStack(Core.registry.item_factorization, 1, getFactoryType().md);
@@ -209,9 +214,9 @@ public class TileEntityLeydenJar extends TileEntityCommon implements IChargeCond
         tag.setInteger("storage", storage);
         return is;
     }
-    
+
     @Override
     public int getComparatorValue(ForgeDirection side) {
-        return (int) (getLevel()*0xF);
+        return (int) (getLevel() * 0xF);
     }
 }

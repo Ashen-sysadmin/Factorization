@@ -5,6 +5,7 @@ import factorization.truth.word.LocalizedWord;
 import factorization.util.LangUtil;
 
 public class CmdLocal implements ITypesetCommand {
+
     @Override
     public void callClient(IClientTypesetter out, ITokenizer tokenizer) throws TruthError {
         String localizationKey = tokenizer.getParameter("localization key");

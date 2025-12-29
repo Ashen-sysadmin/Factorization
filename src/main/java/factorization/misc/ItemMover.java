@@ -1,15 +1,17 @@
 package factorization.misc;
 
-import factorization.util.ItemUtil;
+import java.util.ArrayList;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
-import java.util.ArrayList;
+import factorization.util.ItemUtil;
 
 public class ItemMover {
+
     static final int CLICK_BUTTON = 0;
     static final int MODE = 0;
 
@@ -18,7 +20,6 @@ public class ItemMover {
     // When we're exporting, we let the container figure out what slot to use.
     // However we can't do this when importing, so we've got to find the best slot ourselves.
     // Inventories can do arbitrary things, so we've got to carefully manage every aspect to prevent item loss/dupe
-
 
     public static void moveItems(EntityPlayer player, int slotId, int motion) {
         if (player.worldObj.isRemote) return;
@@ -32,17 +33,19 @@ public class ItemMover {
         ItemStack buffer = null;
         int amount = Math.abs(motion);
 
-        //motion = reevaluateMotion(slot, player, motion);
+        // motion = reevaluateMotion(slot, player, motion);
 
         if (!slot.canTakeStack(player) || !slot.isItemValid(search)) return;
         Slot stock = getRestockSlot(player, slot, search);
-        /*if (stock != null) {
-            if (stock.yDisplayPosition < slot.yDisplayPosition) {
-                motion = -motion;
-            }
-        } else {
-            motion = reevaluateMotion(slot, player, motion);
-        }*/
+        /*
+         * if (stock != null) {
+         * if (stock.yDisplayPosition < slot.yDisplayPosition) {
+         * motion = -motion;
+         * }
+         * } else {
+         * motion = reevaluateMotion(slot, player, motion);
+         * }
+         */
 
         if (motion <= -1) {
             // move all but 1 into buffer, shift-click the 1 item, restore buffer

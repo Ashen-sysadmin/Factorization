@@ -3,6 +3,7 @@ package factorization.truth.cmd;
 import factorization.truth.api.*;
 
 public class CmdIfHtml implements ITypesetCommand {
+
     @Override
     public void callClient(IClientTypesetter out, ITokenizer tokenizer) throws TruthError {
         tokenizer.getParameter("true branch");

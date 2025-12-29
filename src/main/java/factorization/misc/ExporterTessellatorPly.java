@@ -1,12 +1,14 @@
 package factorization.misc;
 
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.shader.TesselatorVertexState;
-import org.lwjgl.opengl.GL11;
-
 import java.io.*;
 
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.shader.TesselatorVertexState;
+
+import org.lwjgl.opengl.GL11;
+
 public class ExporterTessellatorPly extends Tessellator {
+
     final File filename, tmp_vert, tmp_face;
     OutputStreamWriter vertices;
     OutputStreamWriter faces;
@@ -51,9 +53,9 @@ public class ExporterTessellatorPly extends Tessellator {
         append(fos, tmp_face);
         out.close();
 
-        //noinspection ResultOfMethodCallIgnored
+        // noinspection ResultOfMethodCallIgnored
         tmp_vert.delete();
-        //noinspection ResultOfMethodCallIgnored
+        // noinspection ResultOfMethodCallIgnored
         tmp_face.delete();
     }
 
@@ -116,6 +118,7 @@ public class ExporterTessellatorPly extends Tessellator {
     }
 
     int r, g, b, a;
+
     @Override
     public void setColorRGBA(int r, int g, int b, int a) {
         this.r = r;
@@ -124,16 +127,34 @@ public class ExporterTessellatorPly extends Tessellator {
         this.a = a;
     }
 
-
     int vertexNumber = 0;
 
     @Override
     public void addVertex(double x, double y, double z) {
-        /*x += xOffset;
-        y += yOffset;
-        z += zOffset;*/
+        /*
+         * x += xOffset;
+         * y += yOffset;
+         * z += zOffset;
+         */
         // y & z are swapped, UVs are flipped
-        vert(x + " " + z + " " + y + " " + textureU + " " + (1 - textureV) + " " + r + " " + g + " " + b + " " + a + "\n");
+        vert(
+            x + " "
+                + z
+                + " "
+                + y
+                + " "
+                + textureU
+                + " "
+                + (1 - textureV)
+                + " "
+                + r
+                + " "
+                + g
+                + " "
+                + b
+                + " "
+                + a
+                + "\n");
         if (vertexNumber % 4 == 0) {
             face("4" + make(-1) + make(-2) + make(-3) + make(-4) + "\n");
         }

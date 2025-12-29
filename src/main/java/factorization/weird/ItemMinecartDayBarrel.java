@@ -1,12 +1,7 @@
 package factorization.weird;
 
-import com.mojang.authlib.GameProfile;
-import cpw.mods.fml.common.Optional;
-import factorization.common.FactoryType;
-import factorization.shared.Core;
-import factorization.shared.ItemFactorization;
-import factorization.util.LangUtil;
-import mods.railcraft.api.core.items.IMinecartItem;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDispenser;
 import net.minecraft.block.BlockRailBase;
@@ -23,14 +18,23 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 
-import java.util.List;
+import com.mojang.authlib.GameProfile;
+
+import cpw.mods.fml.common.Optional;
+import factorization.common.FactoryType;
+import factorization.shared.Core;
+import factorization.shared.ItemFactorization;
+import factorization.util.LangUtil;
+import mods.railcraft.api.core.items.IMinecartItem;
 
 /*
  * Created by asie on 6/11/15.
  */
 @Optional.Interface(iface = "mods.railcraft.api.core.items.IMinecartItem", modid = "Railcraft")
 public class ItemMinecartDayBarrel extends ItemFactorization implements IMinecartItem {
+
     private static final IBehaviorDispenseItem dispenserMinecartBehavior = new BehaviorDefaultDispenseItem() {
+
         private final BehaviorDefaultDispenseItem behaviourDefaultDispenseItem = new BehaviorDefaultDispenseItem();
 
         public ItemStack dispenseStack(IBlockSource at, ItemStack is) {
@@ -48,14 +52,16 @@ public class ItemMinecartDayBarrel extends ItemFactorization implements IMinecar
             if (BlockRailBase.func_150051_a(block)) {
                 yOffset = 0.0D;
             } else {
-                if (block.getMaterial() != Material.air || !BlockRailBase.func_150051_a(world.getBlock(targetX, targetY - 1, targetZ))) {
+                if (block.getMaterial() != Material.air
+                    || !BlockRailBase.func_150051_a(world.getBlock(targetX, targetY - 1, targetZ))) {
                     return this.behaviourDefaultDispenseItem.dispense(at, is);
                 }
 
                 yOffset = -1.0D;
             }
 
-            EntityMinecart entityminecart = Core.registry.barrelCart.placeCart(null, is, at.getWorld(), (int) x, (int) y, (int) z);
+            EntityMinecart entityminecart = Core.registry.barrelCart
+                .placeCart(null, is, at.getWorld(), (int) x, (int) y, (int) z);
 
             if (is.hasDisplayName()) {
                 entityminecart.setMinecartName(is.getDisplayName());
@@ -64,7 +70,8 @@ public class ItemMinecartDayBarrel extends ItemFactorization implements IMinecar
         }
 
         protected void playDispenseSound(IBlockSource at) {
-            at.getWorld().playAuxSFX(1000, at.getXInt(), at.getYInt(), at.getZInt(), 0);
+            at.getWorld()
+                .playAuxSFX(1000, at.getXInt(), at.getYInt(), at.getZInt(), 0);
         }
     };
 
@@ -76,7 +83,8 @@ public class ItemMinecartDayBarrel extends ItemFactorization implements IMinecar
     }
 
     @Override
-    public boolean onItemUse(ItemStack is, EntityPlayer player, World w, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+    public boolean onItemUse(ItemStack is, EntityPlayer player, World w, int x, int y, int z, int side, float hitX,
+        float hitY, float hitZ) {
         if (w.isRemote) return true;
         if (!BlockRailBase.func_150051_a(w.getBlock(x, y, z))) {
             return true;
@@ -137,7 +145,9 @@ public class ItemMinecartDayBarrel extends ItemFactorization implements IMinecar
 
     public ItemStack makeBarrel(ItemStack barrelItem) {
         ItemStack ret = new ItemStack(this, 1, barrelItem.getItemDamage());
-        ret.setTagCompound((NBTTagCompound) barrelItem.getTagCompound().copy());
+        ret.setTagCompound(
+            (NBTTagCompound) barrelItem.getTagCompound()
+                .copy());
         return ret;
     }
 

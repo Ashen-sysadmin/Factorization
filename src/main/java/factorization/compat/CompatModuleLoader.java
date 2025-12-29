@@ -1,25 +1,27 @@
 package factorization.compat;
 
+import java.util.ArrayList;
+import java.util.Locale;
+
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import factorization.shared.Core;
 
-import java.util.ArrayList;
-import java.util.Locale;
-
 public class CompatModuleLoader extends CompatBase {
+
     ArrayList<CompatBase> modules = new ArrayList<CompatBase>();
 
-    String[] mod_compats = new String[] {"IC2", "Railcraft", "erebus"};
-    String base_name = getClass().getCanonicalName().replace(getClass().getSimpleName(), "");
-    
+    String[] mod_compats = new String[] { "IC2", "Railcraft", "erebus" };
+    String base_name = getClass().getCanonicalName()
+        .replace(getClass().getSimpleName(), "");
+
     public void loadCompat() {
         ClassLoader cl = getClass().getClassLoader();
         for (String mod : mod_compats) {
             if (!Loader.isModLoaded(mod)) {
-                Core.logInfo(mod  + " not loaded; not loading compatibility module");
+                Core.logInfo(mod + " not loaded; not loading compatibility module");
                 continue;
             }
             // TODO: Config options

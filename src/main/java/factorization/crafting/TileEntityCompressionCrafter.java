@@ -3,14 +3,6 @@ package factorization.crafting;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.Share;
-import factorization.notify.Notice;
-import factorization.shared.*;
-import factorization.util.InvUtil;
-import factorization.util.ItemUtil;
-import factorization.util.SpaceUtil;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -18,19 +10,29 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.Share;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
-import factorization.util.InvUtil.FzInv;
+import factorization.notify.Notice;
+import factorization.shared.*;
 import factorization.shared.NetworkFactorization.MessageType;
+import factorization.util.InvUtil;
+import factorization.util.InvUtil.FzInv;
+import factorization.util.ItemUtil;
+import factorization.util.SpaceUtil;
+import io.netty.buffer.ByteBuf;
 
 public class TileEntityCompressionCrafter extends TileEntityCommon {
+
     static ThreadLocal<CompressionState> states = new ThreadLocal();
 
     ArrayList<ItemStack> buffer = new ArrayList();
-    
+
     CompressionState getStateHelper() {
         CompressionState cs = states.get();
         if (cs == null) {
@@ -38,7 +40,7 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
         }
         return cs;
     }
-    
+
     @Override
     public FactoryType getFactoryType() {
         return FactoryType.COMPRESSIONCRAFTER;
@@ -48,41 +50,46 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
     public BlockClass getBlockClass() {
         return BlockClass.DarkIron;
     }
-    
+
     byte progress = 0;
     byte b_facing = (byte) ForgeDirection.UP.ordinal();
     boolean isCrafterRoot = false;
     boolean powered = false;
     public Coord upperCorner, lowerCorner;
     public ForgeDirection craftingAxis = ForgeDirection.UP;
-    
+
     public ForgeDirection getFacing() {
         return ForgeDirection.getOrientation(b_facing);
     }
-    
+
     public float getProgressPerc() {
         if (progress == 0) {
             return 0;
         }
         if (progress > 0) {
-            return (float) Math.sqrt(progress/20F);
+            return (float) Math.sqrt(progress / 20F);
         }
-        return Math.min(1, (progress*1F)/-10F);
+        return Math.min(1, (progress * 1F) / -10F);
     }
-    
+
     public boolean isPrimaryCrafter() {
         return isCrafterRoot && progress > 0;
     }
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        progress = data.as(Share.PRIVATE, "prog").putByte(progress);
-        b_facing = data.as(Share.VISIBLE, "dir").putByte(b_facing);
-        isCrafterRoot = data.as(Share.VISIBLE, "root").putBoolean(isCrafterRoot);
-        powered = data.as(Share.PRIVATE, "rs").putBoolean(powered);
-        buffer = data.as(Share.PRIVATE, "buff").putItemList(buffer);
+        progress = data.as(Share.PRIVATE, "prog")
+            .putByte(progress);
+        b_facing = data.as(Share.VISIBLE, "dir")
+            .putByte(b_facing);
+        isCrafterRoot = data.as(Share.VISIBLE, "root")
+            .putBoolean(isCrafterRoot);
+        powered = data.as(Share.PRIVATE, "rs")
+            .putBoolean(powered);
+        buffer = data.as(Share.PRIVATE, "buff")
+            .putItemList(buffer);
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(ForgeDirection dir) {
@@ -100,7 +107,7 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
         super.onPlacedBy(player, is, side, hitX, hitY, hitZ);
         b_facing = SpaceUtil.getOpposite(SpaceUtil.determineOrientation(player));
     }
-    
+
     @Override
     public void updateEntity() {
         if (progress != 0 && progress++ == 20) {
@@ -116,10 +123,10 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
             }
             progress = -10;
         }
-        
+
         dumpBuffer();
     }
-    
+
     void dumpBuffer() {
         if (buffer.isEmpty()) return;
         for (FzInv fz : getAdjacentInventories()) {
@@ -137,9 +144,9 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
             }
         }
     }
-    
+
     FzInv[] getAdjacentInventories() {
-        FzInv[] ret = new FzInv[6*5];
+        FzInv[] ret = new FzInv[6 * 5];
         int i = 0;
         Coord me = getCoord();
         final ForgeDirection facing = getFacing();
@@ -157,7 +164,7 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
                 TileEntityCompressionCrafter neighbor = sc.getTE(TileEntityCompressionCrafter.class);
                 if (neighbor == null) continue;
                 if (neighbor.getFacing() != facing) continue;
-                //recursiveish search
+                // recursiveish search
                 for (ForgeDirection nfd : ForgeDirection.VALID_DIRECTIONS) {
                     if (nfd == facing) continue;
                     if (nfd == back) continue;
@@ -170,10 +177,10 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
         }
         return ret;
     }
-    
+
     @Override
     public void neighborChanged() {
-        //look for a redstone signal
+        // look for a redstone signal
         if (worldObj.isRemote) {
             return;
         }
@@ -184,8 +191,7 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
         }
         powered = signal;
     }
-    
-    
+
     @Override
     public boolean handleMessageFromServer(MessageType messageType, ByteBuf input) throws IOException {
         if (super.handleMessageFromServer(messageType, input)) {
@@ -215,13 +221,13 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
         }
         return false;
     }
-    
+
     void informClient() {
         broadcastMessage(null, MessageType.CompressionCrafterBeginCrafting);
         progress = 1;
         powered = true;
     }
-    
+
     TileEntityCompressionCrafter look(ForgeDirection d) {
         TileEntity te = worldObj.getTileEntity(xCoord + d.offsetX, yCoord + d.offsetY, zCoord + d.offsetZ);
         if (te instanceof TileEntityCompressionCrafter) {
@@ -229,7 +235,7 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
         }
         return null;
     }
-    
+
     @Override
     public boolean rotate(ForgeDirection axis) {
         byte new_b = (byte) axis.ordinal();
@@ -239,7 +245,7 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
         b_facing = new_b;
         return true;
     }
-    
+
     @Override
     protected void onRemove() {
         super.onRemove();
@@ -248,7 +254,7 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
             here.spawnItem(buffer.remove(0));
         }
     }
-    
+
     @Override
     public boolean activate(EntityPlayer entityplayer, ForgeDirection side) {
         if (worldObj.isRemote) {
@@ -282,13 +288,13 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
         getStateHelper().showTutorial(entityplayer, this);
         return false;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public AxisAlignedBB getRenderBoundingBox() {
         if (isPrimaryCrafter()) {
             AxisAlignedBB ab = super.getRenderBoundingBox();
-            //This could be more precise.
+            // This could be more precise.
             int d = 7;
             ab.maxX += d;
             ab.maxY += d;
@@ -300,7 +306,7 @@ public class TileEntityCompressionCrafter extends TileEntityCommon {
         }
         return super.getRenderBoundingBox();
     }
-    
+
     @Override
     public void click(EntityPlayer entityplayer) {
         InvUtil.emptyBuffer(entityplayer, buffer, this);

@@ -13,6 +13,7 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 import factorization.wrath.BlockLightAir;
 
 public class FactorizationRender implements ISimpleBlockRenderingHandler {
+
     public FactorizationRender() {
         Core.factory_rendertype = RenderingRegistry.getNextAvailableRenderId();
     }
@@ -23,8 +24,7 @@ public class FactorizationRender implements ISimpleBlockRenderingHandler {
             FactorizationBlockRender FBR = FactorizationBlockRender.getRenderer(metadata);
             FBR.renderInInventory();
             FBR.setMetadata(metadata);
-            if (FBR.renderType == ItemRenderType.EQUIPPED
-                    || FBR.renderType == ItemRenderType.EQUIPPED_FIRST_PERSON) {
+            if (FBR.renderType == ItemRenderType.EQUIPPED || FBR.renderType == ItemRenderType.EQUIPPED_FIRST_PERSON) {
                 GL11.glPushAttrib(GL11.GL_DEPTH_BUFFER_BIT);
                 GL11.glDepthMask(true);
                 FBR.render(renderer);
@@ -36,12 +36,12 @@ public class FactorizationRender implements ISimpleBlockRenderingHandler {
     }
 
     @Override
-    public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z,
-            Block block, int modelId, RenderBlocks renderBlocks) {
+    public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,
+        RenderBlocks renderBlocks) {
         Core.profileStart("fz");
         try {
             int md = world.getBlockMetadata(x, y, z);
-            int renderPass = BlockFactorization.CURRENT_PASS; //MinecraftForgeClient.getRenderPass(); //Bluh
+            int renderPass = BlockFactorization.CURRENT_PASS; // MinecraftForgeClient.getRenderPass(); //Bluh
             TileEntity te = world.getTileEntity(x, y, z);
             if (te instanceof TileEntityCommon) {
                 TileEntityCommon tec = (TileEntityCommon) te;

@@ -1,19 +1,8 @@
 package factorization.misc;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-import java.util.Arrays;
-
-import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 
-import org.lwjgl.opengl.ARBVertexBufferObject;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GLContext;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -27,9 +16,9 @@ public class WireframeTessellator extends Tessellator {
         verts = 0;
         faker = false;
     }
-    
+
     boolean faker = false;
-    
+
     @Override
     public void setColorOpaque_I(int val) {
         if (val == -1) {
@@ -62,7 +51,7 @@ public class WireframeTessellator extends Tessellator {
             }
         }
     }
-    
+
     @Override
     public int draw() {
         if (drawMode != GL11.GL_QUADS || faker) return super.draw();

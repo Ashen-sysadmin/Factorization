@@ -1,6 +1,7 @@
 package factorization.oreprocessing;
 
 import net.minecraft.client.renderer.RenderBlocks;
+
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.shared.Core;

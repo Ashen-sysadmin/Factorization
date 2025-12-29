@@ -1,8 +1,7 @@
 package factorization.truth.gen;
 
-import factorization.truth.api.IDocGenerator;
-import factorization.truth.api.ITypesetter;
-import factorization.truth.api.TruthError;
+import java.util.ArrayList;
+
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -13,7 +12,9 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 
-import java.util.ArrayList;
+import factorization.truth.api.IDocGenerator;
+import factorization.truth.api.ITypesetter;
+import factorization.truth.api.TruthError;
 
 public class BiomeViewer implements IDocGenerator {
 
@@ -37,11 +38,11 @@ public class BiomeViewer implements IDocGenerator {
             out.write("\\nl Blocks: ");
             out.write(new ItemStack(biome.topBlock));
             out.write(new ItemStack(biome.fillerBlock));
-            
+
             {
                 final BiomeDecorator dec = biome.theBiomeDecorator;
                 out.write("\\nl\\nl");
-                
+
                 feature(out, dec.waterlilyPerChunk, Blocks.waterlily);
                 feature(out, dec.treesPerChunk, Blocks.sapling);
                 feature(out, dec.flowersPerChunk, Blocks.red_flower);
@@ -56,19 +57,18 @@ public class BiomeViewer implements IDocGenerator {
                 if (dec.generateLakes) {
                     out.write(new ItemStack(Items.water_bucket));
                 }
-                
+
                 out.write("\\nl");
             }
-            
+
             if (biome.canSpawnLightningBolt()) {
                 out.write("\\nl Rainy");
             }
-            
+
             if (biome.getEnableSnow()) {
                 out.write("\\nl Snowy");
             }
-            
-            
+
             BiomeDictionary.Type[] types = BiomeDictionary.getTypesForBiome(biome);
             if (types == null || types.length == 0) continue;
             out.write("\\nl \\nl");
@@ -106,7 +106,7 @@ public class BiomeViewer implements IDocGenerator {
             }
         }
     }
-    
+
     void feature(ITypesetter out, int val, Block symbol) {
         if (val <= 0) return;
         if (val > 99) val = 99;

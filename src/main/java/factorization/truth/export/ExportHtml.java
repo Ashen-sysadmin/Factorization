@@ -1,19 +1,21 @@
 package factorization.truth.export;
 
-import factorization.shared.Core;
-import factorization.truth.DocumentationModule;
-import factorization.truth.api.TruthError;
-import factorization.util.PlayerUtil;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
+
+import factorization.shared.Core;
+import factorization.truth.DocumentationModule;
+import factorization.truth.api.TruthError;
+import factorization.util.PlayerUtil;
+
 public class ExportHtml implements ICommand {
+
     @Override
     public int compareTo(Object arg0) {
         if (arg0 instanceof ICommand) {
@@ -34,7 +36,9 @@ public class ExportHtml implements ICommand {
     }
 
     @Override
-    public List getCommandAliases() { return null; }
+    public List getCommandAliases() {
+        return null;
+    }
 
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender icommandsender) {
@@ -42,10 +46,14 @@ public class ExportHtml implements ICommand {
     }
 
     @Override
-    public List addTabCompletionOptions(ICommandSender icommandsender, String[] astring) { return null; }
+    public List addTabCompletionOptions(ICommandSender icommandsender, String[] astring) {
+        return null;
+    }
 
     @Override
-    public boolean isUsernameIndex(String[] astring, int i) { return false; }
+    public boolean isUsernameIndex(String[] astring, int i) {
+        return false;
+    }
 
     @Override
     public void processCommand(ICommandSender player, String[] args) {
@@ -69,13 +77,16 @@ public class ExportHtml implements ICommand {
             }
         }
     }
-    
+
     void processFile(String filename) throws IOException {
         Core.logInfo("Processing: " + filename);
         String root = System.getProperty("fzdoc.webroot", "/FzDocs/");
         String outDir = System.getProperty("fzdoc.out", "/var/www/FzDocs/");
         File outfile = new File(outDir + filename + ".html");
-        if (!outfile.getParentFile().mkdirs() && !outfile.getParentFile().exists()) {
+        if (!outfile.getParentFile()
+            .mkdirs()
+            && !outfile.getParentFile()
+                .exists()) {
             throw new IOException("Failed to create output directory");
         }
         if (outfile.exists()) {
@@ -107,7 +118,7 @@ public class ExportHtml implements ICommand {
             os.close();
         }
     }
-    
+
     static HashSet<String> visited = new HashSet<String>();
     static ArrayList<String> frontier = new ArrayList<String>();
 
@@ -118,7 +129,7 @@ public class ExportHtml implements ICommand {
         frontier.add(newLink);
         visited.add(newLink);
     }
-    
+
     public static void resetLinks() {
         visited.clear();
         frontier.clear();

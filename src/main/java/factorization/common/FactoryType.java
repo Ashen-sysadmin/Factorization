@@ -1,5 +1,7 @@
 package factorization.common;
 
+import net.minecraft.item.ItemStack;
+
 import cpw.mods.fml.common.registry.GameRegistry;
 import factorization.artifact.TileEntityLegendarium;
 import factorization.astro.TileEntityRocketEngine;
@@ -26,37 +28,39 @@ import factorization.sockets.fanturpeller.BlowEntities;
 import factorization.sockets.fanturpeller.PumpLiquids;
 import factorization.weird.TileEntityDayBarrel;
 import factorization.wrath.TileEntityWrathLamp;
-import net.minecraft.item.ItemStack;
 
 public enum FactoryType {
-    //Traced here is the history of Factorization.
-    //0 -- This used to be ROUTER, which is now servos
-    //1 -- This used to be CUTTER, which only existed for routers
-    //2 -- This used to be MAKER, which is now
+
+    // Traced here is the history of Factorization.
+    // 0 -- This used to be ROUTER, which is now servos
+    // 1 -- This used to be CUTTER, which only existed for routers
+    // 2 -- This used to be MAKER, which is now
     STAMPER(3, true, TileEntityStamper.class, "factory_stamper"), // Crafts a single item
-    //4 -- This used to be QUEUE
-    //5 -- This used to be BARREL
-    LAMP(6, false, TileEntityWrathLamp.class, "factory_lamp"), //spawn a bunch of AIR blocks around and below
-    //7 -- this was the BlockDarkIron, which got turned into a proper block
-    PACKAGER(8, true, STAMPER.gui, TileEntityPackager.class, "factory_packager"), //crafts its input as a 3x3 or 2x2
-    //9 -- This used to be SENTRYDEMON
-    //10 -- This used to be WRATHFIRE
-    SLAGFURNACE(11, true, TileEntitySlagFurnace.class, "factory_slag"), //get extra ore output
+    // 4 -- This used to be QUEUE
+    // 5 -- This used to be BARREL
+    LAMP(6, false, TileEntityWrathLamp.class, "factory_lamp"), // spawn a bunch of AIR blocks around and below
+    // 7 -- this was the BlockDarkIron, which got turned into a proper block
+    PACKAGER(8, true, STAMPER.gui, TileEntityPackager.class, "factory_packager"), // crafts its input as a 3x3 or 2x2
+    // 9 -- This used to be SENTRYDEMON
+    // 10 -- This used to be WRATHFIRE
+    SLAGFURNACE(11, true, TileEntitySlagFurnace.class, "factory_slag"), // get extra ore output
     BATTERY(12, false, TileEntityBattery.class, "factory_battery"),
-    //13 -- This used to be SOLARTURBINE
+    // 13 -- This used to be SOLARTURBINE
     LEADWIRE(14, false, TileEntityWire.class, "factory_solder"),
-    HEATER(15, false, TileEntityHeater.class, "factory_heater"), //work furnaces without fuel
-    MIRROR(16, false, TileEntityMirror.class, "factory_mirror"), //reflect sunlight onto IReflectionTargets
-    //17 -- This used to be GRINDER
-    MIXER(18, true, TileEntityMixer.class, "factory_mixer"), //crafts its input as shapeless recipes of 2-4 ingredients
-    CRYSTALLIZER(19, true, TileEntityCrystallizer.class, "factory_crystal"), //grow metallic crystals
-    //20 -- Used to be GREENWARE
-    STEAMTURBINE(21, false, TileEntitySteamTurbine.class, "factory_steamturbine"), //A generic steam turbine; works with other mods' steam
-    SOLARBOILER(22, false, TileEntitySolarBoiler.class, "factory_solarfurnace"), //Produces steam from sunlight
-    ROCKETENGINE(23, false, TileEntityRocketEngine.class, "factory_rocketengine"), //Is a rocket
-    EXTENDED(24, false, TileEntityExtension.class, "factory_ext"), //Used for multipiece blocks (like beds & rocket engines)
-    CERAMIC(25, false, TileEntityGreenware.class, "factory_ceramic"), //clay sculpture
-    LEYDENJAR(26, false, TileEntityLeydenJar.class, "factory_leyjar"), //inefficient bulk energy storage
+    HEATER(15, false, TileEntityHeater.class, "factory_heater"), // work furnaces without fuel
+    MIRROR(16, false, TileEntityMirror.class, "factory_mirror"), // reflect sunlight onto IReflectionTargets
+    // 17 -- This used to be GRINDER
+    MIXER(18, true, TileEntityMixer.class, "factory_mixer"), // crafts its input as shapeless recipes of 2-4 ingredients
+    CRYSTALLIZER(19, true, TileEntityCrystallizer.class, "factory_crystal"), // grow metallic crystals
+    // 20 -- Used to be GREENWARE
+    STEAMTURBINE(21, false, TileEntitySteamTurbine.class, "factory_steamturbine"), // A generic steam turbine; works
+                                                                                   // with other mods' steam
+    SOLARBOILER(22, false, TileEntitySolarBoiler.class, "factory_solarfurnace"), // Produces steam from sunlight
+    ROCKETENGINE(23, false, TileEntityRocketEngine.class, "factory_rocketengine"), // Is a rocket
+    EXTENDED(24, false, TileEntityExtension.class, "factory_ext"), // Used for multipiece blocks (like beds & rocket
+                                                                   // engines)
+    CERAMIC(25, false, TileEntityGreenware.class, "factory_ceramic"), // clay sculpture
+    LEYDENJAR(26, false, TileEntityLeydenJar.class, "factory_leyjar"), // inefficient bulk energy storage
     SERVORAIL(27, false, TileEntityServoRail.class, "factory_rail"),
     PARASIEVE(28, true, TileEntityParaSieve.class, "factory_sieve"),
     COMPRESSIONCRAFTER(29, false, TileEntityCompressionCrafter.class, "factory_compact"),
@@ -66,19 +70,19 @@ public enum FactoryType {
     SOCKET_LACERATOR(33, false, SocketLacerator.class, "fzsock_lacerate"),
     SOCKET_ROBOTHAND(34, false, SocketRobotHand.class, "fzsock_hand"),
     SOCKET_SHIFTER(35, true, SocketShifter.class, "fzsock_shift"),
-    //36 -- Was the short-lived SOCKET_FANTURPELLER; which is now abstract
+    // 36 -- Was the short-lived SOCKET_FANTURPELLER; which is now abstract
     SOCKET_PUMP(37, false, PumpLiquids.class, "fzsock_pump"),
-    //38 -- Was the short-lived SOCKET_POWERGEN
+    // 38 -- Was the short-lived SOCKET_POWERGEN
     SOCKET_BLOWER(39, true, BlowEntities.class, "fzsock_blow"),
-    //40 -- Was the short-lived SOCKET_MIXER
+    // 40 -- Was the short-lived SOCKET_MIXER
     SOCKET_BARE_MOTOR(41, false, SocketBareMotor.class, "fzsock_motor"),
     SOCKET_SCISSORS(42, false, SocketScissors.class, "fzsock_scissors"),
     CREATIVE_CHARGE(43, false, InfiniteChargeBlock.class, "factory_creative_charge"),
     HINGE(44, false, TileEntityHinge.class, "factory_hinge"),
-    //ANCHOR(45, false, TileEntityAnchor.class, "factory_anchor"),
-    //SOCKET_HAND_CRANK(46, false, SocketHandCrank.class, "fzsock_hand_crank"),
+    // ANCHOR(45, false, TileEntityAnchor.class, "factory_anchor"),
+    // SOCKET_HAND_CRANK(46, false, SocketHandCrank.class, "fzsock_hand_crank"),
     SOCKET_POWERED_CRANK(47, false, SocketPoweredCrank.class, "factory_powered_crank"),
-    //SOCKET_CONTROLLED_CRANK(48, true, SocketControlledCrank.class, "factory_controlled_crank"),
+    // SOCKET_CONTROLLED_CRANK(48, true, SocketControlledCrank.class, "factory_controlled_crank"),
     SAP_TAP(49, false, TileEntitySapTap.class, "factory_sap_extractor"),
     ANTHRO_GEN(50, false, TileEntityAnthroGen.class, "factory_anthro_gen"),
     BIBLIO_GEN(51, false, TileEntityBiblioGen.class, "factory_biblio_gen"),
@@ -86,7 +90,7 @@ public enum FactoryType {
     STEAM_SHAFT(53, false, TileEntitySteamShaft.class, "factory_steam_shaft"),
     SHAFT(54, false, TileEntityShaft.class, "factory_shaft"),
     WIND_MILL_GEN(55, false, TileEntityWindMill.class, "factory_fluidmill" /* bad name to save a nice windmill */),
-    //56 -- The short-lived BLOCK_INTAKE; was an automatic block-breaker...
+    // 56 -- The short-lived BLOCK_INTAKE; was an automatic block-breaker...
     WATER_WHEEL_GEN(57, false, TileEntityWaterWheel.class, "factory_water_wheel"),
     // 58 -- Stupid MISANTHROPIC_GEN
     // 59 -- And the stupid MISANTHROPIC_EGG
@@ -94,8 +98,7 @@ public enum FactoryType {
 
     POCKETCRAFTGUI(101, true),
     NONE(102, false),
-    ARTIFACTFORGEGUI(103, true)
-    ;
+    ARTIFACTFORGEGUI(103, true);
 
     public static int MAX_ID = 0;
     static {
@@ -107,13 +110,13 @@ public enum FactoryType {
         }
         if (!DeltaChunk.enabled()) {
             HINGE.disable();
-            //ANCHOR.disable();
+            // ANCHOR.disable();
             ROCKETENGINE.disable();
             WIND_MILL_GEN.disable();
             WATER_WHEEL_GEN.disable();
         }
     }
-    
+
     final public int md;
     final public int gui;
     final public boolean hasGui;
@@ -139,7 +142,7 @@ public enum FactoryType {
                 }
             }
             try {
-                representative = ((Class<? extends TileEntityCommon>)clazz).newInstance();
+                representative = ((Class<? extends TileEntityCommon>) clazz).newInstance();
             } catch (Throwable e) {
                 throw new IllegalArgumentException("Can not instantiate: " + toString(), e);
             }
@@ -147,11 +150,14 @@ public enum FactoryType {
         }
         return representative;
     }
-    
-    public Class<? extends TileEntityCommon> getFactoryTypeClass() { return clazz; }
+
+    public Class<? extends TileEntityCommon> getFactoryTypeClass() {
+        return clazz;
+    }
 
     static class mapper {
-        //bluh java
+
+        // bluh java
         static FactoryType mapping[] = new FactoryType[128];
     }
 
@@ -178,7 +184,7 @@ public enum FactoryType {
     FactoryType(int md, boolean use_gui) {
         this(md, use_gui, md, null, null);
     }
-    
+
     void disable() {
         disabled = true;
     }
@@ -245,7 +251,7 @@ public enum FactoryType {
     public boolean connectRedstone() {
         return this == STAMPER || this == PACKAGER;
     }
-    
+
     public ItemStack asSocketItem() {
         return new ItemStack(Core.registry.socket_part, 1, md);
     }

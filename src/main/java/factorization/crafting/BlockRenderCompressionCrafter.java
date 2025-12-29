@@ -4,6 +4,7 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.FzOrientation;
 import factorization.api.Quaternion;
 import factorization.common.BlockIcons;
@@ -14,15 +15,11 @@ import factorization.shared.FactorizationBlockRender;
 
 public class BlockRenderCompressionCrafter extends FactorizationBlockRender {
 
-    
     @Override
     public boolean render(RenderBlocks rb) {
         BlockRenderHelper block = Core.registry.blockRender;
         IIcon side = BlockIcons.compactSide;
-        block.useTextures(
-                BlockIcons.compactBack, BlockIcons.compactFace,
-                side, side,
-                side, side);
+        block.useTextures(BlockIcons.compactBack, BlockIcons.compactFace, side, side, side, side);
         block.setBlockBoundsOffset(0, 0, 0);
         ForgeDirection dir = ForgeDirection.WEST;
         if (world_mode) {
@@ -38,21 +35,21 @@ public class BlockRenderCompressionCrafter extends FactorizationBlockRender {
             block.beginWithMirroredUVs();
             block.rotateMiddle(q);
             block.renderRotated(Tessellator.instance, x, y, z);
-            
+
             /*
-            block.useTextures(
-                    BlockIcons.compactFace, null,
-                    null, null,
-                    null, null);
-            block.begin();
-            block.rotateMiddle(q);
-            float d = -1F/10000F;
-            block.translate(dir.offsetX*d, dir.offsetY*d, dir.offsetZ*d);
-            block.renderRotated(Tessellator.instance, x + dir.offsetX, y + dir.offsetY , z + dir.offsetZ);
-            */
+             * block.useTextures(
+             * BlockIcons.compactFace, null,
+             * null, null,
+             * null, null);
+             * block.begin();
+             * block.rotateMiddle(q);
+             * float d = -1F/10000F;
+             * block.translate(dir.offsetX*d, dir.offsetY*d, dir.offsetZ*d);
+             * block.renderRotated(Tessellator.instance, x + dir.offsetX, y + dir.offsetY , z + dir.offsetZ);
+             */
         } else {
             block.renderForInventory(rb);
-            final float d = 1F/64F;
+            final float d = 1F / 64F;
             block.setBlockBoundsOffset(d, 0, d);
             IIcon s = BlockIcons.compactSideSlide;
             block.useTextures(null, null, s, s, s, s);

@@ -1,5 +1,15 @@
 package factorization.servo;
 
+import java.io.IOException;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.EntityDamageSourceIndirect;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
 import cpw.mods.fml.relauncher.Side;
@@ -11,23 +21,14 @@ import factorization.api.IEntityMessage;
 import factorization.api.datahelpers.*;
 import factorization.shared.Core;
 import factorization.shared.NetworkFactorization;
-import factorization.util.FzUtil;
 import factorization.util.PlayerUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EntityDamageSourceIndirect;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.IOException;
 
 public abstract class AbstractServoMachine extends Entity implements IEntityAdditionalSpawnData, IEntityMessage {
+
     // Hey,. why doesn't this extend EntityFZ!?
     public final MotionHandler motionHandler = newMotionHandler();
 
@@ -69,7 +70,7 @@ public abstract class AbstractServoMachine extends Entity implements IEntityAddi
         } catch (IOException e) {
             e.printStackTrace();
         } catch (IllegalStateException e) {
-            e.printStackTrace(); //Hrm! Why? (I mean, besides the obvious.)
+            e.printStackTrace(); // Hrm! Why? (I mean, besides the obvious.)
         }
     }
 
@@ -80,7 +81,7 @@ public abstract class AbstractServoMachine extends Entity implements IEntityAddi
         } catch (IOException e) {
             e.printStackTrace();
         } catch (IllegalStateException e) {
-            e.printStackTrace(); //Hrm! Why? (I mean, besides the obvious.)
+            e.printStackTrace(); // Hrm! Why? (I mean, besides the obvious.)
         }
     }
 
@@ -96,10 +97,17 @@ public abstract class AbstractServoMachine extends Entity implements IEntityAddi
     public void broadcastBriefUpdate() {
         Coord a = getCurrentPos();
         Coord b = getNextPos();
-        broadcast(NetworkFactorization.MessageType.servo_brief, (byte) motionHandler.orientation.ordinal(), motionHandler.speed_b,
-                a.x, a.y, a.z,
-                b.x, b.y, b.z,
-                motionHandler.pos_progress);
+        broadcast(
+            NetworkFactorization.MessageType.servo_brief,
+            (byte) motionHandler.orientation.ordinal(),
+            motionHandler.speed_b,
+            a.x,
+            a.y,
+            a.z,
+            b.x,
+            b.y,
+            b.z,
+            motionHandler.pos_progress);
     }
 
     public void broadcastFullUpdate() {
@@ -116,13 +124,15 @@ public abstract class AbstractServoMachine extends Entity implements IEntityAddi
     }
 
     @Override
-    public boolean handleMessageFromClient(NetworkFactorization.MessageType messageType, ByteBuf input) throws IOException {
+    public boolean handleMessageFromClient(NetworkFactorization.MessageType messageType, ByteBuf input)
+        throws IOException {
         return false;
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input) throws IOException {
+    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input)
+        throws IOException {
         if (messageType == NetworkFactorization.MessageType.servo_stopped) {
             motionHandler.stopped = input.readBoolean();
             return true;
@@ -174,12 +184,13 @@ public abstract class AbstractServoMachine extends Entity implements IEntityAddi
         if (wire == null) {
             return false;
         }
-        return wire.getCharge().tryTake(amount) >= amount;
+        return wire.getCharge()
+            .tryTake(amount) >= amount;
     }
 
-    public void updateSocket() { }
+    public void updateSocket() {}
 
-    public void onEnterNewBlock() { }
+    public void onEnterNewBlock() {}
 
     public FzOrientation getOrientation() {
         return motionHandler.orientation;
@@ -234,7 +245,7 @@ public abstract class AbstractServoMachine extends Entity implements IEntityAddi
             updateServoLogic();
             if (orig_speed != motionHandler.speed_b || orig_or != motionHandler.orientation) {
                 broadcastBriefUpdate();
-                //NOTE: Could be spammy. Speed might be too important to not send tho.
+                // NOTE: Could be spammy. Speed might be too important to not send tho.
             }
         }
     }
@@ -254,19 +265,21 @@ public abstract class AbstractServoMachine extends Entity implements IEntityAddi
 
     @Override
     public void setPosition(double x, double y, double z) {
-        // super.setPosition(x, y, z); //Super does some stupid shit to the bounding box. Does not mess with the chunk location or anything like that.
+        // super.setPosition(x, y, z); //Super does some stupid shit to the bounding box. Does not mess with the chunk
+        // location or anything like that.
         this.posX = x;
         this.posY = y;
         this.posZ = z;
         double dp = 1;
         this.boundingBox.setBounds(x, y, z, x + dp, y + dp, z + dp);
         /*
-        double neg_size = -0.25;
-        double pos_size = 0.75;
-        double height = 2F/16F;
-        double dy = 0.5;
-        this.boundingBox.setBounds(x - neg_size, dy + y - height, z - neg_size, x + pos_size, dy + y + height, z + pos_size);
-        */
+         * double neg_size = -0.25;
+         * double pos_size = 0.75;
+         * double height = 2F/16F;
+         * double dy = 0.5;
+         * this.boundingBox.setBounds(x - neg_size, dy + y - height, z - neg_size, x + pos_size, dy + y + height, z +
+         * pos_size);
+         */
     }
 
     @Override

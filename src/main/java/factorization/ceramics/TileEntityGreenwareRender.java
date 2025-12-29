@@ -7,7 +7,6 @@ import org.lwjgl.opengl.GL11;
 
 import factorization.shared.Core;
 
-
 public class TileEntityGreenwareRender extends TileEntitySpecialRenderer {
 
     @Override
@@ -19,7 +18,7 @@ public class TileEntityGreenwareRender extends TileEntitySpecialRenderer {
         Core.profileStartRender("ceramics");
         GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
         GL11.glDisable(GL11.GL_LIGHTING);
-        //prevents AO flickering on & off
+        // prevents AO flickering on & off
         int lt = gw.lastTouched;
         gw.lastTouched = 0;
         bindTexture(Core.blockAtlas);

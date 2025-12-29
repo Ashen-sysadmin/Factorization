@@ -1,11 +1,13 @@
 package factorization.oreprocessing;
 
-import factorization.common.ContainerFactorization;
-import factorization.shared.TileEntityFactorization;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ICrafting;
 
+import factorization.common.ContainerFactorization;
+import factorization.shared.TileEntityFactorization;
+
 public class ContainerSlagFurnace extends ContainerFactorization {
+
     int lastBurnTime = -1, lastFuelItemBurnTime = -1, lastCookTime = -1;
     TileEntitySlagFurnace furnace;
 
@@ -36,15 +38,15 @@ public class ContainerSlagFurnace extends ContainerFactorization {
     @Override // -- stupid server
     public void updateProgressBar(int index, int val) {
         switch (index) {
-        case 0:
-            furnace.furnaceBurnTime = val;
-            break;
-        case 1:
-            furnace.furnaceCookTime = val;
-            break;
-        case 2:
-            furnace.currentFuelItemBurnTime = val;
-            break;
+            case 0:
+                furnace.furnaceBurnTime = val;
+                break;
+            case 1:
+                furnace.furnaceCookTime = val;
+                break;
+            case 2:
+                furnace.currentFuelItemBurnTime = val;
+                break;
         }
     }
 }

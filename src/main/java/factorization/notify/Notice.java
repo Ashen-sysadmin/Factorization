@@ -13,6 +13,7 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 public class Notice {
+
     final Object where;
     private String message;
     private String[] messageParameters;
@@ -42,21 +43,21 @@ public class Notice {
      * </pre></code>
      * 
      * @param where
-     *            An {@link Entity}, {@link TileEntity}, {@link Vec3}, or
-     *            {@link ISaneCoord} (eg {@link SimpleCoord}, or FZ's Coord)
+     *                          An {@link Entity}, {@link TileEntity}, {@link Vec3}, or
+     *                          {@link ISaneCoord} (eg {@link SimpleCoord}, or FZ's Coord)
      * @param message
-     *            The message to be sent.
+     *                          The message to be sent.
      * 
-     *            <p>
-     *            The message will be translated, and then the translated
-     *            message and the messageParameters will be passed through
-     *            {@link String.format}. All translations happen client-side.
-     *            </p>
-     *            <p>
-     *            Newlines work as expected.
-     *            </p>
+     *                          <p>
+     *                          The message will be translated, and then the translated
+     *                          message and the messageParameters will be passed through
+     *                          {@link String.format}. All translations happen client-side.
+     *                          </p>
+     *                          <p>
+     *                          Newlines work as expected.
+     *                          </p>
      * @param messageParameters
-     *            The format parameters.
+     *                          The format parameters.
      * 
      */
 
@@ -72,7 +73,7 @@ public class Notice {
             world = ((TileEntity) where).getWorldObj();
         }
     }
-    
+
     /**
      * Creates a new Notice. The {@link NoticeUpdater} will be used to populate the initial message,
      * and will be called repeatedly until some amount of time passes. If the message changes,
@@ -89,10 +90,10 @@ public class Notice {
      * </pre>
      * 
      * @param where
-     *            An {@link Entity}, {@link TileEntity}, {@link Vec3}, or
-     *            {@link ISaneCoord} (eg {@link SimpleCoord}, or FZ's Coord)
+     *                An {@link Entity}, {@link TileEntity}, {@link Vec3}, or
+     *                {@link ISaneCoord} (eg {@link SimpleCoord}, or FZ's Coord)
      * @param updater
-     *             The {@link NoticeUpdater} object.
+     *                The {@link NoticeUpdater} object.
      * 
      */
     public Notice(Object where, NoticeUpdater updater) {
@@ -100,7 +101,7 @@ public class Notice {
         withUpdater(updater);
         updater.update(this);
     }
-    
+
     /**
      * <p>
      * Sets a single item to be sent along with the message. It can be used in
@@ -165,7 +166,7 @@ public class Notice {
         this.updater = updater;
         return this;
     }
-    
+
     /**
      * Changes the message. This goes with the {@link NoticeUpdater} constructor.
      */
@@ -186,7 +187,7 @@ public class Notice {
         this.message = newMessage;
         this.messageParameters = newMessageParameters;
     }
-    
+
     private void cmp(Object a, Object b) {
         if (a == b) return;
         if (a != null && b != null) {
@@ -195,7 +196,7 @@ public class Notice {
             changed |= a == b;
         }
     }
-    
+
     private void cmpIs(ItemStack a, ItemStack b) {
         if (a == b) return;
         if (a != null && b != null) {
@@ -210,7 +211,7 @@ public class Notice {
         if (style.contains(Style.LONG)) return ClientMessage.LONG_TIME;
         return ClientMessage.SHORT_TIME;
     }
-    
+
     boolean isInvalid() {
         int maxAge = 20 * (style.contains(Style.LONG) ? ClientMessage.LONG_TIME : ClientMessage.SHORT_TIME);
         if (age++ > maxAge) {
@@ -228,7 +229,8 @@ public class Notice {
             }
         } else if (where instanceof ISaneCoord) {
             ISaneCoord coord = (ISaneCoord) where;
-            if (!coord.w().blockExists(coord.x(), coord.y(), coord.z())) {
+            if (!coord.w()
+                .blockExists(coord.x(), coord.y(), coord.z())) {
                 return false;
             }
         } else if (where instanceof Vec3 && world != null) {
@@ -264,7 +266,7 @@ public class Notice {
             addedToRecurList = true;
         }
     }
-    
+
     /**
      * Dispatches the Notice to the player. If the player is null, then all
      * players in the world will see it.
@@ -275,6 +277,7 @@ public class Notice {
 
     /**
      * Sends the Notice to everyone in the world.
+     * 
      * @see sendTo
      */
     public void sendToAll() {
@@ -286,7 +289,8 @@ public class Notice {
      */
     public static void clear(EntityPlayer player) {
         SimpleCoord at = new SimpleCoord(player.worldObj, (int) player.posX, (int) player.posY, (int) player.posZ);
-        NotifyImplementation.instance.doSend(player, at, player.worldObj, EnumSet.of(Style.CLEAR), null, "", emptyStringArray);
+        NotifyImplementation.instance
+            .doSend(player, at, player.worldObj, EnumSet.of(Style.CLEAR), null, "", emptyStringArray);
     }
 
     /**
@@ -295,21 +299,21 @@ public class Notice {
      * (Unfortunately it kind of looks like crap because the text isn't shadowed. Oh well.)
      * 
      * @param player
-     *            The player to be notified
+     *                        The player to be notified
      * @param message
-     *            A string. The client will localize this message prior to
-     *            displaying it.
+     *                        A string. The client will localize this message prior to
+     *                        displaying it.
      * @param formatArguments
-     *            Optional string arguments for a format parameter.
+     *                        Optional string arguments for a format parameter.
      */
     public static void onscreen(EntityPlayer player, String message, String... formatArguments) {
         NotifyImplementation.instance.doSendOnscreenMessage(player, message, formatArguments);
     }
-    
+
     /**
      * Sends an updatable chat message to the player. If a message with the same msgKey is sent,
      * then all other messages with the same key will be removed.
-     * (But it might have a problem with word-wrapping if the message is too long. By the grace of notch.) 
+     * (But it might have a problem with word-wrapping if the message is too long. By the grace of notch.)
      * 
      * <code><pre>
      * {@link ChatComponentTranslation} msg = new {@link ChatComponentTranslation}("mymod.currentTime", System.currentTimeMillis());
@@ -319,19 +323,16 @@ public class Notice {
      * 
      * @param player Who to send the message to.
      * @param msgKey A non-zero, arbitrary, and consistent integer.
-     * @param msg The chat message to send, preferably a {@link ChatComponentTranslation}
+     * @param msg    The chat message to send, preferably a {@link ChatComponentTranslation}
      */
     public static void chat(EntityPlayer player, int msgKey, IChatComponent msg) {
         NotifyImplementation.instance.sendReplacableChatMessage(player, msg, msgKey);
     }
 
     boolean updateNotice() {
-        if (updater == null)
-            return false;
-        if (targetPlayer != null && targetPlayer.isDead)
-            return false;
-        if (isUpdating)
-            return false;
+        if (updater == null) return false;
+        if (targetPlayer != null && targetPlayer.isDead) return false;
+        if (isUpdating) return false;
         isUpdating = true;
         updater.update(this);
         isUpdating = false;

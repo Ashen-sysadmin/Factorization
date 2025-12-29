@@ -1,15 +1,16 @@
 package factorization.api.datahelpers;
 
-import factorization.api.FzOrientation;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.UUID;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.fluids.FluidTank;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.UUID;
+import factorization.api.FzOrientation;
 
 /**
  * An abstract base class for DataHelpers that aren't fussy about types.
@@ -17,6 +18,7 @@ import java.util.UUID;
  * You probably shouldn't be using huge long chains of 'instanceof' in putImplementation.
  */
 public abstract class MergedDataHelper extends DataHelper {
+
     protected abstract <E> E putImplementation(E o) throws IOException;
 
     @Override

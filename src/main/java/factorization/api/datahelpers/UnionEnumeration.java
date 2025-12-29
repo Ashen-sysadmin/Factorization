@@ -8,6 +8,7 @@ import java.util.Map;
  * Holds a list of types and their default values.
  */
 public class UnionEnumeration {
+
     public static final UnionEnumeration empty = new UnionEnumeration(new Class<?>[0], new Object[0]);
 
     private UnionEnumeration(Class<?>[] classes, Object[] zeros) {
@@ -23,21 +24,23 @@ public class UnionEnumeration {
         DataValidator data = new DataValidator(new HashMap<String, Object>());
         for (int i = 0; i < classes.length; i++) {
             try {
-                data.as(Share.VISIBLE_TRANSIENT, "#" + i).putUnion(this, zeros[i]);
+                data.as(Share.VISIBLE_TRANSIENT, "#" + i)
+                    .putUnion(this, zeros[i]);
             } catch (IOException e) {
                 throw new IllegalArgumentException(e);
             }
         }
     }
 
-    public static UnionEnumeration build(Object ...parts) {
+    public static UnionEnumeration build(Object... parts) {
         if (parts.length % 2 != 0) throw new IllegalArgumentException("Not pairs");
         Class<?> classes[] = new Class<?>[parts.length / 2];
         Object zeros[] = new Object[parts.length / 2];
         for (int i = 0; i < parts.length; i += 2) {
             Class<?> klass = (Class<?>) parts[i];
             Object val = parts[i + 1];
-            if (val != null && !klass.isInstance(val)) throw new IllegalArgumentException("default value does not match class");
+            if (val != null && !klass.isInstance(val))
+                throw new IllegalArgumentException("default value does not match class");
             classes[i / 2] = klass;
             zeros[i / 2] = val;
             if (val == null ^ klass == Void.TYPE) {
@@ -56,7 +59,8 @@ public class UnionEnumeration {
         Integer integer;
         while (true) {
             if (k == null) {
-                throw new IllegalArgumentException("Type is not registered to be serialized: " + val + ", a " + val.getClass());
+                throw new IllegalArgumentException(
+                    "Type is not registered to be serialized: " + val + ", a " + val.getClass());
             }
             integer = indexMap.get(k);
             if (integer != null) break;

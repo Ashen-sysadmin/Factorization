@@ -20,10 +20,11 @@ import factorization.oreprocessing.TileEntityCrystallizer;
 import factorization.oreprocessing.TileEntityCrystallizer.CrystalRecipe;
 import factorization.shared.Core;
 
-public class RecipeCrystallizer extends TemplateRecipeHandler  {
+public class RecipeCrystallizer extends TemplateRecipeHandler {
+
     @Override
     public void loadCraftingRecipes(ItemStack result) {
-        //XXX NOTE: This is probably a lame implementation of this function.
+        // XXX NOTE: This is probably a lame implementation of this function.
         for (Object obj : TileEntityCrystallizer.recipes) {
             if (obj instanceof CrystalRecipe) {
                 CrystalRecipe cr = (CrystalRecipe) obj;
@@ -33,7 +34,7 @@ public class RecipeCrystallizer extends TemplateRecipeHandler  {
             }
         }
     }
-    
+
     @Override
     public void loadCraftingRecipes(String outputId, Object... results) {
         if (outputId.equals("fz.crystallizing")) {
@@ -42,16 +43,14 @@ public class RecipeCrystallizer extends TemplateRecipeHandler  {
         }
         super.loadCraftingRecipes(outputId, results);
     }
-    
+
     @Override
     public void loadUsageRecipes(ItemStack ingredient) {
-        //XXX NOTE: This is probably a lame implementation of this function.
+        // XXX NOTE: This is probably a lame implementation of this function.
         for (Object obj : TileEntityCrystallizer.recipes) {
             if (obj instanceof CrystalRecipe) {
                 CrystalRecipe cr = (CrystalRecipe) obj;
-                if (ingredient == null
-                        || ingredient.isItemEqual(cr.input)
-                        || ingredient.isItemEqual(cr.solution)) {
+                if (ingredient == null || ingredient.isItemEqual(cr.input) || ingredient.isItemEqual(cr.solution)) {
                     arecipes.add(new CachedCrystallizerRecipe(cr));
                 }
             }
@@ -59,6 +58,7 @@ public class RecipeCrystallizer extends TemplateRecipeHandler  {
     }
 
     class CachedCrystallizerRecipe extends CachedRecipe {
+
         CrystalRecipe cr;
 
         public CachedCrystallizerRecipe(CrystalRecipe cr) {
@@ -85,17 +85,17 @@ public class RecipeCrystallizer extends TemplateRecipeHandler  {
         }
 
     }
-    
+
     @Override
     public List<String> handleItemTooltip(GuiRecipe gui, ItemStack stack, List currenttip, int recipe) {
         if (stack == null) {
             return currenttip;
         }
-        CrystalRecipe cr = ((CachedCrystallizerRecipe)arecipes.get(recipe)).cr;
+        CrystalRecipe cr = ((CachedCrystallizerRecipe) arecipes.get(recipe)).cr;
         if (stack.isItemEqual(cr.output)) {
-            float prob = cr.output_count*100;
+            float prob = cr.output_count * 100;
             if (prob != 100 || true) {
-                currenttip.add((int)prob + "%");
+                currenttip.add((int) prob + "%");
             }
         }
         if (stack.isItemEqual(cr.solution)) {
@@ -113,13 +113,14 @@ public class RecipeCrystallizer extends TemplateRecipeHandler  {
 
     @Override
     public void loadTransferRects() {
-        // XXX TODO (if this is even actually necessary? What's it do?) (It might give you places to click on to bring up the recipes list.)
+        // XXX TODO (if this is even actually necessary? What's it do?) (It might give you places to click on to bring
+        // up the recipes list.)
         transferRects.add(new RecipeTransferRect(new Rectangle(35 + 63, 78, 95 - 63, 16), "fz.crystallizing"));
     }
 
     @Override
     public Class<? extends GuiContainer> getGuiClass() {
-        return GuiCrystallizer.class;		
+        return GuiCrystallizer.class;
     }
 
     @Override
@@ -131,7 +132,7 @@ public class RecipeCrystallizer extends TemplateRecipeHandler  {
     public String getGuiTexture() {
         return Core.gui_nei + "crystal.png";
     }
-    
+
     @Override
     public void drawBackground(int recipe) {
         GL11.glColor4f(1, 1, 1, 1);
@@ -143,29 +144,28 @@ public class RecipeCrystallizer extends TemplateRecipeHandler  {
     public String getOverlayIdentifier() {
         return "fz.crystallizing";
     }
-    
+
     /*
-    public void drawBackground(GuiContainerManager gui, int recipe)
-    {
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        
-        gui.bindTexture(getGuiTexture());
-        gui.drawTexturedModalRect(0, 15, 5, 11, 166, 95);
-    }*/
-    
+     * public void drawBackground(GuiContainerManager gui, int recipe)
+     * {
+     * GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+     * gui.bindTexture(getGuiTexture());
+     * gui.drawTexturedModalRect(0, 15, 5, 11, 166, 95);
+     * }
+     */
+
     @Override
     public void drawExtras(int recipe) {
         super.drawExtras(recipe);
-        //drawProgressBar(gui, 43 - 5, 89 + 4, 0, 192, 90, 16, 20*60, 0);
-        
-        
-        //this.drawTexturedModalRect(var5 + 43, var6 + 89, 0, 192, progress, 16);
-        //for (int dx : new int[] { 54, 109 }) {
-        //	this.drawTexturedModalRect(var5 + dx, var6 + 75 + heat, 176, 0 + heat, 14, 13 - heat);
-        //}
-        //drawProgressBar(gui, x, y, tx, ty, w, h, completion, direction);
+        // drawProgressBar(gui, 43 - 5, 89 + 4, 0, 192, 90, 16, 20*60, 0);
+
+        // this.drawTexturedModalRect(var5 + 43, var6 + 89, 0, 192, progress, 16);
+        // for (int dx : new int[] { 54, 109 }) {
+        // this.drawTexturedModalRect(var5 + dx, var6 + 75 + heat, 176, 0 + heat, 14, 13 - heat);
+        // }
+        // drawProgressBar(gui, x, y, tx, ty, w, h, completion, direction);
     }
-    
+
     @Override
     public int recipiesPerPage() {
         return 1;

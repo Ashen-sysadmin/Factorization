@@ -1,19 +1,21 @@
 package factorization.mechanics;
 
+import java.io.IOException;
+
+import net.minecraft.item.ItemStack;
+
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.IDataSerializable;
 import factorization.common.FactoryType;
 import factorization.shared.Core;
 import factorization.sockets.TileEntitySocketBase;
-import net.minecraft.item.ItemStack;
-
-import java.io.IOException;
 
 public class SocketHandCrank extends TileEntitySocketBase {
+
     @Override
     public FactoryType getFactoryType() {
         return null;
-        //return FactoryType.SOCKET_HAND_CRANK;
+        // return FactoryType.SOCKET_HAND_CRANK;
     }
 
     @Override

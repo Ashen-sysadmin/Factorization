@@ -1,10 +1,10 @@
 package factorization.charge;
 
-import factorization.util.PlayerUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+
 import factorization.api.Charge;
 import factorization.api.Charge.ChargeDensityReading;
 import factorization.api.Coord;
@@ -15,6 +15,7 @@ import factorization.notify.NoticeUpdater;
 import factorization.shared.Core;
 import factorization.shared.Core.TabType;
 import factorization.shared.ItemFactorization;
+import factorization.util.PlayerUtil;
 
 public class ItemChargeMeter extends ItemFactorization {
 
@@ -22,17 +23,15 @@ public class ItemChargeMeter extends ItemFactorization {
         super("tool/charge_meter", TabType.TOOLS);
         setMaxStackSize(1);
     }
-    
+
     @Override
-    public boolean onItemUse(ItemStack par1ItemStack,
-            EntityPlayer par2EntityPlayer, World par3World, int par4, int par5,
-            int par6, int par7, float par8, float par9, float par10) {
-        return tryPlaceIntoWorld(par1ItemStack, par2EntityPlayer, par3World, par4, par5,
-                par6, par7, par8, par9, par10);
+    public boolean onItemUse(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, World par3World, int par4,
+        int par5, int par6, int par7, float par8, float par9, float par10) {
+        return tryPlaceIntoWorld(par1ItemStack, par2EntityPlayer, par3World, par4, par5, par6, par7, par8, par9, par10);
     }
 
-    public boolean tryPlaceIntoWorld(ItemStack is, EntityPlayer player, World w, int x, int y,
-            int z, int side, float vecx, float vecy, float vecz) {
+    public boolean tryPlaceIntoWorld(ItemStack is, EntityPlayer player, World w, int x, int y, int z, int side,
+        float vecx, float vecy, float vecz) {
         if (w.isRemote) {
             return true;
         }
@@ -47,6 +46,7 @@ public class ItemChargeMeter extends ItemFactorization {
                 return false;
             }
             new Notice(te, new NoticeUpdater() {
+
                 @Override
                 public void update(Notice msg) {
                     String info = im.getInfo();
@@ -57,6 +57,7 @@ public class ItemChargeMeter extends ItemFactorization {
             return true;
         }
         new Notice(te, new NoticeUpdater() {
+
             @Override
             public void update(Notice msg) {
                 ChargeDensityReading ret = Charge.getChargeDensity(ic);
@@ -67,11 +68,12 @@ public class ItemChargeMeter extends ItemFactorization {
                     inf = "\n" + inf;
                 }
                 String txt;
-                if (Core.dev_environ) { 
-                    txt = "Charge: " + ic.getCharge().getValue() + "/" + ret.totalCharge
-                        + "\nConductors: " + ret.conductorCount;
+                if (Core.dev_environ) {
+                    txt = "Charge: " + ic.getCharge()
+                        .getValue() + "/" + ret.totalCharge + "\nConductors: " + ret.conductorCount;
                 } else {
-                    txt = "Charge: " + ic.getCharge().getValue();
+                    txt = "Charge: " + ic.getCharge()
+                        .getValue();
                 }
                 txt += inf;
                 msg.setMessage("%s", txt);

@@ -4,6 +4,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
 public class TileEntityFzNull extends TileEntity {
+
     static final String mapName = "fz.null";
 
     @Override
@@ -18,9 +19,20 @@ public class TileEntityFzNull extends TileEntity {
             int origX = tag.getInteger("x");
             int origY = tag.getInteger("y");
             int origZ = tag.getInteger("z");
-            Core.logSevere("fz.null TileEntity reading a " + tag.getString("id") + " TileEntity at "
-                    + xCoord + "," + yCoord + "," + zCoord + "; saved position's at "
-                    + origX + "," + origY + "," + origZ);
+            Core.logSevere(
+                "fz.null TileEntity reading a " + tag.getString("id")
+                    + " TileEntity at "
+                    + xCoord
+                    + ","
+                    + yCoord
+                    + ","
+                    + zCoord
+                    + "; saved position's at "
+                    + origX
+                    + ","
+                    + origY
+                    + ","
+                    + origZ);
         }
         tag.setInteger("x", this.xCoord);
         tag.setInteger("y", this.yCoord);

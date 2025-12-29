@@ -3,6 +3,7 @@ package factorization.charge;
 import factorization.api.DeltaCoord;
 
 class CubeFace {
+
     private static final int side_reverser[] = { 1, 0, 3, 2, 5, 4 };
     int side;
 
@@ -26,14 +27,9 @@ class CubeFace {
         return new CubeFace(side_reverser[side]);
     }
 
-    static private final int vecMap[][] = {
-            { 0, -1, 0 },
-            { 0, +1, 0 },
-            { 0, 0, -1 },
-            { 0, 0, +1 },
-            { -1, 0, 0 },
-            { +1, 0, 0 }
-    };
+    static private final int vecMap[][] = { { 0, -1, 0 }, { 0, +1, 0 }, { 0, 0, -1 }, { 0, 0, +1 }, { -1, 0, 0 },
+        { +1, 0, 0 } };
+
     DeltaCoord toVector() {
         int a[] = vecMap[this.side];
         return new DeltaCoord(a[0], a[1], a[2]);
@@ -51,7 +47,7 @@ class CubeFace {
     long getFaceFlag() {
         return 1 << this.side;
     }
-    
+
     private static long e(int... args) {
         long r = 0;
         for (int a : args) {
@@ -59,14 +55,13 @@ class CubeFace {
         }
         return r;
     }
-    
-    private static final long edgeMap[] = {
-            e(0, 1, 2, 3), //-y
-            e(4, 5, 6, 7), //+y
-            e(4, 8, 0, 11), //-z
-            e(6, 9, 2, 10), //+z
-            e(7, 10, 3, 11), //-x
-            e(5, 8, 1, 9) //+x
+
+    private static final long edgeMap[] = { e(0, 1, 2, 3), // -y
+        e(4, 5, 6, 7), // +y
+        e(4, 8, 0, 11), // -z
+        e(6, 9, 2, 10), // +z
+        e(7, 10, 3, 11), // -x
+        e(5, 8, 1, 9) // +x
     };
 
     long getEdgeFlags() {

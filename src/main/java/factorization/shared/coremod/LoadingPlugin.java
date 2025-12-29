@@ -1,4 +1,4 @@
-package factorization.coremod;
+package factorization.shared.coremod;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,30 +16,38 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
 @TransformerExclusions("factorization.coremod.")
 @DependsOn("cpw.mods.fml.common.asm.transformers.DeobfuscationTransformer")
 public class LoadingPlugin implements IFMLLoadingPlugin {
+
     public static boolean pluginInvoked = false;
     public static boolean deobfuscatedEnvironment = true;
 
     private static File mcLocation = null;
     private boolean inspect_air = false;
 
-    @Override public String getSetupClass() { return null; }
-    @Override public String getModContainerClass() { return null; } // We use the FMLCorePluginContainsFMLMod manifest attribute
-    
+    @Override
+    public String getSetupClass() {
+        return null;
+    }
+
+    @Override
+    public String getModContainerClass() {
+        return null;
+    } // We use the FMLCorePluginContainsFMLMod manifest attribute
+
     @Override
     public String getAccessTransformerClass() {
-        return "factorization.coremod.FzAccessTransformer";
+        return "factorization.shared.coremod.FzAccessTransformer";
     }
 
     @Override
     public String[] getASMTransformerClass() {
         ArrayList<String> plugins = new ArrayList();
-        plugins.add("factorization.coremod.ASMTransformer");
+        plugins.add("factorization.shared.coremod.ASMTransformer");
         if (inspect_air) {
-            plugins.add("factorization.coremod.AirInspector");
+            plugins.add("factorization.shared.coremod.AirInspector");
         }
         return plugins.toArray(new String[plugins.size()]);
     }
-    
+
     @Override
     public void injectData(Map<String, Object> data) {
         deobfuscatedEnvironment = !(Boolean) data.get("runtimeDeobfuscationEnabled");

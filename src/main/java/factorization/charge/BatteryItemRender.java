@@ -1,6 +1,5 @@
 package factorization.charge;
 
-import factorization.util.ItemUtil;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -9,12 +8,16 @@ import net.minecraftforge.client.IItemRenderer;
 import org.lwjgl.opengl.GL11;
 
 import factorization.shared.Core;
+import factorization.util.ItemUtil;
 
 public class BatteryItemRender implements IItemRenderer {
+
     BlockRenderBattery render_battery;
+
     public BatteryItemRender(BlockRenderBattery render_battery) {
         this.render_battery = render_battery;
     }
+
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {
         return true;
@@ -40,7 +43,7 @@ public class BatteryItemRender implements IItemRenderer {
         NBTTagCompound tag = ItemUtil.getTag(is);
         render_battery.item_fullness = TileEntityBattery.getFullness(Core.registry.battery.getStorage(is));
         render_battery.renderInInventory();
-        render_battery.renderInventoryMode((RenderBlocks)data[0], type);
+        render_battery.renderInventoryMode((RenderBlocks) data[0], type);
         GL11.glPopMatrix();
     }
 

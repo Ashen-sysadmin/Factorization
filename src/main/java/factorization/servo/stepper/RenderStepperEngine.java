@@ -1,18 +1,5 @@
 package factorization.servo.stepper;
 
-import factorization.api.FzColor;
-import factorization.api.FzOrientation;
-import factorization.api.Quaternion;
-import factorization.common.BlockIcons;
-import factorization.fzds.DeltaChunk;
-import factorization.fzds.Hammer;
-import factorization.fzds.HammerEnabled;
-import factorization.servo.BlockRenderServoRail;
-import factorization.servo.TileEntityServoRail;
-import factorization.shared.BlockRenderHelper;
-import factorization.shared.Core;
-import factorization.shared.ObjectModel;
-import factorization.util.NumUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderEntity;
@@ -23,10 +10,25 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import factorization.api.FzColor;
+import factorization.api.FzOrientation;
+import factorization.api.Quaternion;
+import factorization.common.BlockIcons;
+import factorization.fzds.DeltaChunk;
+import factorization.fzds.Hammer;
+import factorization.fzds.HammerEnabled;
+import factorization.servo.BlockRenderServoRail;
+import factorization.shared.BlockRenderHelper;
+import factorization.shared.Core;
+import factorization.shared.ObjectModel;
+import factorization.util.NumUtil;
+
 public class RenderStepperEngine extends RenderEntity {
+
     ObjectModel sprocket = new ObjectModel(Core.getResource("models/servo/sprocket.obj"));
     ObjectModel chasis = new ObjectModel(Core.getResource("models/servo/stepper.obj"));
 
@@ -47,7 +49,7 @@ public class RenderStepperEngine extends RenderEntity {
     @Override
     public void doRender(Entity ent, double x, double y, double z, float yaw, float partial) {
         Core.profileStartRender("servo");
-        //Ugh, there's some state that changes when mousing over an item in the inventory...
+        // Ugh, there's some state that changes when mousing over an item in the inventory...
         MovingObjectPosition mop = Minecraft.getMinecraft().objectMouseOver;
         if (HammerEnabled.ENABLED && DeltaChunk.getClientShadowWorld() == ent.worldObj) {
             mop = Hammer.proxy.getShadowHit();
@@ -61,7 +63,10 @@ public class RenderStepperEngine extends RenderEntity {
         GL11.glPushMatrix();
 
         motor.motionHandler.interpolatePosition((float) Math.pow(motor.motionHandler.pos_progress, 2));
-        float reorientInterpolation = interp(motor.motionHandler.servo_reorient, motor.motionHandler.prev_servo_reorient, partial);
+        float reorientInterpolation = interp(
+            motor.motionHandler.servo_reorient,
+            motor.motionHandler.prev_servo_reorient,
+            partial);
         orientMotor(motor, partial, reorientInterpolation);
 
         renderMainModel(motor, partial, reorientInterpolation, false);
@@ -75,7 +80,7 @@ public class RenderStepperEngine extends RenderEntity {
             float gray = 0.65F;
             GL11.glColor4f(gray, gray, gray, 0.8F);
             GL11.glLineWidth(1.5F);
-            float d = 1F/2F, h = 0.25F;
+            float d = 1F / 2F, h = 0.25F;
             AxisAlignedBB ab = AxisAlignedBB.getBoundingBox(-d, -h, -d, d, h, d);
             drawOutlinedBoundingBox(ab);
             ab.offset(ab.minX, ab.minY, ab.minZ);
@@ -145,7 +150,10 @@ public class RenderStepperEngine extends RenderEntity {
             GL11.glColor3f(1, 0, 0);
             GL11.glVertex3d(0, 0, 0);
             GL11.glVertex3d(o.facing.offsetX, o.facing.offsetY, o.facing.offsetZ);
-            GL11.glVertex3d(o.facing.offsetX + o.top.offsetX, o.facing.offsetY + o.top.offsetY, o.facing.offsetZ + o.top.offsetZ);
+            GL11.glVertex3d(
+                o.facing.offsetX + o.top.offsetX,
+                o.facing.offsetY + o.top.offsetY,
+                o.facing.offsetZ + o.top.offsetZ);
             GL11.glEnd();
             GL11.glLineWidth(2);
             GL11.glBegin(GL11.GL_LINE_STRIP);
@@ -153,7 +161,10 @@ public class RenderStepperEngine extends RenderEntity {
             GL11.glColor3f(0, 0, 1);
             GL11.glVertex3d(0, 0, 0);
             GL11.glVertex3d(o.facing.offsetX, o.facing.offsetY, o.facing.offsetZ);
-            GL11.glVertex3d(o.facing.offsetX + o.top.offsetX, o.facing.offsetY + o.top.offsetY, o.facing.offsetZ + o.top.offsetZ);
+            GL11.glVertex3d(
+                o.facing.offsetX + o.top.offsetX,
+                o.facing.offsetY + o.top.offsetY,
+                o.facing.offsetZ + o.top.offsetZ);
             GL11.glEnd();
         }
 
@@ -187,7 +198,6 @@ public class RenderStepperEngine extends RenderEntity {
         }
     }
 
-
     @Override
     protected ResourceLocation getEntityTexture(Entity ent) {
         return Core.blockAtlas;
@@ -205,11 +215,15 @@ public class RenderStepperEngine extends RenderEntity {
         // Determine the sprocket location & rotation
         double radius = 0.5;
         double constant = Math.PI * 2 * (radius);
-        double partial_rotation = NumUtil.interp((float) motor.motionHandler.prev_sprocket_rotation, (float) motor.motionHandler.sprocket_rotation, partial);
+        double partial_rotation = NumUtil.interp(
+            (float) motor.motionHandler.prev_sprocket_rotation,
+            (float) motor.motionHandler.sprocket_rotation,
+            partial);
         final double angle = constant * partial_rotation;
 
         float rd = (float) radius;
-        if (motor.motionHandler.orientation != motor.motionHandler.prevOrientation && motor.motionHandler.prevOrientation != FzOrientation.UNKNOWN) {
+        if (motor.motionHandler.orientation != motor.motionHandler.prevOrientation
+            && motor.motionHandler.prevOrientation != FzOrientation.UNKNOWN) {
             // This could use some work: only stretch if the new direction is parallel to the old gear direction.
             double stretch_interp = ro * 2;
             if (stretch_interp < 1) {
@@ -220,8 +234,8 @@ public class RenderStepperEngine extends RenderEntity {
             }
         }
         // Render them
-        float o = 8F/16F;
-        float height_d = 2F/16F;
+        float o = 8F / 16F;
+        float height_d = 2F / 16F;
         GL11.glRotatef(180, 1, 0, 0);
         {
             GL11.glPushMatrix();
@@ -252,21 +266,21 @@ public class RenderStepperEngine extends RenderEntity {
         block.beginWithMirroredUVs();
         GL11.glPushMatrix();
         float d = -0.5F;
-        GL11.glTranslatef(d, d - 3F/8F + 0.0001F, d);
+        GL11.glTranslatef(d, d - 3F / 8F + 0.0001F, d);
         {
             // We need to get 14/16ths transformed for 10/16ths.
-            float b = 14F/16F;
-            GL11.glScalef(1/b, 1, 1/b);
-            float s = 10F/16F;
+            float b = 14F / 16F;
+            GL11.glScalef(1 / b, 1, 1 / b);
+            float s = 10F / 16F;
             GL11.glScalef(s, 1, s);
-            float t = 3.2F/16F;
+            float t = 3.2F / 16F;
             GL11.glTranslatef(t, 0, t);
         }
         Tessellator.instance.startDrawingQuads();
         block.renderForTileEntity();
-        //GL11.glDisable(GL11.GL_LIGHTING);
+        // GL11.glDisable(GL11.GL_LIGHTING);
         Tessellator.instance.draw();
-        //GL11.glEnable(GL11.GL_LIGHTING);
+        // GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glPopMatrix();
     }
 }

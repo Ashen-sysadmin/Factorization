@@ -1,20 +1,23 @@
 package factorization.truth.gen;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map.Entry;
+
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemStack;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+
 import factorization.truth.DocumentationModule;
 import factorization.truth.api.IDocGenerator;
 import factorization.truth.api.ITypesetter;
 import factorization.truth.api.TruthError;
 import factorization.util.LangUtil;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.ItemStack;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map.Entry;
 
 public class ItemListViewer implements IDocGenerator {
+
     @Override
     public void process(ITypesetter sb, String arg) throws TruthError {
         if (arg.equalsIgnoreCase("all")) {
@@ -23,7 +26,8 @@ public class ItemListViewer implements IDocGenerator {
         }
         CreativeTabs found = null;
         for (CreativeTabs ct : CreativeTabs.creativeTabArray) {
-            if (ct.getTabLabel().equalsIgnoreCase(arg)) {
+            if (ct.getTabLabel()
+                .equalsIgnoreCase(arg)) {
                 found = ct;
                 break;
             }
@@ -34,7 +38,7 @@ public class ItemListViewer implements IDocGenerator {
             listTabs(sb);
         }
     }
-    
+
     void listTabs(ITypesetter sb) throws TruthError {
         String ret = "";
         ret += "\\title{Item Categories}\n\n";
@@ -48,7 +52,7 @@ public class ItemListViewer implements IDocGenerator {
         }
         sb.write(ret);
     }
-    
+
     void listAll(ITypesetter out, CreativeTabs ct) throws TruthError {
         if (ct == null) {
             out.write("\\title{All Items}");
@@ -58,13 +62,16 @@ public class ItemListViewer implements IDocGenerator {
             out.write("\\title{" + title + "}");
         }
         out.write("\n\n");
-        int size = DocumentationModule.getNameItemCache().size();
+        int size = DocumentationModule.getNameItemCache()
+            .size();
         Multimap<String, ItemStack> found = HashMultimap.create(size, 1);
         ArrayList<String> toSort = new ArrayList<String>();
-        for (Entry<String, ArrayList<ItemStack>> pair : DocumentationModule.getNameItemCache().entrySet()) {
+        for (Entry<String, ArrayList<ItemStack>> pair : DocumentationModule.getNameItemCache()
+            .entrySet()) {
             ArrayList<ItemStack> items = pair.getValue();
             for (ItemStack is : items) {
-                if (ct != null && is.getItem().getCreativeTab() != ct) {
+                if (ct != null && is.getItem()
+                    .getCreativeTab() != ct) {
                     continue;
                 }
                 String name = is.getDisplayName();
@@ -75,7 +82,7 @@ public class ItemListViewer implements IDocGenerator {
             }
         }
         Collections.sort(toSort, String.CASE_INSENSITIVE_ORDER);
-        
+
         for (String name : toSort) {
             for (ItemStack is : found.get(name)) {
                 if (is == null) continue;

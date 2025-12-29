@@ -3,20 +3,22 @@ package factorization.charge;
 import java.util.ArrayList;
 
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.IIcon;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import factorization.api.VectorUV;
 
 public class WireRenderingCube {
+
     IIcon icon;
     public VectorUV corner, origin, axis;
     public double ul, vl;
     public float theta;
 
     /**
-     * Creates a lovely cube used to render with. The vectors are in texels with the center of the tile as the origin. The rotations will also be done around
+     * Creates a lovely cube used to render with. The vectors are in texels with the center of the tile as the origin.
+     * The rotations will also be done around
      * the center of the tile.
      */
     public WireRenderingCube(IIcon icon, VectorUV corner, VectorUV origin) {
@@ -28,17 +30,18 @@ public class WireRenderingCube {
         this.axis = new VectorUV(0, 0, 0);
         this.theta = 0;
 
-        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+        if (FMLCommonHandler.instance()
+            .getSide() == Side.CLIENT) {
             setIIcon(icon);
         }
     }
-    
+
     static float takeFloat(ArrayList<Object> args) {
         return (Float) args.remove(0);
     }
-    
+
     public boolean equals(WireRenderingCube other) {
-        return this.corner.equals(other.corner) && this.origin.equals(other.origin) && this.icon == other.icon; 
+        return this.corner.equals(other.corner) && this.origin.equals(other.origin) && this.icon == other.icon;
     }
 
     public WireRenderingCube copy() {
@@ -69,8 +72,12 @@ public class WireRenderingCube {
         o = o.add(8, 8, 8);
         o.scale(1F / 16F);
         b.setBlockBounds(
-                (float)(o.x - c.x), (float)(o.y - c.y), (float)(o.z - c.z),
-                (float)(o.x + c.x), (float)(o.y + c.y), (float)(o.z + c.z));
+            (float) (o.x - c.x),
+            (float) (o.y - c.y),
+            (float) (o.z - c.z),
+            (float) (o.x + c.x),
+            (float) (o.y + c.y),
+            (float) (o.z + c.z));
     }
 
     public WireRenderingCube rotate(double ax, double ay, double az, int theta) {
@@ -87,7 +94,7 @@ public class WireRenderingCube {
         this.theta = theta;
         return this;
     }
-    
+
     public void setIIcon(IIcon newIIcon) {
         icon = newIIcon;
         ul = newIIcon.getMinU();
@@ -99,80 +106,81 @@ public class WireRenderingCube {
         VectorUV v = corner;
         int c = 8;
         switch (face) {
-        case 0: //-y
-            ret[0] = new VectorUV(v.x, -v.y, v.z);
-            ret[1] = new VectorUV(-v.x, -v.y, v.z);
-            ret[2] = new VectorUV(-v.x, -v.y, -v.z);
-            ret[3] = new VectorUV(v.x, -v.y, -v.z);
-            break;
-        case 1: //+y
-            ret[0] = new VectorUV(v.x, v.y, -v.z);
-            ret[1] = new VectorUV(-v.x, v.y, -v.z);
-            ret[2] = new VectorUV(-v.x, v.y, v.z);
-            ret[3] = new VectorUV(v.x, v.y, v.z);
-            break;
-        case 2: //-z
-            ret[0] = new VectorUV(v.x, v.y, -v.z);
-            ret[1] = new VectorUV(v.x, -v.y, -v.z);
-            ret[2] = new VectorUV(-v.x, -v.y, -v.z);
-            ret[3] = new VectorUV(-v.x, v.y, -v.z);
-            break;
-        case 3: //+z
-            ret[0] = new VectorUV(v.x, v.y, v.z);
-            ret[1] = new VectorUV(-v.x, v.y, v.z);
-            ret[2] = new VectorUV(-v.x, -v.y, v.z);
-            ret[3] = new VectorUV(v.x, -v.y, v.z);
-            break;
-        case 4: //-x
-            ret[0] = new VectorUV(-v.x, v.y, v.z);
-            ret[1] = new VectorUV(-v.x, v.y, -v.z);
-            ret[2] = new VectorUV(-v.x, -v.y, -v.z);
-            ret[3] = new VectorUV(-v.x, -v.y, v.z);
-            break;
-        case 5: //+x
-            ret[0] = new VectorUV(v.x, v.y, v.z);
-            ret[1] = new VectorUV(v.x, -v.y, v.z);
-            ret[2] = new VectorUV(v.x, -v.y, -v.z);
-            ret[3] = new VectorUV(v.x, v.y, -v.z);
-            break;
+            case 0: // -y
+                ret[0] = new VectorUV(v.x, -v.y, v.z);
+                ret[1] = new VectorUV(-v.x, -v.y, v.z);
+                ret[2] = new VectorUV(-v.x, -v.y, -v.z);
+                ret[3] = new VectorUV(v.x, -v.y, -v.z);
+                break;
+            case 1: // +y
+                ret[0] = new VectorUV(v.x, v.y, -v.z);
+                ret[1] = new VectorUV(-v.x, v.y, -v.z);
+                ret[2] = new VectorUV(-v.x, v.y, v.z);
+                ret[3] = new VectorUV(v.x, v.y, v.z);
+                break;
+            case 2: // -z
+                ret[0] = new VectorUV(v.x, v.y, -v.z);
+                ret[1] = new VectorUV(v.x, -v.y, -v.z);
+                ret[2] = new VectorUV(-v.x, -v.y, -v.z);
+                ret[3] = new VectorUV(-v.x, v.y, -v.z);
+                break;
+            case 3: // +z
+                ret[0] = new VectorUV(v.x, v.y, v.z);
+                ret[1] = new VectorUV(-v.x, v.y, v.z);
+                ret[2] = new VectorUV(-v.x, -v.y, v.z);
+                ret[3] = new VectorUV(v.x, -v.y, v.z);
+                break;
+            case 4: // -x
+                ret[0] = new VectorUV(-v.x, v.y, v.z);
+                ret[1] = new VectorUV(-v.x, v.y, -v.z);
+                ret[2] = new VectorUV(-v.x, -v.y, -v.z);
+                ret[3] = new VectorUV(-v.x, -v.y, v.z);
+                break;
+            case 5: // +x
+                ret[0] = new VectorUV(v.x, v.y, v.z);
+                ret[1] = new VectorUV(v.x, -v.y, v.z);
+                ret[2] = new VectorUV(v.x, -v.y, -v.z);
+                ret[3] = new VectorUV(v.x, v.y, -v.z);
+                break;
         }
         for (VectorUV vert : ret) {
             vert.incr(origin);
         }
-        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+        if (FMLCommonHandler.instance()
+            .getSide() == Side.CLIENT) {
             switch (face) {
-            case 0: //-y
-            case 1: //+y
-                //Mirror these like MC does.
-                for (VectorUV vert : ret) {
-                    vert.u = vert.x + 8;
-                    vert.v = vert.z + 8;
-                }
-                break;
-            case 2: //-z
-                for (VectorUV vert : ret) {
-                    vert.u = 16 - (vert.x + 8);
-                    vert.v = 16 - (vert.y + 8);
-                }
-                break;
-            case 3: //+z
-                for (VectorUV vert : ret) {
-                    vert.u = vert.x + 8;
-                    vert.v = 16 - (vert.y + 8);
-                }
-                break;
-            case 4: //-x
-                for (VectorUV vert : ret) {
-                    vert.u = 16 - (vert.y + 8);
-                    vert.v = (vert.z + 8);
-                }
-                break;
-            case 5: //+x
-                for (VectorUV vert : ret) {
-                    vert.u = 16 - (vert.y + 8);
-                    vert.v = 16 - (vert.z + 8);
-                }
-                break;
+                case 0: // -y
+                case 1: // +y
+                    // Mirror these like MC does.
+                    for (VectorUV vert : ret) {
+                        vert.u = vert.x + 8;
+                        vert.v = vert.z + 8;
+                    }
+                    break;
+                case 2: // -z
+                    for (VectorUV vert : ret) {
+                        vert.u = 16 - (vert.x + 8);
+                        vert.v = 16 - (vert.y + 8);
+                    }
+                    break;
+                case 3: // +z
+                    for (VectorUV vert : ret) {
+                        vert.u = vert.x + 8;
+                        vert.v = 16 - (vert.y + 8);
+                    }
+                    break;
+                case 4: // -x
+                    for (VectorUV vert : ret) {
+                        vert.u = 16 - (vert.y + 8);
+                        vert.v = (vert.z + 8);
+                    }
+                    break;
+                case 5: // +x
+                    for (VectorUV vert : ret) {
+                        vert.u = 16 - (vert.y + 8);
+                        vert.v = 16 - (vert.z + 8);
+                    }
+                    break;
             }
             for (VectorUV main : ret) {
                 double udelta = 0, vdelta = 0;
@@ -198,8 +206,8 @@ public class WireRenderingCube {
                     other.u -= udelta;
                     other.v -= vdelta;
                 }
-                //vert.u = Math.max(0, Math.min(vert.u, 16));
-                //vert.v = Math.max(0, Math.min(vert.v, 16));
+                // vert.u = Math.max(0, Math.min(vert.u, 16));
+                // vert.v = Math.max(0, Math.min(vert.v, 16));
             }
         }
         if (theta != 0) {

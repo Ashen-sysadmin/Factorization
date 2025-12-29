@@ -1,15 +1,18 @@
 package factorization.beauty;
 
+import net.minecraft.client.renderer.RenderBlocks;
+import net.minecraft.util.ResourceLocation;
+
+import org.lwjgl.opengl.GL11;
+
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.shared.Core;
 import factorization.shared.FactorizationBlockRender;
 import factorization.shared.ObjectModel;
-import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
 
 public class BlockRenderAnthrogen extends FactorizationBlockRender {
+
     ObjectModel lit = new ObjectModel(new ResourceLocation("factorization", "models/beauty/lanternLit.obj"));
     ObjectModel unlit = new ObjectModel(new ResourceLocation("factorization", "models/beauty/lanternUnlit.obj"));
 

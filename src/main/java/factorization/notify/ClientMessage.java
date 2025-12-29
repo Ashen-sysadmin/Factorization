@@ -1,6 +1,8 @@
 package factorization.notify;
 
-import factorization.util.LangUtil;
+import java.util.ArrayList;
+import java.util.EnumSet;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -13,21 +15,21 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
+import factorization.util.LangUtil;
 
 class ClientMessage {
+
     World world;
     Object locus;
     ItemStack item;
     String msg;
     EnumSet<Style> style;
-    
+
     long creationTime;
     long lifeTime;
     boolean position_important = false;
     boolean show_item = false;
-    
+
     static final int SHORT_TIME = 6, LONG_TIME = 11, VERY_LONG_TIME = 60;
 
     public ClientMessage(World world, Object locus, ItemStack item, String format, String... args) {
@@ -35,11 +37,11 @@ class ClientMessage {
         this.locus = locus;
         this.item = item;
         this.msg = format;
-        
+
         String[] parts = msg.split("\n", 2);
         style = NotifyImplementation.loadStyle(parts[0]);
         msg = parts[1];
-        
+
         creationTime = System.currentTimeMillis();
         if (style.contains(Style.LONG)) {
             lifeTime = 1000 * LONG_TIME;
@@ -50,18 +52,19 @@ class ClientMessage {
         show_item = style.contains(Style.DRAWITEM) && item != null;
         translate(args);
     }
-    
+
     void translate(String... args) {
         msg = StatCollector.translateToLocal(msg);
         msg = msg.replace("\\n", "\n");
-        
+
         String item_name = "null", item_info = "", item_info_newline = "";
         if (item != null) {
             item_name = item.getDisplayName();
             EntityPlayer player = Minecraft.getMinecraft().thePlayer;
             ArrayList<String> bits = new ArrayList();
             try {
-                item.getItem().addInformation(item, player, bits, false);
+                item.getItem()
+                    .addInformation(item, player, bits, false);
             } catch (Throwable t) {
                 t.printStackTrace();
                 bits.add("" + EnumChatFormatting.RED + EnumChatFormatting.BOLD + "ERROR");
@@ -90,9 +93,9 @@ class ClientMessage {
 
         msg = String.format(msg, (Object[]) cp);
     }
-    
+
     static double interp(double old, double new_, float partial) {
-        return old*(1 - partial) + new_*partial;
+        return old * (1 - partial) + new_ * partial;
     }
 
     Vec3 getPosition(float partial) {

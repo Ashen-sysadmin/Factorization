@@ -1,5 +1,17 @@
 package factorization.beauty;
 
+import java.io.IOException;
+import java.util.List;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.INpc;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.IIcon;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
@@ -16,19 +28,9 @@ import factorization.shared.TileEntityCommon;
 import factorization.util.InvUtil;
 import factorization.util.ItemUtil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.INpc;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.IIcon;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.IOException;
-import java.util.List;
 
 public class TileEntityAnthroGen extends TileEntityCommon implements IInventory, ICoordFunction {
+
     public static int UPDATE_RATE = 20 * 60 * 7;
     public static int MIN_WANDER_DISTANCE = 12 * 12;
     public static int VILLAGER_CHECKS_PER_ENTHEAS = 8;
@@ -48,9 +50,12 @@ public class TileEntityAnthroGen extends TileEntityCommon implements IInventory,
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        entheas = data.as(Share.PRIVATE, "entheas").putItemStack(entheas);
-        satisfactory_villagers = data.as(Share.PRIVATE, "foundVillagers").putInt(satisfactory_villagers);
-        isLit = data.as(Share.VISIBLE_TRANSIENT, "isLit").putBoolean(ItemUtil.stackSize(entheas) > 0);
+        entheas = data.as(Share.PRIVATE, "entheas")
+            .putItemStack(entheas);
+        satisfactory_villagers = data.as(Share.PRIVATE, "foundVillagers")
+            .putInt(satisfactory_villagers);
+        isLit = data.as(Share.VISIBLE_TRANSIENT, "isLit")
+            .putBoolean(ItemUtil.stackSize(entheas) > 0);
     }
 
     @Override
@@ -97,7 +102,8 @@ public class TileEntityAnthroGen extends TileEntityCommon implements IInventory,
 
     @SideOnly(Side.CLIENT)
     @Override
-    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input) throws IOException {
+    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input)
+        throws IOException {
         if (messageType == NetworkFactorization.MessageType.GeneratorParticles) {
             worldObj.spawnParticle("flame", xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, 0, 0, 0);
             return true;
@@ -119,6 +125,7 @@ public class TileEntityAnthroGen extends TileEntityCommon implements IInventory,
     }
 
     private static final String hash_key = "anthrogen_last_seen";
+
     boolean hashEnt(Entity ent) {
         if (ent.isRiding()) return false;
         if (!ent.onGround) return false;

@@ -1,17 +1,20 @@
 package factorization.util;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.shared.Core;
+import static org.lwjgl.opengl.GL11.glGetError;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
-import static org.lwjgl.opengl.GL11.glGetError;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.shared.Core;
 
 public final class RenderUtil {
+
     @SideOnly(Side.CLIENT)
     private static RenderBlocks rb;
 
@@ -27,24 +30,25 @@ public final class RenderUtil {
     @SideOnly(Side.CLIENT)
     public static void rotateForDirection(ForgeDirection dir) {
         switch (dir) {
-        case WEST:
-            break;
-        case EAST:
-            GL11.glRotatef(180, 0, 1, 0);
-            break;
-        case NORTH:
-            GL11.glRotatef(-90, 0, 1, 0);
-            break;
-        case SOUTH:
-            GL11.glRotatef(90, 0, 1, 0);
-            break;
-        case UP:
-            GL11.glRotatef(-90, 0, 0, 1);
-            break;
-        case DOWN:
-            GL11.glRotatef(90, 0, 0, 1);
-            break;
-        case UNKNOWN: break;
+            case WEST:
+                break;
+            case EAST:
+                GL11.glRotatef(180, 0, 1, 0);
+                break;
+            case NORTH:
+                GL11.glRotatef(-90, 0, 1, 0);
+                break;
+            case SOUTH:
+                GL11.glRotatef(90, 0, 1, 0);
+                break;
+            case UP:
+                GL11.glRotatef(-90, 0, 0, 1);
+                break;
+            case DOWN:
+                GL11.glRotatef(90, 0, 0, 1);
+                break;
+            case UNKNOWN:
+                break;
         }
     }
 

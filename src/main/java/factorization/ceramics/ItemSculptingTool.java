@@ -3,10 +3,6 @@ package factorization.ceramics;
 import java.io.IOException;
 import java.util.List;
 
-import factorization.api.datahelpers.DataInNBT;
-import factorization.shared.*;
-import factorization.util.InvUtil;
-import factorization.util.ItemUtil;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -18,15 +14,19 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.Quaternion;
+import factorization.api.datahelpers.DataInNBT;
 import factorization.ceramics.TileEntityGreenware.ClayLump;
 import factorization.ceramics.TileEntityGreenware.ClayState;
-import factorization.common.FactoryType;
 import factorization.common.ItemIcons;
 import factorization.notify.Notice;
+import factorization.shared.*;
 import factorization.shared.Core.TabType;
+import factorization.util.InvUtil;
 import factorization.util.InvUtil.FzInv;
+import factorization.util.ItemUtil;
 
 public class ItemSculptingTool extends ItemFactorization {
 
@@ -38,7 +38,7 @@ public class ItemSculptingTool extends ItemFactorization {
         setFull3D();
         setHasSubtypes(true);
     }
-    
+
     public static void addModeChangeRecipes() {
         int length = ToolMode.values().length;
         ToolMode mode[] = ToolMode.values();
@@ -55,36 +55,37 @@ public class ItemSculptingTool extends ItemFactorization {
             Core.registry.shapelessOreRecipe(fromMode(mode[j]), fromMode(mode[i]));
         }
     }
-    
+
     @Override
-    public void registerIcons(IIconRegister reg) { }
+    public void registerIcons(IIconRegister reg) {}
 
     static enum ToolMode {
+
         MOVER("move", true),
         STRETCHER("stretch", false),
         ROTATE_GLOBAL("rotate_global", true),
         ROTATE_LOCAL("rotate_local", false),
         RESETTER("reset", true),
         MOLD("mold", true);
-        
+
         String name;
         boolean craftable;
         ToolMode next;
-        
+
         private ToolMode(String english, boolean craftable) {
             this.name = english;
             this.craftable = craftable;
             this.next = this;
         }
-        
-        static void group(ToolMode ...group) {
+
+        static void group(ToolMode... group) {
             ToolMode prev = group[group.length - 1];
             for (ToolMode me : group) {
                 me.next = prev;
                 prev = me;
             }
         }
-        
+
         static {
             group(MOVER, STRETCHER);
             group(RESETTER);
@@ -92,7 +93,7 @@ public class ItemSculptingTool extends ItemFactorization {
             group(MOLD);
         }
     }
-    
+
     ToolMode getMode(int damage) {
         if (damage < 0) {
             return ToolMode.MOVER;
@@ -102,25 +103,31 @@ public class ItemSculptingTool extends ItemFactorization {
         }
         return ToolMode.values()[damage];
     }
-    
+
     static ItemStack fromMode(ToolMode mode) {
         return new ItemStack(Core.registry.sculpt_tool, 1, mode.ordinal());
     }
-    
+
     @Override
     public IIcon getIconFromDamage(int damage) {
-        //A bit lame. Lame.
+        // A bit lame. Lame.
         switch (getMode(damage)) {
-        default:
-        case MOVER: return ItemIcons.move;
-        case RESETTER: return ItemIcons.reset;
-        case ROTATE_LOCAL: return ItemIcons.rotate_local;
-        case ROTATE_GLOBAL: return ItemIcons.rotate_global;
-        case STRETCHER: return ItemIcons.stretch;
-        case MOLD: return ItemIcons.mold;
+            default:
+            case MOVER:
+                return ItemIcons.move;
+            case RESETTER:
+                return ItemIcons.reset;
+            case ROTATE_LOCAL:
+                return ItemIcons.rotate_local;
+            case ROTATE_GLOBAL:
+                return ItemIcons.rotate_global;
+            case STRETCHER:
+                return ItemIcons.stretch;
+            case MOLD:
+                return ItemIcons.mold;
         }
     }
-    
+
     @Override
     public void addExtraInformation(ItemStack is, EntityPlayer player, List list, boolean verbose) {
         ToolMode mode = getMode(is.getItemDamage());
@@ -130,27 +137,24 @@ public class ItemSculptingTool extends ItemFactorization {
             list.add(EnumChatFormatting.DARK_GRAY + "(" + StatCollector.translateToLocal(pre + nextMode) + ")");
         }
     }
-    
+
     void changeMode(ItemStack is) {
         ToolMode mode = getMode(is.getItemDamage());
         is.setItemDamage(mode.next.ordinal());
     }
-    
+
     @Override
-    public boolean onItemUse(ItemStack par1ItemStack,
-            EntityPlayer par2EntityPlayer, World par3World, int par4, int par5,
-            int par6, int par7, float par8, float par9, float par10) {
-        return tryPlaceIntoWorld(par1ItemStack, par2EntityPlayer, par3World, par4, par5,
-                par6, par7, par8, par9, par10);
+    public boolean onItemUse(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, World par3World, int par4,
+        int par5, int par6, int par7, float par8, float par9, float par10) {
+        return tryPlaceIntoWorld(par1ItemStack, par2EntityPlayer, par3World, par4, par5, par6, par7, par8, par9, par10);
     }
-    
+
     public static MovingObjectPosition doRayTrace(EntityPlayer player) {
         return Core.registry.sculpt_tool.getMovingObjectPositionFromPlayer(player.worldObj, player, true);
     }
-    
-    public boolean tryPlaceIntoWorld(ItemStack is, EntityPlayer player,
-            World w, int x, int y, int z, int side,
-            float vx, float vy, float vz) {
+
+    public boolean tryPlaceIntoWorld(ItemStack is, EntityPlayer player, World w, int x, int y, int z, int side,
+        float vx, float vy, float vz) {
         if (w.isRemote) {
             return true;
         }
@@ -159,7 +163,7 @@ public class ItemSculptingTool extends ItemFactorization {
         if (gw == null) {
             if (player.isSneaking()) {
                 changeMode(is);
-                //creative mode has to go and over-complicate this.
+                // creative mode has to go and over-complicate this.
                 if (player.inventory.mainInventory[player.inventory.currentItem] == is) {
                     player.inventory.mainInventory[player.inventory.currentItem] = is.copy();
                 }
@@ -178,7 +182,8 @@ public class ItemSculptingTool extends ItemFactorization {
 
             TileEntityGreenware rep = new TileEntityGreenware();
 
-            NBTTagCompound tag = gw.getItem().getTagCompound();
+            NBTTagCompound tag = gw.getItem()
+                .getTagCompound();
 
             try {
                 rep.putData(new DataInNBT(tag));
@@ -236,16 +241,17 @@ public class ItemSculptingTool extends ItemFactorization {
             }
             Notice msg = new Notice(gw.getCoord(), "");
             switch (state) {
-            case DRY:
-                msg.withItem(new ItemStack(Items.water_bucket)).setMessage("The clay is dry\nUse a {ITEM_NAME}");
-                break;
-            case BISQUED:
-            case HIGHFIRED:
-                msg.setMessage("This has been fired");
-                break;
-            default:
-                msg.setMessage("This clay can not be reshaped.");
-                break;
+                case DRY:
+                    msg.withItem(new ItemStack(Items.water_bucket))
+                        .setMessage("The clay is dry\nUse a {ITEM_NAME}");
+                    break;
+                case BISQUED:
+                case HIGHFIRED:
+                    msg.setMessage("This has been fired");
+                    break;
+                default:
+                    msg.setMessage("This clay can not be reshaped.");
+                    break;
             }
             msg.send(player);
             return false;
@@ -253,10 +259,10 @@ public class ItemSculptingTool extends ItemFactorization {
         if (w.isRemote) {
             return true;
         }
-        
-        //See EntityLiving.rayTrace
+
+        // See EntityLiving.rayTrace
         MovingObjectPosition hitPart = getMovingObjectPositionFromPlayer(w, player, true);
-        
+
         if (hitPart == null) {
             return false;
         }
@@ -264,97 +270,105 @@ public class ItemSculptingTool extends ItemFactorization {
             return true;
         }
         int strength = Math.max(1, is.stackSize);
-        
+
         ClayLump selection = gw.parts.get(hitPart.subHit);
         ClayLump test = selection.copy();
         boolean sneaking = player.isSneaking();
         switch (mode) {
-        case MOVER:
-            move(test, sneaking, side, strength);
-            break;
-        case STRETCHER:
-            //move the nearest face of selected cube towards (of away from) the player
-            stretch(test, sneaking, side, strength);
-            break;
-        case ROTATE_LOCAL:
-            rotate_local(test, sneaking, side, strength);
-            break;
-        case ROTATE_GLOBAL:
-            rotate_global(test, sneaking, side, strength);
-            break;
-        case RESETTER:
-            if (sneaking) {
-                Quaternion orig = test.quat;
-                test.asDefault();
-                test.quat = orig;
-            } else {
-                test.quat = new Quaternion();
-            }
-            break;
-        case MOLD:
-            new Notice(here, "Not fired").send(player);
-            return true;
+            case MOVER:
+                move(test, sneaking, side, strength);
+                break;
+            case STRETCHER:
+                // move the nearest face of selected cube towards (of away from) the player
+                stretch(test, sneaking, side, strength);
+                break;
+            case ROTATE_LOCAL:
+                rotate_local(test, sneaking, side, strength);
+                break;
+            case ROTATE_GLOBAL:
+                rotate_global(test, sneaking, side, strength);
+                break;
+            case RESETTER:
+                if (sneaking) {
+                    Quaternion orig = test.quat;
+                    test.asDefault();
+                    test.quat = orig;
+                } else {
+                    test.quat = new Quaternion();
+                }
+                break;
+            case MOLD:
+                new Notice(here, "Not fired").send(player);
+                return true;
         }
         if (gw.isValidLump(test)) {
             gw.changeLump(hitPart.subHit, test);
         }
         return true;
     }
-    
+
     void rotate_local(ClayLump cube, boolean reverse, int side, int strength) {
-        float delta = (float) Math.toRadians(-360F/32F*strength);
+        float delta = (float) Math.toRadians(-360F / 32F * strength);
         if (reverse) {
             delta *= -1;
         }
         ForgeDirection direction = ForgeDirection.getOrientation(side);
-        cube.quat.incrMultiply(Quaternion.getRotationQuaternionRadians(delta, direction.offsetX, direction.offsetY, direction.offsetZ));
+        cube.quat.incrMultiply(
+            Quaternion.getRotationQuaternionRadians(delta, direction.offsetX, direction.offsetY, direction.offsetZ));
     }
-    
+
     void rotate_global(ClayLump cube, boolean reverse, int side, int strength) {
-        float delta = (float) Math.toRadians(-360F/32F*strength);
+        float delta = (float) Math.toRadians(-360F / 32F * strength);
         if (reverse) {
             delta *= -1;
         }
         ForgeDirection direction = ForgeDirection.getOrientation(side);
-        Quaternion global = Quaternion.getRotationQuaternionRadians(delta, direction.offsetX, direction.offsetY, direction.offsetZ);
+        Quaternion global = Quaternion
+            .getRotationQuaternionRadians(delta, direction.offsetX, direction.offsetY, direction.offsetZ);
         global.incrMultiply(cube.quat);
         cube.quat = global;
     }
-    
+
     void move(ClayLump cube, boolean reverse, int side, int strength) {
-        //shift origin 0.5, and corner by 0.5.
+        // shift origin 0.5, and corner by 0.5.
         ForgeDirection dir = ForgeDirection.getOrientation(side);
         stretch(cube, reverse, dir.ordinal(), strength);
-        stretch(cube, !reverse, dir.getOpposite().ordinal(), strength);
+        stretch(
+            cube,
+            !reverse,
+            dir.getOpposite()
+                .ordinal(),
+            strength);
     }
-    
+
     void stretch(ClayLump cube, boolean reverse, int side, int strength) {
-        //shift origin 0.5, and corner by 0.5.
+        // shift origin 0.5, and corner by 0.5.
         ForgeDirection dir = ForgeDirection.getOrientation(side);
         int delta = reverse ? -strength : strength;
         switch (dir) {
-        case SOUTH:
-            cube.maxZ += delta;
-            break;
-        case NORTH:
-            cube.minZ -= delta;
-            break;
-        case EAST:
-            cube.maxX += delta;
-            break;
-        case WEST:
-            cube.minX -= delta;
-            break;
-        case UP:
-            cube.maxY += delta;
-            break;
-        case DOWN:
-            cube.minY -= delta;
-            break;
-        case UNKNOWN: break;
+            case SOUTH:
+                cube.maxZ += delta;
+                break;
+            case NORTH:
+                cube.minZ -= delta;
+                break;
+            case EAST:
+                cube.maxX += delta;
+                break;
+            case WEST:
+                cube.minX -= delta;
+                break;
+            case UP:
+                cube.maxY += delta;
+                break;
+            case DOWN:
+                cube.minY -= delta;
+                break;
+            case UNKNOWN:
+                break;
         }
     }
-    
+
     @Override
     public boolean isItemTool(ItemStack is) {
         return true;

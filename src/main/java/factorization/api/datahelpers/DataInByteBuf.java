@@ -1,18 +1,20 @@
 package factorization.api.datahelpers;
 
+import java.io.IOException;
+
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.relauncher.Side;
 import factorization.util.DataUtil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-
-import java.io.IOException;
 
 public class DataInByteBuf extends DataHelper {
+
     private final ByteBuf dis;
     private final Side side;
-    
+
     public DataInByteBuf(ByteBuf dis, Side side) {
         this.dis = dis;
         this.side = side;

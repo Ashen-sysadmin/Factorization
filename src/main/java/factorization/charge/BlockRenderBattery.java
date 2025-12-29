@@ -8,16 +8,16 @@ import net.minecraftforge.client.IItemRenderer.ItemRenderType;
 
 import org.lwjgl.opengl.GL11;
 
-import factorization.api.Coord;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.shared.BlockRenderHelper;
 import factorization.shared.Core;
 import factorization.shared.FactorizationBlockRender;
 
-
 public class BlockRenderBattery extends FactorizationBlockRender {
+
     float item_fullness = 0;
+
     @Override
     public boolean render(RenderBlocks rb) {
         TileEntityBattery bat;
@@ -36,7 +36,7 @@ public class BlockRenderBattery extends FactorizationBlockRender {
         renderNormalBlock(rb, FactoryType.BATTERY.md);
         return true;
     }
-    
+
     void renderInventoryMode(RenderBlocks rb, ItemRenderType type) {
         Minecraft mc = Minecraft.getMinecraft();
         mc.renderEngine.bindTexture(Core.blockAtlas);
@@ -46,7 +46,6 @@ public class BlockRenderBattery extends FactorizationBlockRender {
         GL11.glPopMatrix();
     }
 
-    
     void renderBatteryDisplay(RenderBlocks rb, float fullness) {
         fullness = Math.min(fullness, 1);
         Tessellator tes = Tessellator.instance;
@@ -66,9 +65,9 @@ public class BlockRenderBattery extends FactorizationBlockRender {
         tes.setBrightness(brightness);
         float color = Math.min(1, fullness * .8F + 0.2F);
         tes.setColorOpaque_F(color, fullness, fullness);
-        
+
         BlockRenderHelper block = BlockRenderHelper.instance;
-        //IIcon meter = BlockIcons.battery_meter;
+        // IIcon meter = BlockIcons.battery_meter;
         IIcon meter = BlockIcons.battery_meter;
         block.useTextures(null, null, meter, meter, meter, meter);
         block.setBlockBounds(0 - d, 0, 0 - d, 1 + d, h, 1 + d);
@@ -78,7 +77,6 @@ public class BlockRenderBattery extends FactorizationBlockRender {
             block.renderForInventory(rb);
         }
     }
-
 
     @Override
     public FactoryType getFactoryType() {

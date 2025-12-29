@@ -1,5 +1,15 @@
 package factorization.shared;
 
+import java.io.IOException;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.ISidedInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.util.Constants;
+
 import factorization.api.Coord;
 import factorization.api.ICoord;
 import factorization.api.IFactoryType;
@@ -10,31 +20,21 @@ import factorization.shared.NetworkFactorization.MessageType;
 import factorization.util.InvUtil;
 import factorization.util.ItemUtil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraftforge.common.util.Constants;
-
-import java.io.IOException;
 
 public abstract class TileEntityFactorization extends TileEntityCommon
-        implements IInventory, ISidedInventory, ICoord, IFactoryType {
+    implements IInventory, ISidedInventory, ICoord, IFactoryType {
 
-    //Save & Share
+    // Save & Share
     public byte draw_active;
     public byte facing_direction = 3;
 
-    //Runtime
+    // Runtime
     protected transient boolean need_logic_check = true;
 
     @Override
     public abstract FactoryType getFactoryType();
 
-    protected void makeNoise() {
-    }
+    protected void makeNoise() {}
 
     protected abstract void doLogic();
 
@@ -107,12 +107,10 @@ public abstract class TileEntityFactorization extends TileEntityCommon
     }
 
     @Override
-    public final void openInventory() {
-    }
+    public final void openInventory() {}
 
     @Override
-    public final void closeInventory() {
-    }
+    public final void closeInventory() {}
 
     @Override
     public boolean hasCustomInventoryName() {
@@ -121,8 +119,10 @@ public abstract class TileEntityFactorization extends TileEntityCommon
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        draw_active = data.as(Share.VISIBLE, "draw_active_byte").putByte(draw_active);
-        facing_direction = data.as(Share.VISIBLE, "facing").putByte(facing_direction);
+        draw_active = data.as(Share.VISIBLE, "draw_active_byte")
+            .putByte(draw_active);
+        facing_direction = data.as(Share.VISIBLE, "facing")
+            .putByte(facing_direction);
     }
 
     public final void putSlots(DataHelper data) {
@@ -162,12 +162,12 @@ public abstract class TileEntityFactorization extends TileEntityCommon
     public ItemStack getStackInSlotOnClosing(int slot) {
         return null;
     }
-    
+
     @Override
     public boolean canInsertItem(int i, ItemStack itemstack, int j) {
         return isItemValidForSlot(i, itemstack);
     }
-    
+
     @Override
     public boolean canExtractItem(int slot, ItemStack itemstack, int side) {
         return true;
@@ -198,7 +198,7 @@ public abstract class TileEntityFactorization extends TileEntityCommon
                 draw_active--;
             }
         } else {
-            draw_active = (draw_active > 0) ? (byte)(draw_active - 1) : 0;
+            draw_active = (draw_active > 0) ? (byte) (draw_active - 1) : 0;
             if (need_logic_check && 0 == worldObj.getTotalWorldTime() % getLogicSpeed()) {
                 need_logic_check = false;
                 doLogic();

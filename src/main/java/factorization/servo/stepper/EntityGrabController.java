@@ -1,5 +1,16 @@
 package factorization.servo.stepper;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.DamageSource;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.DeltaCoord;
 import factorization.api.Quaternion;
@@ -11,26 +22,19 @@ import factorization.fzds.interfaces.IDeltaChunk;
 import factorization.shared.EntityFz;
 import factorization.shared.EntityReference;
 import factorization.util.SpaceUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.DamageSource;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 
 public class EntityGrabController extends EntityFz implements IDCController {
+
     private static final long WAIT_TIME = 20 * 30;
     final EntityReference<Entity> holderRef = new EntityReference<Entity>();
-    final EntityReference<IDeltaChunk> idcRef = new EntityReference<IDeltaChunk>().whenFound(new EntityReference.OnFound<IDeltaChunk>() {
-        @Override
-        public void found(IDeltaChunk ent) {
-            ent.setController(EntityGrabController.this);
-        }
-    });
+    final EntityReference<IDeltaChunk> idcRef = new EntityReference<IDeltaChunk>()
+        .whenFound(new EntityReference.OnFound<IDeltaChunk>() {
+
+            @Override
+            public void found(IDeltaChunk ent) {
+                ent.setController(EntityGrabController.this);
+            }
+        });
     DropMode dropMode = DropMode.EVENTUALLY;
     long unheldTime = 0;
     boolean needs_future_glue_applied = true;
@@ -51,9 +55,12 @@ public class EntityGrabController extends EntityFz implements IDCController {
     protected void putData(DataHelper data) throws IOException {
         holderRef.serialize("holder", data);
         idcRef.serialize("idc", data);
-        dropMode = data.as(Share.PRIVATE, "dropMode").putEnum(dropMode);
-        unheldTime = data.as(Share.PRIVATE, "unheldTime").putLong(unheldTime);
-        needs_future_glue_applied = data.as(Share.PRIVATE, "need4glue").putBoolean(needs_future_glue_applied);
+        dropMode = data.as(Share.PRIVATE, "dropMode")
+            .putEnum(dropMode);
+        unheldTime = data.as(Share.PRIVATE, "unheldTime")
+            .putLong(unheldTime);
+        needs_future_glue_applied = data.as(Share.PRIVATE, "need4glue")
+            .putBoolean(needs_future_glue_applied);
     }
 
     @Override
@@ -111,7 +118,14 @@ public class EntityGrabController extends EntityFz implements IDCController {
         int bestScore = Integer.MAX_VALUE;
         DeltaCoord bestShift = null;
         for (DeltaCoord shift : DeltaCoord.directNeighborsPlusMe) {
-            IdcDropper dropper = new IdcDropper(up, south, east, min, realStart.add(shift), range, true /* break source block on collision w/ destination */);
+            IdcDropper dropper = new IdcDropper(
+                up,
+                south,
+                east,
+                min,
+                realStart.add(shift),
+                range,
+                true /* break source block on collision w/ destination */);
             int score = dropper.drop(true);
             if (score < bestScore) {
                 bestScore = score;
@@ -120,7 +134,14 @@ public class EntityGrabController extends EntityFz implements IDCController {
         }
 
         // Drop, move any items that fell from block collisions
-        IdcDropper dropper = new IdcDropper(up, south, east, min, realStart.add(bestShift), range, true /* break source block on collision w/ destination */);
+        IdcDropper dropper = new IdcDropper(
+            up,
+            south,
+            east,
+            min,
+            realStart.add(bestShift),
+            range,
+            true /* break source block on collision w/ destination */);
         if (dropper.drop(false) > 0) {
             ((DimensionSliceEntity) idc).removeItemEntities();
         }
@@ -129,11 +150,28 @@ public class EntityGrabController extends EntityFz implements IDCController {
 
     transient AxisAlignedBB hitReal, hitShadow;
 
-    @Override public boolean placeBlock(IDeltaChunk idc, EntityPlayer player, Coord at) { return true; }
-    @Override public boolean breakBlock(IDeltaChunk idc, EntityPlayer player, Coord at, byte sideHit) { return true; }
-    @Override public boolean hitBlock(IDeltaChunk idc, EntityPlayer player, Coord at, byte sideHit) { return true; }
-    @Override public boolean useBlock(IDeltaChunk idc, EntityPlayer player, Coord at, byte sideHit) { return true; }
-    @Override public void beforeUpdate(IDeltaChunk idc) {
+    @Override
+    public boolean placeBlock(IDeltaChunk idc, EntityPlayer player, Coord at) {
+        return true;
+    }
+
+    @Override
+    public boolean breakBlock(IDeltaChunk idc, EntityPlayer player, Coord at, byte sideHit) {
+        return true;
+    }
+
+    @Override
+    public boolean hitBlock(IDeltaChunk idc, EntityPlayer player, Coord at, byte sideHit) {
+        return true;
+    }
+
+    @Override
+    public boolean useBlock(IDeltaChunk idc, EntityPlayer player, Coord at, byte sideHit) {
+        return true;
+    }
+
+    @Override
+    public void beforeUpdate(IDeltaChunk idc) {
         Entity holder = holderRef.getEntity();
         if (holder == null) {
             idc.setVelocity(0, 0, 0);
@@ -144,13 +182,22 @@ public class EntityGrabController extends EntityFz implements IDCController {
         double dz = holder.posZ - holder.prevPosZ;
         idc.setVelocity(dx, dy, dz);
     }
-    @Override public void afterUpdate(IDeltaChunk idc) {
+
+    @Override
+    public void afterUpdate(IDeltaChunk idc) {
         Entity holder = holderRef.getEntity();
         if (holder == null) return;
         idc.setPosition(holder.posX, holder.posY, holder.posZ);
     }
-    @Override public boolean onAttacked(IDeltaChunk idc, DamageSource damageSource, float damage) { return false; }
-    @Override public CollisionAction collidedWithWorld(World realWorld, AxisAlignedBB realBox, World shadowWorld, AxisAlignedBB shadowBox) {
+
+    @Override
+    public boolean onAttacked(IDeltaChunk idc, DamageSource damageSource, float damage) {
+        return false;
+    }
+
+    @Override
+    public CollisionAction collidedWithWorld(World realWorld, AxisAlignedBB realBox, World shadowWorld,
+        AxisAlignedBB shadowBox) {
         hitReal = realBox.copy();
         hitShadow = shadowBox.copy();
         return CollisionAction.STOP_INSIDE;

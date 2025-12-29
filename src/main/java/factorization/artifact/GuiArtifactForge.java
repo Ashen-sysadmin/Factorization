@@ -1,8 +1,5 @@
 package factorization.artifact;
 
-import factorization.shared.Core;
-import factorization.shared.NetworkFactorization;
-import factorization.util.LangUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -10,10 +7,16 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
+import factorization.shared.Core;
+import factorization.shared.NetworkFactorization;
+import factorization.util.LangUtil;
+
 public class GuiArtifactForge extends GuiContainer {
+
     ContainerForge container;
     GuiTextField name_field, lore_field;
 
@@ -41,8 +44,8 @@ public class GuiArtifactForge extends GuiContainer {
     public void initGui() {
         super.initGui();
         Keyboard.enableRepeatEvents(true);
-        //name_field = makeField(62, 24, 103);
-        //lore_field = makeField(62, 64, 103);
+        // name_field = makeField(62, 24, 103);
+        // lore_field = makeField(62, 64, 103);
         name_field = makeField(143, 28, 103, name_field, 40);
         lore_field = makeField(143, 56, 103, lore_field, 40 * 4);
     }
@@ -71,7 +74,11 @@ public class GuiArtifactForge extends GuiContainer {
 
     void syncFields() {
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-        Core.network.sendPlayerMessage(player, NetworkFactorization.MessageType.ArtifactForgeName, name_field.getText(), lore_field.getText());
+        Core.network.sendPlayerMessage(
+            player,
+            NetworkFactorization.MessageType.ArtifactForgeName,
+            name_field.getText(),
+            lore_field.getText());
     }
 
     private static final ResourceLocation bgTexture = Core.getResource("textures/gui/artifactforge.png");
@@ -97,7 +104,8 @@ public class GuiArtifactForge extends GuiContainer {
     @Override
     protected void drawGuiContainerBackgroundLayer(float partial, int mouseX, int mouseY) {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        mc.getTextureManager().bindTexture(bgTexture);
+        mc.getTextureManager()
+            .bindTexture(bgTexture);
         int halfWidth = (width - xSize) / 2;
         int halfHeight = (height - ySize) / 2;
         final int x0 = halfWidth - 4;
@@ -113,7 +121,7 @@ public class GuiArtifactForge extends GuiContainer {
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glPushMatrix();
-        //GL11.glTranslatef(guiLeft, guiTop, 0.0F);
+        // GL11.glTranslatef(guiLeft, guiTop, 0.0F);
         if (name_field != null) name_field.drawTextBox();
         if (lore_field != null) lore_field.drawTextBox();
         GL11.glPopMatrix();
@@ -121,8 +129,8 @@ public class GuiArtifactForge extends GuiContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int p_146979_1_, int p_146979_2_) {
-        //fontRendererObj.drawString(I18n.format("factorization:container.artifactforge"), 28, 0, 4210752);
-        //fontRendererObj.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 - 14, 4210752);
+        // fontRendererObj.drawString(I18n.format("factorization:container.artifactforge"), 28, 0, 4210752);
+        // fontRendererObj.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 - 14, 4210752);
         fontRendererObj.drawString(I18n.format("factorization.forge.name"), 156, 16, 4210752);
         fontRendererObj.drawString(I18n.format("factorization.forge.lore"), 156, 45, 4210752);
         String err = container.forge.error_message;

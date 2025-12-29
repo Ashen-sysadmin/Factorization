@@ -1,22 +1,16 @@
 package factorization.misc;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import factorization.algos.ReservoirSampler;
-import factorization.common.Command;
-import factorization.common.FzConfig;
-import factorization.coremodhooks.UnhandledGuiKeyEvent;
-import factorization.shared.Core;
-import factorization.truth.DocumentationModule;
-import factorization.util.FzUtil;
-import factorization.weird.NeptuneCape;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.IResource;
-import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
@@ -29,31 +23,38 @@ import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.sound.PlaySoundEvent17;
+
 import org.apache.commons.io.Charsets;
 import org.lwjgl.input.Keyboard;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import factorization.algos.ReservoirSampler;
+import factorization.common.Command;
+import factorization.common.FzConfig;
+import factorization.coremodhooks.UnhandledGuiKeyEvent;
+import factorization.shared.Core;
+import factorization.truth.DocumentationModule;
+import factorization.util.FzUtil;
+import factorization.weird.NeptuneCape;
 
 public class MiscClientProxy extends MiscProxy {
+
     static final Minecraft mc = Minecraft.getMinecraft();
     MiscClientTickHandler cth = new MiscClientTickHandler();
-    
+
     @Override
     void initializeClient() {
         Minecraft.memoryReserve = new byte[0]; // Frees 10MB. Used for OOM screen, but that *never* happens.
         Core.loadBus(this);
         ClientCommandHandler.instance.registerCommand(new MiscClientCommands());
-        FMLCommonHandler.instance().bus().register(cth);
+        FMLCommonHandler.instance()
+            .bus()
+            .register(cth);
         new NeptuneCape();
     }
-    
-    
+
     @Override
     void handleTpsReport(float newTps) {
         if (Float.isInfinite(newTps) || Float.isNaN(newTps)) {
@@ -65,9 +66,9 @@ public class MiscClientProxy extends MiscProxy {
         newTps = Math.min(1.5F, Math.max(FzConfig.lowest_dilation, newTps));
         mc.timer.timerSpeed = newTps;
     }
-    
+
     private GuiButton difficulty_button = null;
-    
+
     @SubscribeEvent
     public void addDifficultyInfo(InitGuiEvent.Post event) {
         if (!(event.gui instanceof GuiSelectWorld)) {
@@ -82,7 +83,7 @@ public class MiscClientProxy extends MiscProxy {
         event.buttonList.add(difficulty_button = new GuiButton(-237, 0, 0, 150, 18, ""));
         updateDifficultyString();
     }
-    
+
     @SubscribeEvent
     public void changeDifficulty(ActionPerformedEvent.Pre event) {
         if (event.button != difficulty_button || difficulty_button == null) return;
@@ -90,21 +91,21 @@ public class MiscClientProxy extends MiscProxy {
         gs.difficulty = FzUtil.shiftEnum(gs.difficulty, EnumDifficulty.values(), 1);
         updateDifficultyString();
     }
-    
+
     void updateDifficultyString() {
         EnumDifficulty ed = getDifficulty();
         String color = (ed == EnumDifficulty.PEACEFUL) ? ("" + EnumChatFormatting.RED) : "";
         difficulty_button.displayString = color + "Difficulty: " + ed;
     }
-    
+
     EnumDifficulty getDifficulty() {
         return Minecraft.getMinecraft().gameSettings.difficulty;
     }
-    
+
     @SubscribeEvent
     public void patchupTheStupidSecretButton(InitGuiEvent.Post event) {
         if (!(event.gui instanceof GuiOptions)) return;
-        
+
         for (Object obj : event.buttonList) {
             if (obj instanceof GuiButton) {
                 GuiButton button = (GuiButton) obj;
@@ -117,7 +118,7 @@ public class MiscClientProxy extends MiscProxy {
             }
         }
     }
-    
+
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void addDirectionInfoToDebugScreen(RenderGameOverlayEvent.Text event) {
         Minecraft mc = Minecraft.getMinecraft();
@@ -127,7 +128,7 @@ public class MiscClientProxy extends MiscProxy {
         yaw = Math.toRadians(yaw);
         double x = -Math.sin(yaw);
         double z = Math.cos(yaw);
-        
+
         for (int i = 0; i < event.left.size(); i++) {
             String line = event.left.get(i);
             if (line == null) continue;
@@ -138,7 +139,7 @@ public class MiscClientProxy extends MiscProxy {
             }
         }
     }
-    
+
     private String displ(double r) {
         int n = (int) Math.abs(r * 3);
         if (n == 0) {
@@ -151,7 +152,6 @@ public class MiscClientProxy extends MiscProxy {
         }
         return ret;
     }
-
 
     long present_tick = -100;
     int event_count = 0;
@@ -175,8 +175,9 @@ public class MiscClientProxy extends MiscProxy {
         }
         if (event_count++ < max_event) return;
         final double origVolume = event.result.getVolume();
-        final float newVolume = (float)(origVolume / Math.log(event_count) * logMax);
+        final float newVolume = (float) (origVolume / Math.log(event_count) * logMax);
         event.result = new ProxiedSound(event.result) {
+
             @Override
             public float getVolume() {
                 return newVolume;
@@ -185,6 +186,7 @@ public class MiscClientProxy extends MiscProxy {
     }
 
     int last_hash = 0;
+
     @SubscribeEvent
     public void customSplash(InitGuiEvent.Pre event) {
         if (!(event.gui instanceof GuiMainMenu)) return;
@@ -198,7 +200,8 @@ public class MiscClientProxy extends MiscProxy {
         sampler.give(""); // !!!! The secret EMPTY splash text! :O
         try {
             @SuppressWarnings("unchecked")
-            List<IResource> resources = mc.getResourceManager().getAllResources(new ResourceLocation("minecraft:texts/extra_splashes.txt"));
+            List<IResource> resources = mc.getResourceManager()
+                .getAllResources(new ResourceLocation("minecraft:texts/extra_splashes.txt"));
             for (IResource res : resources) {
                 InputStream is = null;
                 try {
@@ -210,7 +213,8 @@ public class MiscClientProxy extends MiscProxy {
                     while ((s = bufferedreader.readLine()) != null) {
                         s = s.trim();
                         if (s.isEmpty()) continue;
-                        if (s.hashCode() == 125780783) continue; // Probably "This message will never appear on the splash screen, isn't that weird?".hashCode()
+                        if (s.hashCode() == 125780783) continue; // Probably "This message will never appear on the
+                                                                 // splash screen, isn't that weird?".hashCode()
                         if (s.startsWith("#")) continue;
                         sampler.give(s);
                     }
@@ -222,7 +226,8 @@ public class MiscClientProxy extends MiscProxy {
             e.printStackTrace();
         }
         if (sampler.size() < 1) return;
-        menu.splashText = sampler.getSamples().get(0);
+        menu.splashText = sampler.getSamples()
+            .get(0);
     }
 
     @SubscribeEvent

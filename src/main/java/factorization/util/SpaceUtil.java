@@ -1,9 +1,10 @@
 package factorization.util;
 
-import factorization.api.Coord;
-import factorization.api.DeltaCoord;
-import factorization.api.FzOrientation;
-import factorization.api.Quaternion;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Random;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
@@ -11,10 +12,10 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Random;
+import factorization.api.Coord;
+import factorization.api.DeltaCoord;
+import factorization.api.FzOrientation;
+import factorization.api.Quaternion;
 
 /**
  * Operations on AxisAlignedBB (aka 'Box'), Vec3, Entities, and conversions between the three.
@@ -39,7 +40,7 @@ public final class SpaceUtil {
     }
 
     public static int determineFlatOrientation(EntityPlayer player) {
-        //stolen from BlockPistonBase.determineOrientation. It was reversed, & we handle the y-axis differently
+        // stolen from BlockPistonBase.determineOrientation. It was reversed, & we handle the y-axis differently
         int var7 = MathHelper.floor_double((double) ((180 + player.rotationYaw) * 4.0F / 360.0F) + 0.5D) & 3;
         return var7 == 0 ? 2 : (var7 == 1 ? 5 : (var7 == 2 ? 3 : (var7 == 3 ? 4 : 0)));
     }
@@ -52,9 +53,10 @@ public final class SpaceUtil {
     }
 
     public static byte getOpposite(int dir) {
-        return (byte) ForgeDirection.getOrientation(dir).getOpposite().ordinal();
+        return (byte) ForgeDirection.getOrientation(dir)
+            .getOpposite()
+            .ordinal();
     }
-
 
     public static Vec3 copy(Vec3 a) {
         return Vec3.createVectorHelper(a.xCoord, a.yCoord, a.zCoord);
@@ -95,7 +97,8 @@ public final class SpaceUtil {
         // This is all iChun's fault. :/
         // Uh...
         if (ent.worldObj.isRemote) {
-            return Vec3.createVectorHelper(ent.posX, ent.posY + (ent.getEyeHeight() - ent.getDefaultEyeHeight()), ent.posZ);
+            return Vec3
+                .createVectorHelper(ent.posX, ent.posY + (ent.getEyeHeight() - ent.getDefaultEyeHeight()), ent.posZ);
         } else {
             return Vec3.createVectorHelper(ent.posX, ent.posY + ent.getEyeHeight(), ent.posZ);
         }
@@ -147,9 +150,9 @@ public final class SpaceUtil {
     }
 
     public static void setMiddle(AxisAlignedBB ab, Vec3 v) {
-        v.xCoord = (ab.minX + ab.maxX)/2;
-        v.yCoord = (ab.minY + ab.maxY)/2;
-        v.zCoord = (ab.minZ + ab.maxZ)/2;
+        v.xCoord = (ab.minX + ab.maxX) / 2;
+        v.yCoord = (ab.minY + ab.maxY) / 2;
+        v.zCoord = (ab.minZ + ab.maxZ) / 2;
     }
 
     public static Vec3 getMiddle(AxisAlignedBB ab) {
@@ -216,7 +219,7 @@ public final class SpaceUtil {
     }
 
     /**
-     * @param box The box to be flattened
+     * @param box  The box to be flattened
      * @param face The side of the box that will remain untouched; the opposite face will be brought to it
      * @return A new box, with a volume of 0. Returns null if face is invalid.
      */
@@ -280,8 +283,6 @@ public final class SpaceUtil {
         return ret;
     }
 
-
-
     public static double getAngle(Vec3 a, Vec3 b) {
         double dot = a.dotProduct(b);
         double mags = a.lengthVector() * b.lengthVector();
@@ -335,8 +336,7 @@ public final class SpaceUtil {
     }
 
     public static AxisAlignedBB createAABB(Coord min, Coord max) {
-        return AxisAlignedBB.getBoundingBox(min.x, min.y, min.z,
-                max.x, max.y, max.z);
+        return AxisAlignedBB.getBoundingBox(min.x, min.y, min.z, max.x, max.y, max.z);
     }
 
     public static void updateAABB(AxisAlignedBB box, Vec3 min, Vec3 max) {
@@ -363,17 +363,15 @@ public final class SpaceUtil {
     }
 
     public static Vec3[] getCorners(AxisAlignedBB box) {
-        return new Vec3[]{
-                Vec3.createVectorHelper(box.minX, box.minY, box.minZ),
-                Vec3.createVectorHelper(box.minX, box.maxY, box.minZ),
-                Vec3.createVectorHelper(box.maxX, box.maxY, box.minZ),
-                Vec3.createVectorHelper(box.maxX, box.minY, box.minZ),
+        return new Vec3[] { Vec3.createVectorHelper(box.minX, box.minY, box.minZ),
+            Vec3.createVectorHelper(box.minX, box.maxY, box.minZ),
+            Vec3.createVectorHelper(box.maxX, box.maxY, box.minZ),
+            Vec3.createVectorHelper(box.maxX, box.minY, box.minZ),
 
-                Vec3.createVectorHelper(box.minX, box.minY, box.maxZ),
-                Vec3.createVectorHelper(box.minX, box.maxY, box.maxZ),
-                Vec3.createVectorHelper(box.maxX, box.maxY, box.maxZ),
-                Vec3.createVectorHelper(box.maxX, box.minY, box.maxZ)
-        };
+            Vec3.createVectorHelper(box.minX, box.minY, box.maxZ),
+            Vec3.createVectorHelper(box.minX, box.maxY, box.maxZ),
+            Vec3.createVectorHelper(box.maxX, box.maxY, box.maxZ),
+            Vec3.createVectorHelper(box.maxX, box.minY, box.maxZ) };
     }
 
     public static ArrayList<ForgeDirection> getRandomDirections(Random rand) {
@@ -406,23 +404,24 @@ public final class SpaceUtil {
         return vec.xCoord == 0 && vec.yCoord == 0 && vec.zCoord == 0;
     }
 
-
     /**
      * Return the distance between point and the line defined as passing through the origin and lineVec
+     * 
      * @param lineVec The vector defining the line, relative to the origin.
-     * @param point The point being measured, relative to the origin
+     * @param point   The point being measured, relative to the origin
      * @return the distance between line defined by lineVec and point
      */
     public static double lineDistance(Vec3 lineVec, Vec3 point) {
         // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html equation 9
         double mag = lineVec.lengthVector();
         Vec3 nPoint = scale(point, -1);
-        return lineVec.crossProduct(nPoint).lengthVector() / mag;
+        return lineVec.crossProduct(nPoint)
+            .lengthVector() / mag;
     }
 
     public static FzOrientation getOrientation(EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
         ForgeDirection facing = ForgeDirection.getOrientation(side);
-        double u = 0.5, v = 0.5; //We pick the axiis based on which side gets clicked
+        double u = 0.5, v = 0.5; // We pick the axiis based on which side gets clicked
         switch (facing) {
             case UNKNOWN:
             case DOWN:
@@ -454,7 +453,7 @@ public final class SpaceUtil {
         v -= 0.5;
         double angle = Math.toDegrees(Math.atan2(v, u)) + 180;
         angle = (angle + 45) % 360;
-        int pointy = (int) (angle/90);
+        int pointy = (int) (angle / 90);
         pointy = (pointy + 1) % 4;
 
         FzOrientation fo = FzOrientation.fromDirection(facing);
@@ -462,9 +461,11 @@ public final class SpaceUtil {
             fo = fo.getNextRotationOnFace();
         }
         if (SpaceUtil.determineOrientation(player) >= 2 /* player isn't looking straight down */
-                && side < 2 /* and the side is the bottom */) {
+            && side < 2 /* and the side is the bottom */) {
             side = SpaceUtil.determineOrientation(player);
-            fo = FzOrientation.fromDirection(ForgeDirection.getOrientation(side).getOpposite());
+            fo = FzOrientation.fromDirection(
+                ForgeDirection.getOrientation(side)
+                    .getOpposite());
             FzOrientation perfect = fo.pointTopTo(ForgeDirection.UP);
             if (perfect != FzOrientation.UNKNOWN) {
                 fo = perfect;
@@ -548,8 +549,8 @@ public final class SpaceUtil {
 
     public static boolean contains(AxisAlignedBB box, Coord at) {
         return NumUtil.intersect(box.minX, box.maxX, at.x, at.x + 1)
-                && NumUtil.intersect(box.minY, box.maxY, at.y, at.y + 1)
-                && NumUtil.intersect(box.minZ, box.maxZ, at.z, at.z + 1);
+            && NumUtil.intersect(box.minY, box.maxY, at.y, at.y + 1)
+            && NumUtil.intersect(box.minZ, box.maxZ, at.z, at.z + 1);
 
     }
 
@@ -570,20 +571,27 @@ public final class SpaceUtil {
 
     public static ForgeDirection demojangSide(int side) {
         switch (side) {
-            case 0: return ForgeDirection.SOUTH;
-            case 1: return ForgeDirection.WEST;
-            case 2: return ForgeDirection.NORTH;
-            case 3: return ForgeDirection.EAST;
+            case 0:
+                return ForgeDirection.SOUTH;
+            case 1:
+                return ForgeDirection.WEST;
+            case 2:
+                return ForgeDirection.NORTH;
+            case 3:
+                return ForgeDirection.EAST;
             default:
-            case 4: return ForgeDirection.UP; // Making this up
-            case 5: return ForgeDirection.DOWN; // And this one
+            case 4:
+                return ForgeDirection.UP; // Making this up
+            case 5:
+                return ForgeDirection.DOWN; // And this one
         }
     }
 
     /**
      * Rotate the allowed direction that is nearest to the rotated dir.
-     * @param dir The original direction
-     * @param rot The rotation to apply
+     * 
+     * @param dir   The original direction
+     * @param rot   The rotation to apply
      * @param allow The directions that may be used.
      * @return A novel direction
      */
@@ -604,7 +612,8 @@ public final class SpaceUtil {
         return best;
     }
 
-    public static ForgeDirection rotateDirectionAndExclude(ForgeDirection dir, Quaternion rot, Collection<ForgeDirection> allow) {
+    public static ForgeDirection rotateDirectionAndExclude(ForgeDirection dir, Quaternion rot,
+        Collection<ForgeDirection> allow) {
         ForgeDirection ret = rotateDirection(dir, rot, allow);
         allow.remove(ret);
         allow.remove(ret.getOpposite());

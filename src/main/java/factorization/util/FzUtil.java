@@ -1,13 +1,12 @@
 package factorization.util;
 
-import com.google.common.collect.Multimap;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.api.Coord;
-import factorization.shared.Core;
-import factorization.weird.TileEntityDayBarrel;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.BaseAttributeMap;
@@ -17,15 +16,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
+import com.google.common.collect.Multimap;
+
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.api.Coord;
+import factorization.shared.Core;
+import factorization.weird.TileEntityDayBarrel;
 
 public class FzUtil {
-
 
     public static <E extends Enum> E shiftEnum(E current, E values[], int delta) {
         int next = current.ordinal() + delta;
@@ -37,10 +38,8 @@ public class FzUtil {
         }
         return values[next];
     }
-    
-    
-    //Liquid tank handling
 
+    // Liquid tank handling
 
     public static int getWorldDimension(World world) {
         return world.provider.dimensionId;
@@ -53,9 +52,11 @@ public class FzUtil {
     @SideOnly(Side.CLIENT)
     public static void copyStringToClipboard(String text) {
         StringSelection stringselection = new StringSelection(text);
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringselection, null);
+        Toolkit.getDefaultToolkit()
+            .getSystemClipboard()
+            .setContents(stringselection, null);
     }
-    
+
     public static <E> ArrayList<E> copyWithoutNull(Collection<E> orig) {
         ArrayList<E> ret = new ArrayList();
         if (orig == null) return ret;
@@ -74,7 +75,7 @@ public class FzUtil {
             e.printStackTrace();
         }
     }
-    
+
     public static boolean stringsEqual(String a, String b) {
         if (a == b) return true;
         if (a == null || b == null) return false;
@@ -88,7 +89,8 @@ public class FzUtil {
 
     public static double rateDamage(ItemStack is) {
         if (is == null) return 0;
-        Multimap attrs = is.getItem().getAttributeModifiers(is);
+        Multimap attrs = is.getItem()
+            .getAttributeModifiers(is);
         if (attrs == null) return 0;
         BaseAttributeMap test = new ServersideAttributeMap();
         test.applyAttributeModifiers(attrs);
@@ -112,6 +114,7 @@ public class FzUtil {
     // Enh, really belongs in NumUtil maybe?
     // Probably UnitUtil, with the map compass stuff as well
     private static class UnitBase {
+
         final long ratio;
         final String unit;
 
@@ -122,25 +125,19 @@ public class FzUtil {
     }
 
     public static UnitBase unit_time[] = new UnitBase[] {
-            new UnitBase(1L * 20 * 60 * 60 * 24 * 365 * 1000 * 1000, "time.eons"),
-            new UnitBase(1L * 20 * 60 * 60 * 24 * 365 * 1000, "time.millenia"),
-            new UnitBase(1L * 20 * 60 * 60 * 24 * 365 * 100, "time.centuries"),
-            new UnitBase(1L * 20 * 60 * 60 * 24 * 365, "time.years"),
-            new UnitBase(1L * 20 * 60 * 60 * 24 * 30, "time.months"), // Mostly! :D
-            new UnitBase(1L * 20 * 60 * 60 * 24 * 7, "time.weeks"),
-            new UnitBase(1L * 20 * 60 * 60 * 24, "time.irldays"),
-            new UnitBase(1L * 20 * 60 * 60, "time.hours"),
-            //new UnitBase(1L * 20 * 60 * 20, "time.mcdays"), // skipped due to confusingness
-            new UnitBase(1L * 20 * 60, "time.minutes"),
-            new UnitBase(1L * 20, "time.seconds"),
-            new UnitBase(1L, "time.ticks"),
-    };
-    public static UnitBase unit_distance_px[] = new UnitBase[] {
-            new UnitBase(1L * 16 * 1000, "distance.kilometers"),
-            new UnitBase(1L * 16 * 16, "distance.chunks"),
-            new UnitBase(1L * 16, "distance.blocks"),
-            new UnitBase(1L, "distance.pixels"),
-    };
+        new UnitBase(1L * 20 * 60 * 60 * 24 * 365 * 1000 * 1000, "time.eons"),
+        new UnitBase(1L * 20 * 60 * 60 * 24 * 365 * 1000, "time.millenia"),
+        new UnitBase(1L * 20 * 60 * 60 * 24 * 365 * 100, "time.centuries"),
+        new UnitBase(1L * 20 * 60 * 60 * 24 * 365, "time.years"),
+        new UnitBase(1L * 20 * 60 * 60 * 24 * 30, "time.months"), // Mostly! :D
+        new UnitBase(1L * 20 * 60 * 60 * 24 * 7, "time.weeks"), new UnitBase(1L * 20 * 60 * 60 * 24, "time.irldays"),
+        new UnitBase(1L * 20 * 60 * 60, "time.hours"),
+        // new UnitBase(1L * 20 * 60 * 20, "time.mcdays"), // skipped due to confusingness
+        new UnitBase(1L * 20 * 60, "time.minutes"), new UnitBase(1L * 20, "time.seconds"),
+        new UnitBase(1L, "time.ticks"), };
+    public static UnitBase unit_distance_px[] = new UnitBase[] { new UnitBase(1L * 16 * 1000, "distance.kilometers"),
+        new UnitBase(1L * 16 * 16, "distance.chunks"), new UnitBase(1L * 16, "distance.blocks"),
+        new UnitBase(1L, "distance.pixels"), };
 
     private static UnitBase best(UnitBase[] bases, long value) {
         boolean wasAbove = false;

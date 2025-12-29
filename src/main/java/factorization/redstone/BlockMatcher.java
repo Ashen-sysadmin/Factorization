@@ -1,9 +1,7 @@
 package factorization.redstone;
 
-import factorization.api.Coord;
-import factorization.common.BlockIcons;
-import factorization.shared.Core;
-import factorization.util.SpaceUtil;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -12,9 +10,13 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.util.Random;
+import factorization.api.Coord;
+import factorization.common.BlockIcons;
+import factorization.shared.Core;
+import factorization.util.SpaceUtil;
 
 public class BlockMatcher extends Block {
+
     public BlockMatcher() {
         super(Material.rock);
         setTickRandomly(false);
@@ -37,9 +39,12 @@ public class BlockMatcher extends Block {
     ForgeDirection getAxis(int md) {
         switch (md & 0x3) {
             default:
-            case 0: return ForgeDirection.DOWN;
-            case 1: return ForgeDirection.NORTH;
-            case 2: return ForgeDirection.WEST;
+            case 0:
+                return ForgeDirection.DOWN;
+            case 1:
+                return ForgeDirection.NORTH;
+            case 2:
+                return ForgeDirection.WEST;
         }
     }
 
@@ -113,7 +118,7 @@ public class BlockMatcher extends Block {
         int notify = Coord.UPDATE | Coord.NOTIFY_NEIGHBORS;
         final int next_md = makeMd(axis, next_state);
         if (md == next_md) return;
-        //println("neighbor changed", block.getLocalizedName(), state, "-->", next_state);
+        // println("neighbor changed", block.getLocalizedName(), state, "-->", next_state);
         world.setBlockMetadataWithNotify(x, y, z, next_md, notify);
         world.scheduleBlockUpdate(x, y, z, this, 4);
     }
@@ -166,12 +171,13 @@ public class BlockMatcher extends Block {
         byte nextState = match >= 3 ? STATE_MATCHED : STATE_READY;
         int notify = Coord.UPDATE | Coord.NOTIFY_NEIGHBORS;
         int nextMd = makeMd(getAxis(md), nextState);
-        //println("update tick", state, "-->", nextState);
+        // println("update tick", state, "-->", nextState);
         world.setBlockMetadataWithNotify(x, y, z, nextMd, notify);
     }
 
     @Override
-    public int onBlockPlaced(World w, int x, int y, int z, int side, float hitX, float hitY, float hitZ, int itemMetadata) {
+    public int onBlockPlaced(World w, int x, int y, int z, int side, float hitX, float hitY, float hitZ,
+        int itemMetadata) {
         return makeMd(ForgeDirection.getOrientation(side), STATE_READY);
     }
 

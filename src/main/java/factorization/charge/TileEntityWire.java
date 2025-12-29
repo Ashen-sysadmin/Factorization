@@ -2,31 +2,32 @@ package factorization.charge;
 
 import java.io.IOException;
 
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.Share;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Charge;
 import factorization.api.Coord;
 import factorization.api.IChargeConductor;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.Share;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.shared.BlockClass;
 import factorization.shared.Core;
-import factorization.shared.TileEntityCommon;
 import factorization.shared.NetworkFactorization.MessageType;
+import factorization.shared.TileEntityCommon;
+import io.netty.buffer.ByteBuf;
 
 public class TileEntityWire extends TileEntityCommon implements IChargeConductor {
+
     public byte supporting_side;
     private boolean extended_wire = false;
     Charge charge = new Charge(this);
@@ -40,6 +41,7 @@ public class TileEntityWire extends TileEntityCommon implements IChargeConductor
     public BlockClass getBlockClass() {
         return BlockClass.Wire;
     }
+
     @Override
     public boolean activate(EntityPlayer entityplayer, ForgeDirection side) {
         return false;
@@ -57,7 +59,8 @@ public class TileEntityWire extends TileEntityCommon implements IChargeConductor
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        supporting_side = data.as(Share.VISIBLE, "side").putByte(supporting_side);
+        supporting_side = data.as(Share.VISIBLE, "side")
+            .putByte(supporting_side);
         charge.serialize("", data);
     }
 
@@ -71,10 +74,10 @@ public class TileEntityWire extends TileEntityCommon implements IChargeConductor
                 shareInfo();
                 return true;
             }
-            //			if (here.towardSide(side).isSolidOnSide(Coord.oppositeSide(side))) {
-            //				supporting_side = side;
-            //				return true;
-            //			}
+            // if (here.towardSide(side).isSolidOnSide(Coord.oppositeSide(side))) {
+            // supporting_side = side;
+            // return true;
+            // }
         }
         return false;
     }
@@ -82,7 +85,7 @@ public class TileEntityWire extends TileEntityCommon implements IChargeConductor
     boolean is_directly_supported() {
         Coord supporter = getCoord().towardSide(supporting_side);
         if (!supporter.blockExists()) {
-            return true; //block isn't loaded, so just hang tight.
+            return true; // block isn't loaded, so just hang tight.
         }
         if (supporter.isSolidOnSide(supporting_side)) {
             return true;
@@ -111,7 +114,9 @@ public class TileEntityWire extends TileEntityCommon implements IChargeConductor
         TileEntityWire parent = supporter.getTE(TileEntityWire.class);
         if (parent != null) {
             if (parent.is_directly_supported()) {
-                int opposite = ForgeDirection.getOrientation(side).getOpposite().ordinal();
+                int opposite = ForgeDirection.getOrientation(side)
+                    .getOpposite()
+                    .ordinal();
                 if (parent.supporting_side == side || parent.supporting_side == opposite) {
                     return false;
                 }
@@ -128,10 +133,10 @@ public class TileEntityWire extends TileEntityCommon implements IChargeConductor
         }
         charge.update();
     }
-    
+
     @Override
     public void neighborChanged() {
-        if (!is_supported() /*&& !find_support()*/ ) {
+        if (!is_supported() /* && !find_support() */ ) {
             Core.registry.factory_block.dropBlockAsItem(worldObj, xCoord, yCoord, zCoord, BlockClass.Wire.md, 0);
             Coord here = getCoord();
             here.setAir();
@@ -149,13 +154,13 @@ public class TileEntityWire extends TileEntityCommon implements IChargeConductor
             }
             complexity += new WireConnections(w).getComplexity();
         }
-        TileEntityWire below = getCoord().add(ForgeDirection.getOrientation(supporting_side)).getTE(TileEntityWire.class);
+        TileEntityWire below = getCoord().add(ForgeDirection.getOrientation(supporting_side))
+            .getTE(TileEntityWire.class);
         if (below != null && below.supporting_side == supporting_side) {
             complexity += 16;
         }
         return complexity;
     }
-
 
     @Override
     public void onPlacedBy(EntityPlayer player, ItemStack is, int side, float hitX, float hitY, float hitZ) {
@@ -207,10 +212,11 @@ public class TileEntityWire extends TileEntityCommon implements IChargeConductor
     @Override
     public AxisAlignedBB getCollisionBoundingBoxFromPool() {
         return null;
-//		setBlockBounds(Core.registry.resource_block);
-//		AxisAlignedBB ret = Core.registry.resource_block.getCollisionBoundingBoxFromPool(worldObj, xCoord, yCoord, zCoord);
-//		Core.registry.resource_block.setBlockBounds(0, 0, 0, 1, 1, 1);
-//		return ret;
+        // setBlockBounds(Core.registry.resource_block);
+        // AxisAlignedBB ret = Core.registry.resource_block.getCollisionBoundingBoxFromPool(worldObj, xCoord, yCoord,
+        // zCoord);
+        // Core.registry.resource_block.setBlockBounds(0, 0, 0, 1, 1, 1);
+        // return ret;
     }
 
     @Override
@@ -233,7 +239,7 @@ public class TileEntityWire extends TileEntityCommon implements IChargeConductor
         }
         return false;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(ForgeDirection dir) {

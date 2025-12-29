@@ -1,18 +1,20 @@
 package factorization.colossi;
 
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 
 public class MaskTemplate {
+
     int width;
     String[] template;
     ForgeDirection anchor = ForgeDirection.UNKNOWN;
     int anchor_points = 0;
     int anchor_x, anchor_y;
-    
+
     int weight = 100;
     char MASK = '#', AIR = '.', EYE = '@';
-    
+
     public MaskTemplate(String... template) {
         this.template = template;
         this.width = template[0].length();
@@ -32,7 +34,7 @@ public class MaskTemplate {
                 } else {
                     if (anchor != fd) {
                         if (anchor != ForgeDirection.UNKNOWN) {
-                            throw new IllegalArgumentException("Mixed anchor types");							
+                            throw new IllegalArgumentException("Mixed anchor types");
                         }
                         anchor = fd;
                         anchor_x = i;
@@ -43,18 +45,23 @@ public class MaskTemplate {
             }
         }
     }
-    
+
     ForgeDirection toAnchor(char c) {
         switch (c) {
-        case 'V':
-        case 'v': return ForgeDirection.DOWN;
-        case '^': return ForgeDirection.UP;
-        case '<': return ForgeDirection.NORTH;
-        case '>': return ForgeDirection.SOUTH;
-        default: return ForgeDirection.UNKNOWN;
-        } 
+            case 'V':
+            case 'v':
+                return ForgeDirection.DOWN;
+            case '^':
+                return ForgeDirection.UP;
+            case '<':
+                return ForgeDirection.NORTH;
+            case '>':
+                return ForgeDirection.SOUTH;
+            default:
+                return ForgeDirection.UNKNOWN;
+        }
     }
-    
+
     @Override
     public String toString() {
         String ret = "weight " + weight;

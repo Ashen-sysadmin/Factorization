@@ -1,15 +1,17 @@
 package factorization.beauty;
 
+import net.minecraft.client.renderer.RenderBlocks;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.util.ResourceLocation;
+
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.shared.Core;
 import factorization.shared.FactorizationBlockRender;
 import factorization.shared.ObjectModel;
-import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.util.ResourceLocation;
 
 public class BlockRenderSteamShaft extends FactorizationBlockRender {
+
     static ObjectModel shaft = new ObjectModel(new ResourceLocation("factorization", "models/whirligig_shaft.obj"));
     static ObjectModel whirligig = new ObjectModel(new ResourceLocation("factorization", "models/whirligig.obj"));
 

@@ -1,14 +1,16 @@
 package factorization.artifact;
 
+import java.util.Random;
+
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.client.IItemRenderer;
+
 import org.lwjgl.opengl.GL11;
 
-import java.util.Random;
-
 public class RenderBrokenArtifact implements IItemRenderer {
+
     int W = 8;
     int S = 16 / W;
     int layerCount = 2;
@@ -87,7 +89,7 @@ public class RenderBrokenArtifact implements IItemRenderer {
             GL11.glTranslated(-1, -1, posterForwardHack);
         }
         IIcon icon = orig.getIconIndex();
-        double d = type == ItemRenderType.INVENTORY ? 1.0 : 1.0/16.0;
+        double d = type == ItemRenderType.INVENTORY ? 1.0 : 1.0 / 16.0;
         tess.startDrawingQuads();
         int index = 0;
         int shuffleIndex = Math.abs(item.getItemDamage()) % shuffles.length;

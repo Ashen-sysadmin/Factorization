@@ -4,13 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.Share;
-import factorization.common.FzConfig;
-import factorization.shared.BlockFactorization;
-import factorization.util.DataUtil;
-import factorization.util.ItemUtil;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -18,26 +11,35 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.oredict.OreDictionary;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
 import factorization.api.DeltaCoord;
 import factorization.api.IReflectionTarget;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.Share;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
+import factorization.common.FzConfig;
 import factorization.shared.BlockClass;
+import factorization.shared.BlockFactorization;
 import factorization.shared.Core;
 import factorization.shared.NetworkFactorization.MessageType;
 import factorization.shared.TileEntityCommon;
-import net.minecraftforge.oredict.OreDictionary;
+import factorization.util.DataUtil;
+import factorization.util.ItemUtil;
+import io.netty.buffer.ByteBuf;
 
 public class TileEntityMirror extends TileEntityCommon {
+
     public Coord reflection_target = null;
 
-    //don't save
+    // don't save
     public boolean is_lit = false;
     int next_check = 1;
-    //don't save, but *do* share w/ client
+    // don't save, but *do* share w/ client
     public transient int target_rotation = -99;
     private boolean covered_by_other_mirror = false;
     public byte silver = 1;
@@ -57,14 +59,17 @@ public class TileEntityMirror extends TileEntityCommon {
         if (reflection_target == null) {
             reflection_target = getCoord();
         }
-        reflection_target = data.as(Share.VISIBLE, "target").putIDS(reflection_target);
+        reflection_target = data.as(Share.VISIBLE, "target")
+            .putIDS(reflection_target);
         if (reflection_target.equals(getCoord())) {
             reflection_target = null;
         } else if (data.isReader()) {
             updateRotation();
         }
-        covered_by_other_mirror = data.as(Share.VISIBLE, "covered").putBoolean(covered_by_other_mirror);
-        silver = data.as(Share.VISIBLE, "silver").putByte(silver);
+        covered_by_other_mirror = data.as(Share.VISIBLE, "covered")
+            .putBoolean(covered_by_other_mirror);
+        silver = data.as(Share.VISIBLE, "silver")
+            .putByte(silver);
     }
 
     @Override
@@ -123,7 +128,14 @@ public class TileEntityMirror extends TileEntityCommon {
     void broadcastTargetInfoIfChanged(boolean force) {
         if (force || getTargetInfo() != last_shared) {
             Coord target = reflection_target == null ? new Coord(this) : reflection_target;
-            broadcastMessage(null, MessageType.MirrorDescription, getTargetInfo(), target.x, target.y, target.z, silver);
+            broadcastMessage(
+                null,
+                MessageType.MirrorDescription,
+                getTargetInfo(),
+                target.x,
+                target.y,
+                target.z,
+                silver);
             last_shared = getTargetInfo();
         }
     }
@@ -203,7 +215,7 @@ public class TileEntityMirror extends TileEntityCommon {
         }
         reflection_target = null;
     }
-    
+
     @Override
     public void invalidate() {
         super.invalidate();
@@ -213,13 +225,13 @@ public class TileEntityMirror extends TileEntityCommon {
     }
 
     boolean gotten_info_packet = false;
-    
+
     void setNextCheck() {
         next_check = 80 + worldObj.rand.nextInt(20);
     }
 
     public boolean last_drawn_as_lit = false;
-    
+
     @Override
     public void updateEntity() {
         if (next_check-- <= 0) {
@@ -240,7 +252,7 @@ public class TileEntityMirror extends TileEntityCommon {
                 } else {
                     reflection_target.setWorld(worldObj);
                 }
-                //we *do* have a target coord by this point. Is there a TE there tho?
+                // we *do* have a target coord by this point. Is there a TE there tho?
                 IReflectionTarget target = null;
                 target = reflection_target.getTE(IReflectionTarget.class);
                 if (target == null) {
@@ -273,7 +285,7 @@ public class TileEntityMirror extends TileEntityCommon {
 
     void findTarget() {
         if (reflection_target != null) {
-            //make the old target forget about us
+            // make the old target forget about us
             IReflectionTarget target = reflection_target.getTE(IReflectionTarget.class);
             if (target != null) {
                 if (is_lit) {
@@ -288,11 +300,13 @@ public class TileEntityMirror extends TileEntityCommon {
         IReflectionTarget closest = null;
         int last_dist = Integer.MAX_VALUE;
         Coord me = getCoord();
-        double maxRadiusSq = 8.9*8.9;
+        double maxRadiusSq = 8.9 * 8.9;
         for (int x = xCoord - search_distance; x <= xCoord + search_distance; x++) {
             for (int z = zCoord - search_distance; z <= zCoord + search_distance; z++) {
                 Coord here = new Coord(worldObj, x, yCoord, z);
-                IReflectionTarget target = here.getTE(IReflectionTarget.class); // FIXME: Iterate the chunk hash maps instead... get a nice helper function perhaps
+                IReflectionTarget target = here.getTE(IReflectionTarget.class); // FIXME: Iterate the chunk hash maps
+                                                                                // instead... get a nice helper function
+                                                                                // perhaps
                 if (target == null) {
                     continue;
                 }
@@ -364,18 +378,17 @@ public class TileEntityMirror extends TileEntityCommon {
     public boolean isBlockSolidOnSide(int side) {
         return false;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(ForgeDirection dir) {
         return BlockIcons.mirror_front;
     }
-    
+
     @Override
     public ItemStack getDroppedBlock() {
         return new ItemStack(Core.registry.mirror);
     }
-
 
     private static ItemStack[] _silver_blocks = null;
 

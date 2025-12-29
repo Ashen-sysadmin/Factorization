@@ -2,24 +2,23 @@ package factorization.charge;
 
 import java.util.List;
 
-import factorization.shared.Core;
-import factorization.shared.ItemFactorization;
-import factorization.shared.Sound;
-import factorization.shared.Core.TabType;
-
-import factorization.util.InvUtil;
-import factorization.util.ItemUtil;
-import factorization.util.PlayerUtil;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
+
+import factorization.shared.Core;
+import factorization.shared.Core.TabType;
+import factorization.shared.ItemFactorization;
+import factorization.shared.Sound;
+import factorization.util.InvUtil;
+import factorization.util.ItemUtil;
 
 public class ItemAcidBottle extends ItemFactorization {
 
@@ -28,22 +27,22 @@ public class ItemAcidBottle extends ItemFactorization {
         setMaxStackSize(16);
         setHasSubtypes(true);
     }
-    
+
     @Override
     public boolean requiresMultipleRenderPasses() {
         return true;
     }
-    
+
     @Override
     public void registerIcons(IIconRegister par1IIconRegister) {
         // Nada
     }
-    
+
     @Override
     public IIcon getIconFromDamageForRenderPass(int damage, int renderPass) {
         return Items.potionitem.getIconFromDamageForRenderPass(damage, renderPass);
     }
-    
+
     @Override
     public int getColorFromItemStack(ItemStack stack, int renderPass) {
         if (renderPass == 0) {
@@ -54,7 +53,7 @@ public class ItemAcidBottle extends ItemFactorization {
         }
         return super.getColorFromItemStack(stack, renderPass);
     }
-    
+
     @Override
     public String getUnlocalizedName(ItemStack stack) {
         String name = super.getUnlocalizedName(stack);
@@ -81,7 +80,7 @@ public class ItemAcidBottle extends ItemFactorization {
     }
 
     static public DamageSource acidDrinker = new AcidDamage();
-    
+
     static class AcidDamage extends DamageSource {
 
         protected AcidDamage() {
@@ -89,7 +88,7 @@ public class ItemAcidBottle extends ItemFactorization {
             setDamageBypassesArmor();
         }
     }
-    
+
     @Override
     public ItemStack onEaten(ItemStack is, World w, EntityPlayer player) {
         is.stackSize--;
@@ -98,13 +97,14 @@ public class ItemAcidBottle extends ItemFactorization {
             return is;
         }
         player.attackEntityFrom(acidDrinker, is.getItemDamage() > 0 ? 15 : 10);
-        player.getFoodStats().addStats(-20, 0);
+        player.getFoodStats()
+            .addStats(-20, 0);
         ItemStack bottle = new ItemStack(Items.glass_bottle);
         ItemUtil.setLore(bottle, "I drank acid and\nall I got was this\nlousy bottle!".split("\n"));
         InvUtil.givePlayerItem(player, bottle);
         return is;
     }
-    
+
     @Override
     public void getSubItems(Item id, CreativeTabs tab, List list) {
         super.getSubItems(id, tab, list);

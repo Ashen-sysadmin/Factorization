@@ -2,16 +2,17 @@ package factorization.servo.instructions;
 
 import java.io.IOException;
 
-import factorization.util.InvUtil;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.IDataSerializable;
 import factorization.common.BlockIcons;
 import factorization.servo.Instruction;
 import factorization.servo.ServoMotor;
+import factorization.util.InvUtil;
 import factorization.util.InvUtil.FzInv;
 
 public class CountItems extends Instruction {
@@ -35,7 +36,8 @@ public class CountItems extends Instruction {
             if (is == null) continue;
             count += is.stackSize;
         }
-        motor.getArgStack().push(count);
+        motor.getArgStack()
+            .push(count);
     }
 
     @Override

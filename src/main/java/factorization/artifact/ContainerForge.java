@@ -1,10 +1,7 @@
 package factorization.artifact;
 
-import factorization.api.Coord;
-import factorization.shared.Core;
-import factorization.shared.NetworkFactorization;
-import factorization.util.InvUtil;
-import factorization.util.ItemUtil;
+import java.util.ArrayList;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -12,11 +9,15 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.StringUtils;
 
-import java.util.ArrayList;
+import factorization.api.Coord;
+import factorization.shared.Core;
+import factorization.shared.NetworkFactorization;
+import factorization.util.InvUtil;
+import factorization.util.ItemUtil;
 
 public class ContainerForge extends Container {
+
     final Coord orig;
     public final InventoryForge forge;
     final EntityPlayer player;
@@ -76,9 +77,8 @@ public class ContainerForge extends Container {
 
     @Override
     public boolean canInteractWith(EntityPlayer player) {
-        return orig.distanceSq(new Coord(player)) < 36  && orig.getBlock() == Core.registry.artifact_forge;
+        return orig.distanceSq(new Coord(player)) < 36 && orig.getBlock() == Core.registry.artifact_forge;
     }
-
 
     void addPlayerSlots(InventoryPlayer inventoryplayer) {
         int d = 18 * 3 + 4;
@@ -133,7 +133,8 @@ public class ContainerForge extends Container {
         super.detectAndSendChanges();
         if (player.worldObj.isRemote) return;
         String new_err = forge.error_message == null ? "" : forge.error_message;
-        Core.network.sendPlayerMessage(player, NetworkFactorization.MessageType.ArtifactForgeError, new_err, forge.warnings);
+        Core.network
+            .sendPlayerMessage(player, NetworkFactorization.MessageType.ArtifactForgeError, new_err, forge.warnings);
     }
 
     @Override

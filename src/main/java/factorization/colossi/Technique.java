@@ -1,6 +1,24 @@
 package factorization.colossi;
 
-import cpw.mods.fml.relauncher.Side;
+import static factorization.colossi.TechniqueKind.*;
+
+import java.util.*;
+
+import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityFallingBlock;
+import net.minecraft.entity.item.EntityFireworkRocket;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.Vec3;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.algos.ReservoirSampler;
 import factorization.api.Coord;
 import factorization.api.DeltaCoord;
@@ -16,30 +34,11 @@ import factorization.fzds.interfaces.Interpolation;
 import factorization.shared.Core;
 import factorization.util.NumUtil;
 import factorization.util.SpaceUtil;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityFallingBlock;
-import net.minecraft.entity.item.EntityFireworkRocket;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.entity.monster.EntityZombie;
-import net.minecraft.entity.passive.EntityChicken;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.util.*;
-
-import static factorization.colossi.TechniqueKind.*;
 
 public enum Technique implements IStateMachine<Technique> {
+
     STATE_MACHINE_ENTRY {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
@@ -51,18 +50,20 @@ public enum Technique implements IStateMachine<Technique> {
             return this; // Is awakening laggy? Give everyone a moment to catch their breath before we start moving
         }
     },
-    
+
     PICK_NEXT_TECHNIQUE {
+
         @Override
         TechniqueKind getKind() {
             return IDLER;
         }
-        
+
         @Override
         public Technique tick(ColossusController controller, int age) {
             if (controller.getHealth() <= 0) return DEATH_FALL;
             if (age == 0) {
-                Vec3 rot = controller.body.getRotation().toRotationVector();
+                Vec3 rot = controller.body.getRotation()
+                    .toRotationVector();
                 double err = Math.abs(rot.xCoord) + Math.abs(rot.zCoord);
                 if (err > 0.00001) {
                     controller.body.setRotationalVelocity(new Quaternion());
@@ -106,7 +107,7 @@ public enum Technique implements IStateMachine<Technique> {
             if (chosen_defense != null) return chosen_defense;
             return STAND_STILL; // Shouldn't happen. Delay for a bit.
         }
-        
+
         Technique grade(Technique orig, ColossusController controller, Technique next) {
             if (orig == null && next.usable(controller)) return next;
             return orig;
@@ -117,8 +118,9 @@ public enum Technique implements IStateMachine<Technique> {
             return player;
         }
     },
-    
+
     STAND_STILL {
+
         @Override
         TechniqueKind getKind() {
             return IDLER;
@@ -137,29 +139,31 @@ public enum Technique implements IStateMachine<Technique> {
             double yRot = bodyRot.toRotationVector().yCoord;
             Quaternion straightRot = Quaternion.getRotationQuaternionRadians(yRot, ForgeDirection.UP);
             controller.bodyLimbInfo.target(straightRot, 1 * controller.getSpeedScale());
-            int time = controller.bodyLimbInfo.idc.getEntity().getRemainingRotationTime();
+            int time = controller.bodyLimbInfo.idc.getEntity()
+                .getRemainingRotationTime();
 
             for (LimbInfo li : controller.limbs) {
                 if (li.type.isArmOrLeg()) {
-                    Quaternion or = li.idc.getEntity().getRotation();
-                    li.idc.getEntity().orderTargetRotation(or, time, Interpolation.SMOOTH3);
+                    Quaternion or = li.idc.getEntity()
+                        .getRotation();
+                    li.idc.getEntity()
+                        .orderTargetRotation(or, time, Interpolation.SMOOTH3);
                     li.target(new Quaternion(), 1 * controller.getSpeedScale());
                 }
             }
 
-
-            
             // The above is way better than the commented out stuff! Keep for educational purposes!
-            
+
             /*
-            Quaternion bodyRot = controller.body.getRotation();
-            Quaternion up = Quaternion.getRotationQuaternionRadians(0, ForgeDirection.UP);
-            double tiltAngle = bodyRot.dotProduct(up);
-            Vec3 right = bodyRot.cross(up).toVector().normalize();
-            Quaternion correction = Quaternion.getRotationQuaternionRadians(tiltAngle, right);
-            Quaternion newBod = bodyRot.multiply(correction);
-            newBod.incrNormalize(); // Not normalizing causes limbs to de-joint?
-            controller.bodyLimbInfo.target(newBod, 1 * controller.getSpeedScale());*/
+             * Quaternion bodyRot = controller.body.getRotation();
+             * Quaternion up = Quaternion.getRotationQuaternionRadians(0, ForgeDirection.UP);
+             * double tiltAngle = bodyRot.dotProduct(up);
+             * Vec3 right = bodyRot.cross(up).toVector().normalize();
+             * Quaternion correction = Quaternion.getRotationQuaternionRadians(tiltAngle, right);
+             * Quaternion newBod = bodyRot.multiply(correction);
+             * newBod.incrNormalize(); // Not normalizing causes limbs to de-joint?
+             * controller.bodyLimbInfo.target(newBod, 1 * controller.getSpeedScale());
+             */
         }
 
         @Override
@@ -172,6 +176,7 @@ public enum Technique implements IStateMachine<Technique> {
     },
 
     CONFUSED {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
@@ -186,7 +191,8 @@ public enum Technique implements IStateMachine<Technique> {
             Random rand = controller.worldObj.rand;
             ForgeDirection dir = rand.nextBoolean() ? ForgeDirection.NORTH : ForgeDirection.SOUTH;
             Quaternion bend = Quaternion.getRotationQuaternionRadians(slight_bend, dir);
-            Quaternion rot = controller.body.getRotation().multiply(bend);
+            Quaternion rot = controller.body.getRotation()
+                .multiply(bend);
             controller.bodyLimbInfo.target(rot, controller.getSpeedScale());
             Quaternion legBack = bend.conjugate();
             legBack = legBack.slerp(legBack.multiply(legBack), 0.5);
@@ -234,6 +240,7 @@ public enum Technique implements IStateMachine<Technique> {
     },
 
     SUMMON_RETALIATION {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
@@ -280,25 +287,27 @@ public enum Technique implements IStateMachine<Technique> {
             }
         }
     },
-    
+
     FINISH_MOVE {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
         }
-        
+
         @Override
         public Technique tick(ColossusController controller, int age) {
             return finishMove(controller);
         }
     },
-    
+
     INITIAL_BOW {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
         }
-        
+
         @Override
         public void onEnterState(ColossusController controller, Technique prevState) {
             playNoise(controller);
@@ -306,12 +315,15 @@ public enum Technique implements IStateMachine<Technique> {
             // Crack a mask blocks that is exposed UP but not EAST
             final ReservoirSampler<Coord> sampler = new ReservoirSampler<Coord>(1, controller.worldObj.rand);
             Coord.iterateCube(controller.body.getCorner(), controller.body.getFarCorner(), new ICoordFunction() {
+
                 @Override
                 public void handle(Coord here) {
                     if (here.getBlock() != Core.registry.colossal_block) return;
                     if (here.getMd() != ColossalBlock.MD_MASK) return;
-                    if (!here.add(ForgeDirection.UP).isAir()) return;
-                    if (here.add(ForgeDirection.EAST).isAir()) return;
+                    if (!here.add(ForgeDirection.UP)
+                        .isAir()) return;
+                    if (here.add(ForgeDirection.EAST)
+                        .isAir()) return;
                     sampler.give(here.copy());
                 }
             });
@@ -326,20 +338,21 @@ public enum Technique implements IStateMachine<Technique> {
             // No suitable mask to crack? Might be a custom design. Silently skip this bow then.
             controller.crackBroken();
         }
-        
+
         @Override
         public Technique tick(ColossusController controller, int age) {
             // Copy of BOW.tick >_>
             if (controller.checkHurt(false)) return INITIAL_UNBOW;
             return this; // Because of this!
         }
-        
+
         @Override
         public void onExitState(ColossusController controller, Technique nextState) {
             // Add the other cracks
             int count = controller.getNaturalCrackCount();
             final ReservoirSampler<Coord> sampler = new ReservoirSampler<Coord>(count, controller.worldObj.rand);
             Coord.iterateCube(controller.body.getCorner(), controller.body.getFarCorner(), new ICoordFunction() {
+
                 @Override
                 public void handle(Coord here) {
                     if (isExposedSkin(here)) {
@@ -351,14 +364,20 @@ public enum Technique implements IStateMachine<Technique> {
                 }
             });
             for (Coord found : sampler) {
-                found.setIdMd(Core.registry.colossal_block, ColossalBlock.MD_BODY_CRACKED /* Unlike the case above, we DO want MD_BODY_CRACKED. I know you're going to mess this up. Don't do it. */, true);
+                found.setIdMd(
+                    Core.registry.colossal_block,
+                    ColossalBlock.MD_BODY_CRACKED /*
+                                                   * Unlike the case above, we DO want MD_BODY_CRACKED. I know you're
+                                                   * going to mess this up. Don't do it.
+                                                   */,
+                    true);
             }
             int newCracks = sampler.size();
             int destroyed = controller.getDestroyedCracks();
             controller.setTotalCracks(newCracks + destroyed);
             controller.confused = false; // No pre-confusing!
         }
-        
+
         boolean isExposedSkin(Coord cell) {
             if (cell.getBlock() != Core.registry.colossal_block) return false;
             if (cell.getMd() != ColossalBlock.MD_BODY) return false;
@@ -369,53 +388,59 @@ public enum Technique implements IStateMachine<Technique> {
             return false;
         }
     },
-    
+
     BOW {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION; // Unbowing is being buggy :(
             // return OFFENSIVE;
         }
-        
+
         @Override
         boolean usable(ColossusController controller) {
-            if (controller.worldObj.rand.nextFloat() < 0.5) return false; 
+            if (controller.worldObj.rand.nextFloat() < 0.5) return false;
             return iteratePotentialPlayers(controller) != null;
         }
-        
+
         @Override
         protected Object visitPlayer(EntityPlayer player, ColossusController controller) {
             if (player.posY < controller.posY) return null;
             double height = controller.bodyLimbInfo.length;
-            if (player.posY > controller.posY + height + 5) return null; // cheap coarse-check if the player is far above us
-            Coord top = controller.body.getFarCorner().copy();
+            if (player.posY > controller.posY + height + 5) return null; // cheap coarse-check if the player is far
+                                                                         // above us
+            Coord top = controller.body.getFarCorner()
+                .copy();
             controller.body.shadow2real(top);
             if (player.posY > top.y) return null;
             double radius = getTotalSize(controller) + 2;
             if (controller.getDistanceSqToEntity(player) > radius * radius) return null;
             return player;
         }
-        
+
         double getTotalSize(ColossusController controller) {
             int bodWidth = measureWidth(controller.body);
             int armWidth = measureWidth(controller.body);
             return (bodWidth + armWidth) / 2.0;
         }
-        
+
         int measureWidth(IDeltaChunk bod) {
-            return bod.getFarCorner().difference(bod.getCorner()).z;
+            return bod.getFarCorner()
+                .difference(bod.getCorner()).z;
         }
-        
+
         @Override
         public void onEnterState(ColossusController controller, Technique prevState) {
             if (prevState != INITIAL_BOW) playNoise(controller);
             // So, uh, we really should do some IK here. But that's rather more math than I want to deal with. O.o
-            // So body bends to 90°, arms bend to 45°, and it might clip through the ground or be too high up or something.
+            // So body bends to 90°, arms bend to 45°, and it might clip through the ground or be too high up or
+            // something.
             // (And the legs bend -90° since they're rooted to the body)
             // And hopefully we're bipedal! It'd do something hilarious & derpy if quadrapedal or polypedal.
             double bowAngle = Math.toRadians(70);
             Quaternion bow = Quaternion.getRotationQuaternionRadians(bowAngle, ForgeDirection.NORTH);
-            Quaternion bodyBend = controller.body.getRotation().multiply(bow);
+            Quaternion bodyBend = controller.body.getRotation()
+                .multiply(bow);
             controller.bodyLimbInfo.target(bodyBend, bow_power, bendInterp);
             int bodyBendTime;
             if (controller.body.hasOrderedRotation()) {
@@ -423,25 +448,32 @@ public enum Technique implements IStateMachine<Technique> {
             } else {
                 bodyBendTime = 60; // Hmph! Make something up. Shouldn't happen.
             }
-            //Quaternion legBend = Quaternion.getRotationQuaternionRadians(-bowAngle * 1.5, ForgeDirection.NORTH);
+            // Quaternion legBend = Quaternion.getRotationQuaternionRadians(-bowAngle * 1.5, ForgeDirection.NORTH);
             Quaternion bodyBack = bodyBend.conjugate();
             Quaternion legBend = bodyBack.slerp(bodyBack.multiply(bodyBack), 0.5);
             for (LimbInfo limb : controller.limbs) {
                 IDeltaChunk idc = limb.idc.getEntity();
                 if (idc == null) continue;
                 if (limb.type == LimbType.LEG) {
-                    idc.orderTargetRotation(legBend, bodyBendTime /* Don't be influenced by controller.getSpeedScale() */, bendInterp);
+                    idc.orderTargetRotation(
+                        legBend,
+                        bodyBendTime /* Don't be influenced by controller.getSpeedScale() */,
+                        bendInterp);
                 } else if (limb.type == LimbType.ARM) {
                     double armFlap = Math.toRadians(limb.side == BodySide.RIGHT ? -25 : 25);
                     double armHang = Math.toRadians(-90 - 45);
                     Quaternion flap = Quaternion.getRotationQuaternionRadians(armFlap, ForgeDirection.EAST);
                     Quaternion hang = Quaternion.getRotationQuaternionRadians(armHang, ForgeDirection.NORTH);
-                    idc.orderTargetRotation(flap.multiply(hang).multiply(bow), bodyBendTime /* Don't be influenced by the speed */, Interpolation.SMOOTH);
+                    idc.orderTargetRotation(
+                        flap.multiply(hang)
+                            .multiply(bow),
+                        bodyBendTime /* Don't be influenced by the speed */,
+                        Interpolation.SMOOTH);
                 }
             }
             controller.setTarget(null);
         }
-        
+
         @Override
         public Technique tick(ColossusController controller, int age) {
             if (controller.checkHurt(false)) return UNBOW;
@@ -451,6 +483,7 @@ public enum Technique implements IStateMachine<Technique> {
     },
 
     INITIAL_UNBOW {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
@@ -470,6 +503,7 @@ public enum Technique implements IStateMachine<Technique> {
     },
 
     INITIAL_UNBOW2 {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
@@ -490,13 +524,14 @@ public enum Technique implements IStateMachine<Technique> {
             UNBOW.onExitState(controller, nextState);
         }
     },
-    
+
     UNBOW {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
         }
-        
+
         @Override
         public void onEnterState(ColossusController controller, Technique prevState) {
             if (prevState != INITIAL_UNBOW) playNoise(controller);
@@ -510,15 +545,17 @@ public enum Technique implements IStateMachine<Technique> {
             controller.bodyLimbInfo.target(straightRot, 1 * controller.getSpeedScale());
 
             Quaternion straightenIsh = new Quaternion().slerp(bodyRot, 0.5);
-            int time = controller.bodyLimbInfo.idc.getEntity().getRemainingRotationTime();
+            int time = controller.bodyLimbInfo.idc.getEntity()
+                .getRemainingRotationTime();
             for (LimbInfo li : controller.limbs) {
                 if (li.type.isArmOrLeg()) {
                     // TODO/FIXME: Make the limbs end up normally rather than requiring STAND_STILL to fix it
-                    li.idc.getEntity().orderTargetRotation(straightenIsh, time, Interpolation.SMOOTH);
+                    li.idc.getEntity()
+                        .orderTargetRotation(straightenIsh, time, Interpolation.SMOOTH);
                 }
             }
         }
-        
+
         @Override
         public Technique tick(ColossusController controller, int age) {
             return finishMove(controller);
@@ -526,6 +563,7 @@ public enum Technique implements IStateMachine<Technique> {
     },
 
     CHASE_PLAYER {
+
         @Override
         TechniqueKind getKind() {
             return OFFENSIVE;
@@ -561,6 +599,7 @@ public enum Technique implements IStateMachine<Technique> {
     },
 
     SIT_DOWN {
+
         @Override
         TechniqueKind getKind() {
             return IDLER;
@@ -573,7 +612,8 @@ public enum Technique implements IStateMachine<Technique> {
 
         @Override
         protected Object visitPlayer(EntityPlayer player, ColossusController controller) {
-            // TODO: Make an OFFENSIVE technique kind; return null here if player's in squishing range, also make this a pain-causing technique
+            // TODO: Make an OFFENSIVE technique kind; return null here if player's in squishing range, also make this a
+            // pain-causing technique
             return player;
         }
 
@@ -584,7 +624,10 @@ public enum Technique implements IStateMachine<Technique> {
             Quaternion legBend = Quaternion.getRotationQuaternionRadians(Math.PI / 2, ForgeDirection.SOUTH);
             for (LimbInfo limb : controller.limbs) {
                 if (limb.type == LimbType.LEG) {
-                    limb.setTargetRotation(legBend, (int) (SIT_FALL_TIME * controller.getSpeedScale()), Interpolation.SMOOTH);
+                    limb.setTargetRotation(
+                        legBend,
+                        (int) (SIT_FALL_TIME * controller.getSpeedScale()),
+                        Interpolation.SMOOTH);
                 }
                 // TODO: Do something with the arms?
             }
@@ -603,6 +646,7 @@ public enum Technique implements IStateMachine<Technique> {
     },
 
     SIT_WAIT {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
@@ -610,7 +654,8 @@ public enum Technique implements IStateMachine<Technique> {
 
         @Override
         public Technique tick(ColossusController controller, int age) {
-            if (age % 60 == 0 /* happening first tick is important */ && iteratePotentialPlayers(controller) != null) return STAND_UP;
+            if (age % 60 == 0 /* happening first tick is important */ && iteratePotentialPlayers(controller) != null)
+                return STAND_UP;
             if (controller.checkHurt(false)) return STAND_UP;
             return this;
         }
@@ -622,6 +667,7 @@ public enum Technique implements IStateMachine<Technique> {
     },
 
     STAND_UP {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
@@ -633,7 +679,10 @@ public enum Technique implements IStateMachine<Technique> {
             controller.body.setVelocity(0, +v * controller.getSpeedScale(), 0);
             for (LimbInfo limb : controller.limbs) {
                 if (limb.type.isArmOrLeg()) {
-                    limb.setTargetRotation(new Quaternion(), (int) (SIT_FALL_TIME * controller.getSpeedScale()), Interpolation.SMOOTH);
+                    limb.setTargetRotation(
+                        new Quaternion(),
+                        (int) (SIT_FALL_TIME * controller.getSpeedScale()),
+                        Interpolation.SMOOTH);
                 }
             }
         }
@@ -650,67 +699,64 @@ public enum Technique implements IStateMachine<Technique> {
         }
     },
 
-    /*GROUND_MELT {
-        @Override
-        TechniqueKind getKind() {
-            return DEFENSIVE;
-        }
+    /*
+     * GROUND_MELT {
+     * @Override
+     * TechniqueKind getKind() {
+     * return DEFENSIVE;
+     * }
+     * @Override
+     * boolean usable(ColossusController controller) {
+     * return controller.posY > 30;
+     * }
+     * int LIQUID_TIME = 160;
+     * @Override
+     * public void onEnterState(ColossusController controller, Technique prevState) {
+     * playNoise(controller);
+     * STAND_STILL.onEnterState(controller, prevState);
+     * controller.setTarget(null);
+     * Coord at = new Coord(controller);
+     * Coord home = controller.getHome();
+     * double tx, tz;
+     * if (at.distance(home) < 8) {
+     * int half = (int) (WorldGenColossus.SMOOTH_START / 2);
+     * double angle = Math.toRadians(controller.worldObj.rand.nextInt(360));
+     * int dist = half + controller.worldObj.rand.nextInt(half);
+     * tx = dist * Math.cos(angle) + home.x;
+     * tz = dist * Math.sin(angle) + home.z;
+     * } else {
+     * tx = -(at.x - home.x);
+     * tz = -(at.z - home.z);
+     * }
+     * controller.body.motionX = tx / LIQUID_TIME;
+     * controller.body.motionZ = tz / LIQUID_TIME;
+     * controller.body.motionY = -at.y / LIQUID_TIME;
+     * }
+     * @Override
+     * public Technique tick(ColossusController controller, int age) {
+     * if (age >= LIQUID_TIME / 2 && controller.motionY < 0) {
+     * controller.motionY = Math.abs(controller.motionY);
+     * }
+     * if (age >= LIQUID_TIME) {
+     * return PICK_NEXT_TECHNIQUE;
+     * }
+     * return super.tick(controller, age);
+     * }
+     * },
+     */
 
-        @Override
-        boolean usable(ColossusController controller) {
-            return controller.posY > 30;
-        }
-
-        int LIQUID_TIME = 160;
-
-        @Override
-        public void onEnterState(ColossusController controller, Technique prevState) {
-            playNoise(controller);
-            STAND_STILL.onEnterState(controller, prevState);
-            controller.setTarget(null);
-            Coord at = new Coord(controller);
-            Coord home = controller.getHome();
-            double tx, tz;
-            if (at.distance(home) < 8) {
-                int half = (int) (WorldGenColossus.SMOOTH_START / 2);
-                double angle = Math.toRadians(controller.worldObj.rand.nextInt(360));
-                int dist = half + controller.worldObj.rand.nextInt(half);
-                tx = dist * Math.cos(angle) + home.x;
-                tz = dist * Math.sin(angle) + home.z;
-            } else {
-                tx = -(at.x - home.x);
-                tz = -(at.z - home.z);
-            }
-
-            controller.body.motionX = tx / LIQUID_TIME;
-            controller.body.motionZ = tz / LIQUID_TIME;
-            controller.body.motionY = -at.y / LIQUID_TIME;
-
-        }
-
-        @Override
-        public Technique tick(ColossusController controller, int age) {
-            if (age >= LIQUID_TIME / 2 && controller.motionY < 0) {
-                controller.motionY = Math.abs(controller.motionY);
-            }
-            if (age >= LIQUID_TIME) {
-                return PICK_NEXT_TECHNIQUE;
-            }
-            return super.tick(controller, age);
-        }
-    },*/
-    
     HIT_WITH_LIMB {
+
         @Override
         TechniqueKind getKind() {
             return OFFENSIVE;
         }
-        
+
         @Override
         boolean usable(ColossusController controller) {
             return findSmashable(controller) != null;
         }
-        
+
         @Override
         public void onEnterState(ColossusController controller, Technique prevState) {
             TargetSmash smash = findSmashable(controller);
@@ -719,19 +765,20 @@ public enum Technique implements IStateMachine<Technique> {
             smash.limb.target(smash.rotation, 8 * controller.getStrikeSpeedScale(), Interpolation.CUBIC);
             playNoise(controller);
         }
-        
+
         @Override
         public Technique tick(ColossusController controller, int age) {
             return finishMove(controller, FINISH_HIT);
         }
-        
+
         TargetSmash findSmashable(ColossusController controller) {
             return iteratePotentialPlayers(controller);
         }
-        
+
         @Override
         protected Object visitPlayer(EntityPlayer player, ColossusController controller) {
-            DeltaCoord bodySize = controller.body.getFarCorner().difference(controller.body.getCorner());
+            DeltaCoord bodySize = controller.body.getFarCorner()
+                .difference(controller.body.getCorner());
             double halfBodyWidth = bodySize.x / 2;
             for (LimbInfo li : controller.limbs) {
                 if (li.type != LimbType.ARM && li.type != LimbType.LEG) continue;
@@ -739,34 +786,35 @@ public enum Technique implements IStateMachine<Technique> {
                 IDeltaChunk idc = li.idc.getEntity();
                 if (idc == null) continue;
                 if (idc.hasOrderedRotation()) continue;
-                
-                // So! We need to hit the player. There are some constraints on hitability. (These are sorted for efficiency)
-                
+
+                // So! We need to hit the player. There are some constraints on hitability. (These are sorted for
+                // efficiency)
+
                 // If it's a leg, we won't kick too far up
                 if (li.type == LimbType.LEG) {
                     if (player.posY > idc.posY) continue;
                 }
-                
+
                 // The player has to be within a shell defined by the limb's length
                 double farthest = li.length + 2; // And since this is too large, we can miss
                 double nearest = li.length - 2;
-                
+
                 double dist = idc.getDistanceToEntity(player);
                 if (dist > farthest || dist < nearest) continue;
-                
+
                 // We won't hit across the body
                 Vec3 li2player = SpaceUtil.subtract(SpaceUtil.fromEntPos(player), SpaceUtil.fromEntPos(idc));
                 Vec3 localOffset = SpaceUtil.copy(li2player);
-                controller.body.getRotation().applyReverseRotation(localOffset);
+                controller.body.getRotation()
+                    .applyReverseRotation(localOffset);
                 if (li.side == BodySide.LEFT) {
                     if (localOffset.zCoord > +halfBodyWidth) continue;
                 } else {
                     if (localOffset.zCoord < -halfBodyWidth) continue;
                 }
-                
+
                 // And striking backwards would be weird
                 if (localOffset.xCoord < 0) continue;
-                
 
                 // The Quaternion needed to cause the limb to hit the player is the quaternion
                 // that changes DOWN to the normalized direction.
@@ -777,7 +825,8 @@ public enum Technique implements IStateMachine<Technique> {
                 Vec3 axis = src.crossProduct(dst);
                 double angle = SpaceUtil.getAngle(src, dst);
 
-                controller.body.getRotation().applyReverseRotation(axis);
+                controller.body.getRotation()
+                    .applyReverseRotation(axis);
 
                 // A single strike through your oponnent will hurt him more than two hundred blows to his skin
                 angle *= 1.5;
@@ -791,66 +840,73 @@ public enum Technique implements IStateMachine<Technique> {
             }
             return CONTINUE;
         }
-        
+
         class TargetSmash {
+
             LimbInfo limb;
             Quaternion rotation;
         }
     },
-    
+
     FINISH_HIT {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
         }
-        
+
         @Override
         public void onEnterState(ColossusController controller, Technique prevState) {
             final Quaternion bodyRotation = controller.body.getRotation();
             for (LimbInfo li : controller.limbs) {
                 if (!li.type.isArmOrLeg()) continue;
                 li.causesPain(false);
-                double error = li.idc.getEntity().getRotation().getAngleBetween(bodyRotation);
+                double error = li.idc.getEntity()
+                    .getRotation()
+                    .getAngleBetween(bodyRotation);
                 if (error < 0.001) continue;
                 li.target(new Quaternion(), 1 * controller.getSpeedScale(), Interpolation.SMOOTH);
 
             }
         }
-        
+
         @Override
         public Technique tick(ColossusController controller, int age) {
             return finishMove(controller);
         }
     },
-    
+
     WANDER {
+
         @Override
         TechniqueKind getKind() {
             return IDLER;
         }
-        
+
         @Override
         public Technique tick(ColossusController controller, int age) {
             if (controller.atTarget() || controller.confused) return PICK_NEXT_TECHNIQUE;
             return this;
         }
-        
+
         @Override
         public void onEnterState(ColossusController controller, Technique prevState) {
-            double range = (WorldGenColossus.SMOOTH_START + WorldGenColossus.SMOOTH_END)/2;
-            Coord target = controller.getHome().copy();
+            double range = (WorldGenColossus.SMOOTH_START + WorldGenColossus.SMOOTH_END) / 2;
+            Coord target = controller.getHome()
+                .copy();
             double dx = rng(controller) * range;
             double dz = rng(controller) * range;
             target = target.add((int) dx, 0, (int) dz);
             controller.setTarget(target);
         }
-        
+
         double rng(ColossusController controller) {
             return controller.worldObj.rand.nextDouble() * 2 - 1;
         }
     },
-    
+
     DEATH_FALL {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
@@ -873,16 +929,19 @@ public enum Technique implements IStateMachine<Technique> {
             Quaternion fallAxis = Quaternion.getRotationQuaternionRadians(Math.PI / 2, ForgeDirection.SOUTH);
             Quaternion rotation = controller.body.getRotation();
             fallAxis = rotation.multiply(fallAxis);
-            controller.body.orderTargetRotation(fallAxis, (int) (20 * 2.5 /* 2.5 seconds for the fall sound to hit */), Interpolation.SQUARE);
+            controller.body.orderTargetRotation(
+                fallAxis,
+                (int) (20 * 2.5 /* 2.5 seconds for the fall sound to hit */),
+                Interpolation.SQUARE);
             controller.setTarget(null);
             removeMyCreepers(controller);
         }
-        
+
         @Override
         public Technique tick(ColossusController controller, int age) {
             return controller.body.hasOrderedRotation() ? this : DEATH_EXPLODE;
         }
-        
+
         @Override
         public void onExitState(ColossusController controller, Technique nextState) {
             for (LimbInfo li : controller.limbs) {
@@ -892,22 +951,24 @@ public enum Technique implements IStateMachine<Technique> {
             }
         }
     },
-    
+
     DEATH_EXPLODE {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
         }
-        
+
         @Override
         public Technique tick(ColossusController controller, int age) {
             if (age % 15 != 0) return this;
             boolean any = false;
             double n = 1 + (controller.leg_size / 2.0) * age * age / 500;
             for (LimbInfo li : controller.limbs) {
-                final ReservoirSampler<Coord> sampler = new ReservoirSampler<Coord>((int)n, null);
+                final ReservoirSampler<Coord> sampler = new ReservoirSampler<Coord>((int) n, null);
                 IDeltaChunk idc = li.idc.getEntity();
                 Coord.iterateCube(idc.getCorner(), idc.getFarCorner(), new ICoordFunction() {
+
                     @Override
                     public void handle(Coord here) {
                         if (here.isAir()) return;
@@ -933,7 +994,7 @@ public enum Technique implements IStateMachine<Technique> {
             }
             return any ? this : DEATH_EXPIRE;
         }
-        
+
         void dislodge(IDeltaChunk idc, Coord src) {
             Coord dest = src.copy();
             idc.shadow2real(dest);
@@ -958,26 +1019,35 @@ public enum Technique implements IStateMachine<Technique> {
                 return;
             }
             TransferLib.move(src, dest, true, true);
-            EntityFallingBlock sand = new EntityFallingBlock(dest.w, dest.x, dest.y, dest.z, dest.getId(), dest.getMd());
+            EntityFallingBlock sand = new EntityFallingBlock(
+                dest.w,
+                dest.x,
+                dest.y,
+                dest.z,
+                dest.getId(),
+                dest.getMd());
             sand.field_145812_b = 1; // "Time" field. This is set to make it not suicide immediately.
             dest.setAir();
-            double gs = 1.0/20.0;
-            sand.motionX = 0; //dest.w.rand.nextGaussian() * gs;
-            sand.motionZ = 0; //dest.w.rand.nextGaussian() * gs;
+            double gs = 1.0 / 20.0;
+            sand.motionX = 0; // dest.w.rand.nextGaussian() * gs;
+            sand.motionZ = 0; // dest.w.rand.nextGaussian() * gs;
             sand.motionY = Math.abs(dest.w.rand.nextGaussian() * gs);
             sand.worldObj.spawnEntityInWorld(sand);
         }
     },
-    
+
     DEATH_EXPIRE {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
         }
-        
+
         @Override
-        public Technique tick(ColossusController controller, int age) { return this; }
-        
+        public Technique tick(ColossusController controller, int age) {
+            return this;
+        }
+
         @Override
         public void onEnterState(final ColossusController controller, Technique prevState) {
             final ArrayList<Entity> lmps = new ArrayList();
@@ -986,56 +1056,80 @@ public enum Technique implements IStateMachine<Technique> {
                 Coord min = idc.getCorner();
                 Coord max = idc.getFarCorner();
                 Coord.iterateCube(min, max, new ICoordFunction() {
+
                     @Override
                     public void handle(Coord here) {
                         if (here.getBlock() != Core.registry.colossal_block) return;
                         int md = here.getMd();
                         switch (md) {
-                        default: return;
-                        case ColossalBlock.MD_EYE:
-                        case ColossalBlock.MD_BODY_CRACKED:
-                        case ColossalBlock.MD_CORE:
-                            here.setAir();
-                            Vec3 core = idc.shadow2real(here.createVector().addVector(0.5, 0.5, 0.5));
-                            controller.worldObj.newExplosion(null, core.xCoord, core.yCoord, core.zCoord, 0.25F, false, true);
-                            if (md == ColossalBlock.MD_CORE) {
-                                ItemStack lmp = new ItemStack(Core.registry.logicMatrixProgrammer);
-                                EntityItem ei = new EntityItem(controller.worldObj, core.xCoord, core.yCoord, core.zCoord, lmp);
-                                ei.invulnerable = true;
-                                ei.motionY = 1;
-                                lmps.add(ei);
-                                EntityFireworkRocket flare = new EntityFireworkRocket(controller.worldObj, core.xCoord, core.yCoord, core.zCoord, null);
-                                lmps.add(flare);
-                            }
-                            break;
-                        case ColossalBlock.MD_MASK:
-                            here.setAir();
-                            Coord real = here.copy();
-                            idc.shadow2real(real);
-                            if (real.isReplacable()) {
-                                EntityFallingBlock mask = new EntityFallingBlock(real.w, real.x, real.y, real.z, Core.registry.colossal_block, ColossalBlock.MD_MASK);
-                                mask.field_145812_b = 1; // "Time" field. This is set to make it not suicide immediately.
-                                lmps.add(mask);
-                            }
-                            break;
+                            default:
+                                return;
+                            case ColossalBlock.MD_EYE:
+                            case ColossalBlock.MD_BODY_CRACKED:
+                            case ColossalBlock.MD_CORE:
+                                here.setAir();
+                                Vec3 core = idc.shadow2real(
+                                    here.createVector()
+                                        .addVector(0.5, 0.5, 0.5));
+                                controller.worldObj
+                                    .newExplosion(null, core.xCoord, core.yCoord, core.zCoord, 0.25F, false, true);
+                                if (md == ColossalBlock.MD_CORE) {
+                                    ItemStack lmp = new ItemStack(Core.registry.logicMatrixProgrammer);
+                                    EntityItem ei = new EntityItem(
+                                        controller.worldObj,
+                                        core.xCoord,
+                                        core.yCoord,
+                                        core.zCoord,
+                                        lmp);
+                                    ei.invulnerable = true;
+                                    ei.motionY = 1;
+                                    lmps.add(ei);
+                                    EntityFireworkRocket flare = new EntityFireworkRocket(
+                                        controller.worldObj,
+                                        core.xCoord,
+                                        core.yCoord,
+                                        core.zCoord,
+                                        null);
+                                    lmps.add(flare);
+                                }
+                                break;
+                            case ColossalBlock.MD_MASK:
+                                here.setAir();
+                                Coord real = here.copy();
+                                idc.shadow2real(real);
+                                if (real.isReplacable()) {
+                                    EntityFallingBlock mask = new EntityFallingBlock(
+                                        real.w,
+                                        real.x,
+                                        real.y,
+                                        real.z,
+                                        Core.registry.colossal_block,
+                                        ColossalBlock.MD_MASK);
+                                    mask.field_145812_b = 1; // "Time" field. This is set to make it not suicide
+                                                             // immediately.
+                                    lmps.add(mask);
+                                }
+                                break;
                         }
                     }
                 });
             }
-            
+
             // This is so that they don't get blown up by the core explosion
             for (Entity l : lmps) {
                 l.worldObj.spawnEntityInWorld(l);
             }
-            
+
             for (LimbInfo li : controller.limbs) {
-                li.idc.getEntity().setDead();
+                li.idc.getEntity()
+                    .setDead();
             }
             controller.setDead();
         }
     },
 
     HACKED {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
@@ -1047,6 +1141,7 @@ public enum Technique implements IStateMachine<Technique> {
             controller.crackBroken();
 
             Coord.iterateCube(controller.body.getCorner(), controller.body.getFarCorner(), new ICoordFunction() {
+
                 @Override
                 public void handle(Coord here) {
                     if (here.getBlock() == Core.registry.colossal_block && here.getMd() == ColossalBlock.MD_EYE) {
@@ -1074,7 +1169,8 @@ public enum Technique implements IStateMachine<Technique> {
                 }
                 int angleDeg = limb.type == LimbType.ARM ? 90 + 45 : 45;
                 if (limb.side == BodySide.RIGHT) angleDeg = -angleDeg;
-                Quaternion target = Quaternion.getRotationQuaternionRadians(Math.toRadians(angleDeg), ForgeDirection.EAST);
+                Quaternion target = Quaternion
+                    .getRotationQuaternionRadians(Math.toRadians(angleDeg), ForgeDirection.EAST);
                 idc.orderTargetRotation(target, target_time, Interpolation.INV_CUBIC);
             }
 
@@ -1088,6 +1184,7 @@ public enum Technique implements IStateMachine<Technique> {
     },
 
     HACKED_EXPIRE {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
@@ -1114,10 +1211,12 @@ public enum Technique implements IStateMachine<Technique> {
                 final WorldServer world = (WorldServer) min.w;
 
                 Coord.iterateCube(min, max, new ICoordFunction() {
+
                     @Override
                     public void handle(Coord here) {
                         if (world.rand.nextInt(5) > 0) return;
-                        //sendParticlePacket(String particleName, double x, double y, double z, int particleCount, double R, double G, double B, double blastRange)
+                        // sendParticlePacket(String particleName, double x, double y, double z, int particleCount,
+                        // double R, double G, double B, double blastRange)
                         world.func_147487_a("portal", here.x, here.y, here.z, 1, 0, 4, 0, 1);
                     }
                 });
@@ -1126,6 +1225,7 @@ public enum Technique implements IStateMachine<Technique> {
             if (age % 24 == 0) {
                 final ReservoirSampler<Coord> eyes = new ReservoirSampler<Coord>(1, controller.worldObj.rand);
                 Coord.iterateCube(controller.body.getCorner(), controller.body.getFarCorner(), new ICoordFunction() {
+
                     @Override
                     public void handle(Coord here) {
                         if (here.getBlock() != Core.registry.colossal_block) return;
@@ -1151,6 +1251,7 @@ public enum Technique implements IStateMachine<Technique> {
     },
 
     DEAD {
+
         @Override
         TechniqueKind getKind() {
             return TRANSITION;
@@ -1159,6 +1260,7 @@ public enum Technique implements IStateMachine<Technique> {
         @Override
         public void onEnterState(ColossusController controller, Technique prevState) {
             ICoordFunction clear = new ICoordFunction() {
+
                 @Override
                 public void handle(Coord here) {
                     here.setAir();
@@ -1182,38 +1284,38 @@ public enum Technique implements IStateMachine<Technique> {
             return DEAD;
         }
     };
-    
+
     abstract TechniqueKind getKind();
-    
+
     boolean usable(ColossusController controller) {
         return true;
     }
-    
+
     @Override
     public Technique tick(ColossusController controller, int age) {
         return this;
     }
 
     @Override
-    public void onEnterState(ColossusController controller, Technique prevState) { }
+    public void onEnterState(ColossusController controller, Technique prevState) {}
 
     @Override
-    public void onExitState(ColossusController controller, Technique nextState) { }
-    
+    public void onExitState(ColossusController controller, Technique nextState) {}
+
     static final double bow_power = 0.4;
     static final Interpolation bendInterp = Interpolation.LINEAR; // SMOOTH could work; playing it safe tho
-    
+
     protected Technique finishMove(ColossusController controller, Technique next) {
         for (LimbInfo li : controller.limbs) {
             if (li.isTurning()) return this;
         }
         return next;
     }
-    
+
     protected Technique finishMove(ColossusController controller) {
         return finishMove(controller, PICK_NEXT_TECHNIQUE);
     }
-    
+
     protected void targetLimb(ColossusController controller, LimbInfo li, BodySide turnDirection) {
         if (li.type != LimbType.ARM) return;
         // Swing arms towards side
@@ -1227,13 +1329,14 @@ public enum Technique implements IStateMachine<Technique> {
             turn = +45;
         }
         turn = Math.toRadians(turn) * d;
-        rot = Quaternion.getRotationQuaternionRadians(turn, ForgeDirection.UP).multiply(rot);
+        rot = Quaternion.getRotationQuaternionRadians(turn, ForgeDirection.UP)
+            .multiply(rot);
         li.target(rot, 1 * controller.getSpeedScale(), Interpolation.SMOOTH);
     }
-    
+
     private static final double distSq = WorldGenColossus.SMOOTH_START * WorldGenColossus.SMOOTH_START;
     protected static final Object CONTINUE = new Object();
-    
+
     protected <E> E iteratePotentialPlayers(ColossusController controller) {
         ArrayList<EntityPlayer> allPlayers = new ArrayList<EntityPlayer>(controller.worldObj.playerEntities);
         Collections.shuffle(allPlayers, controller.worldObj.rand);
@@ -1247,12 +1350,15 @@ public enum Technique implements IStateMachine<Technique> {
     }
 
     boolean targetablePlayer(EntityPlayer player, ColossusController controller) {
-        if (controller.getHome().distanceSq(new Coord(player)) > distSq) return false;
-        if (player.capabilities.isCreativeMode /*&& !Core.dev_environ*/) return false;
+        if (controller.getHome()
+            .distanceSq(new Coord(player)) > distSq) return false;
+        if (player.capabilities.isCreativeMode /* && !Core.dev_environ */) return false;
         return true;
     }
-    
-    protected Object visitPlayer(EntityPlayer player, ColossusController controller) { return null; }
+
+    protected Object visitPlayer(EntityPlayer player, ColossusController controller) {
+        return null;
+    }
 
     static final int SIT_FALL_TIME = 20 * 3;
 
@@ -1268,6 +1374,7 @@ public enum Technique implements IStateMachine<Technique> {
         Coord min = at.add(-d, -d, -d);
         Coord max = at.add(+d, +d, +d);
         Coord.iterateChunks(min, max, new ICoordFunction() {
+
             @Override
             public void handle(Coord here) {
                 if (!here.blockExists()) return;
@@ -1275,7 +1382,8 @@ public enum Technique implements IStateMachine<Technique> {
                     for (Object obj : list) {
                         if (obj instanceof EntityCreeper) {
                             EntityCreeper creeper = (EntityCreeper) obj;
-                            if (creeper.getEntityData().getBoolean(ColossusController.creeper_tag)) {
+                            if (creeper.getEntityData()
+                                .getBoolean(ColossusController.creeper_tag)) {
                                 creeper.setHealth(0);
                             }
                         }

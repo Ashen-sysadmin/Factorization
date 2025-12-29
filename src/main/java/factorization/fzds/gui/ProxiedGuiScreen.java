@@ -1,11 +1,13 @@
 package factorization.fzds.gui;
 
-import factorization.fzds.Hammer;
-import factorization.fzds.interfaces.IFzdsShenanigans;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 
+import factorization.fzds.Hammer;
+import factorization.fzds.interfaces.IFzdsShenanigans;
+
 public class ProxiedGuiScreen extends GuiScreen implements IFzdsShenanigans {
+
     final GuiScreen sub;
 
     public ProxiedGuiScreen(GuiScreen sub) {
@@ -14,7 +16,6 @@ public class ProxiedGuiScreen extends GuiScreen implements IFzdsShenanigans {
             throw new IllegalArgumentException("Nesting has negative socio-economic impact! Not allowed!");
         }
     }
-
 
     private boolean enter() {
         if (!Hammer.proxy.isInShadowWorld()) {

@@ -1,9 +1,5 @@
 package factorization.beauty;
 
-import factorization.charge.TileEntityCaliometricBurner;
-import factorization.servo.ItemMatrixProgrammer;
-import factorization.shared.Core;
-import factorization.shared.ItemFactorization;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
@@ -11,7 +7,13 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.world.World;
 
+import factorization.charge.TileEntityCaliometricBurner;
+import factorization.servo.ItemMatrixProgrammer;
+import factorization.shared.Core;
+import factorization.shared.ItemFactorization;
+
 public class ItemGrossFood extends ItemFactorization {
+
     boolean isInsane;
 
     public ItemGrossFood(String name, Core.TabType tabType, boolean isInsane) {
@@ -32,13 +34,8 @@ public class ItemGrossFood extends ItemFactorization {
             return stack;
         }
         if (isInsane) {
-            for (Potion potion : new Potion[] {
-                    Potion.weakness,
-                    Potion.digSlowdown,
-                    Potion.moveSlowdown,
-                    Potion.blindness,
-                    Potion.wither
-            }) {
+            for (Potion potion : new Potion[] { Potion.weakness, Potion.digSlowdown, Potion.moveSlowdown,
+                Potion.blindness, Potion.wither }) {
                 if (player.getActivePotionEffect(potion) != null) continue;
                 player.addPotionEffect(new PotionEffect(potion.getId(), 20 * 20, 4, false));
                 return stack;
@@ -56,7 +53,8 @@ public class ItemGrossFood extends ItemFactorization {
         TileEntityCaliometricBurner.FoodInfo food = TileEntityCaliometricBurner.lookup(stack);
         if (food == null) return false;
         if (player.worldObj.isRemote) return true;
-        player.getFoodStats().addStats(food.heal, (float) food.sat);
+        player.getFoodStats()
+            .addStats(food.heal, (float) food.sat);
         return true;
     }
 

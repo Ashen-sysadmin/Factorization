@@ -1,7 +1,8 @@
 package factorization.colossi;
 
-import factorization.coremodhooks.HookTargetsServer;
-import factorization.shared.Core;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
@@ -14,10 +15,11 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.util.List;
-import java.util.Random;
+import factorization.coremodhooks.HookTargetsServer;
+import factorization.shared.Core;
 
 public class BlockBlast extends Block {
+
     public BlockBlast() {
         super(Material.tnt);
         setBlockName("blastBlock");
@@ -37,9 +39,11 @@ public class BlockBlast extends Block {
 
     @Override
     public void onNeighborChange(IBlockAccess world, int x, int y, int z, int tileX, int tileY, int tileZ) {
-        /*if (world instanceof World) {
-            onNeighborBlockChange((World) world, x, y, z, world.getBlock(tileX, tileY, tileZ));
-        }*/
+        /*
+         * if (world instanceof World) {
+         * onNeighborBlockChange((World) world, x, y, z, world.getBlock(tileX, tileY, tileZ));
+         * }
+         */
     }
 
     @Override
@@ -57,7 +61,8 @@ public class BlockBlast extends Block {
     }
 
     @Override
-    public float getExplosionResistance(Entity explosion, World world, int x, int y, int z, double explosionX, double explosionY, double explosionZ) {
+    public float getExplosionResistance(Entity explosion, World world, int x, int y, int z, double explosionX,
+        double explosionY, double explosionZ) {
         world.setBlockMetadataWithNotify(x, y, z, 1, 0);
         onNeighborBlockChange(world, x, y, z, this);
         return super.getExplosionResistance(explosion, world, x, y, z, explosionX, explosionY, explosionZ);
@@ -84,14 +89,28 @@ public class BlockBlast extends Block {
         world.setBlockToAir(x, y, z);
         this.onBlockExploded(world, x, y, z, null);
     }
-    
+
     double explosionSize = 8;
-    
+
     void boom(World world, double explosionX, double explosionY, double explosionZ) {
-        world.playSoundEffect(explosionX, explosionY, explosionZ, "random.explode", 4.0F, (1.0F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.2F) * 0.7F);
+        world.playSoundEffect(
+            explosionX,
+            explosionY,
+            explosionZ,
+            "random.explode",
+            4.0F,
+            (1.0F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.2F) * 0.7F);
         world.spawnParticle("largeexplode", explosionX, explosionY, explosionZ, 1.0D, 0.0D, 0.0D);
         double r = 5;
-        List list = world.getEntitiesWithinAABBExcludingEntity(null, AxisAlignedBB.getBoundingBox(explosionX - r, explosionY - r, explosionZ - r, explosionX + r, explosionY + r, explosionZ + r));
+        List list = world.getEntitiesWithinAABBExcludingEntity(
+            null,
+            AxisAlignedBB.getBoundingBox(
+                explosionX - r,
+                explosionY - r,
+                explosionZ - r,
+                explosionX + r,
+                explosionY + r,
+                explosionZ + r));
 
         Vec3 vec3 = Vec3.createVectorHelper(explosionX, explosionY, explosionZ);
         for (Object aList : list) {
@@ -110,10 +129,12 @@ public class BlockBlast extends Block {
             dz /= entDist;
             double density = (double) world.getBlockDensity(vec3, entity.boundingBox);
             double pain = (1.0D - dist) * density;
-            entity.attackEntityFrom(DamageSource.setExplosionSource(null), (float) ((int) ((pain * pain + pain) / 2.0D * 8.0D * (double) explosionSize + 1.0D)));
+            entity.attackEntityFrom(
+                DamageSource.setExplosionSource(null),
+                (float) ((int) ((pain * pain + pain) / 2.0D * 8.0D * (double) explosionSize + 1.0D)));
             // Yeah, we're manually applying the coremod here, ahem.
             double blastbackResistance = HookTargetsServer.clipExplosionResistance(entity, pain);
-            //EnchantmentProtection.func_92092_a(entity, pain);
+            // EnchantmentProtection.func_92092_a(entity, pain);
             entity.motionX += dx * blastbackResistance;
             entity.motionY += dy * blastbackResistance;
             entity.motionZ += dz * blastbackResistance;

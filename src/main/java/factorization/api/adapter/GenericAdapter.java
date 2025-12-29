@@ -1,6 +1,7 @@
 package factorization.api.adapter;
 
 public class GenericAdapter<SELF_IN, SELF_OUT> implements Adapter<SELF_IN, SELF_OUT> {
+
     private final Class<SELF_IN> genericClass;
     private final SELF_OUT genericInterface;
 

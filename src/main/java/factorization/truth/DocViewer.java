@@ -1,11 +1,9 @@
 package factorization.truth;
 
-import factorization.truth.api.AbstractPage;
-import factorization.truth.api.IWord;
-import factorization.truth.api.TruthError;
-import factorization.truth.gen.recipe.RecipeViewer;
-import factorization.truth.minecraft.GuiButtonNextPage;
-import factorization.truth.word.Word;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -16,16 +14,20 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.item.ItemStack;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
+import factorization.truth.api.AbstractPage;
+import factorization.truth.api.IWord;
+import factorization.truth.api.TruthError;
+import factorization.truth.gen.recipe.RecipeViewer;
+import factorization.truth.minecraft.GuiButtonNextPage;
 
 public class DocViewer extends GuiScreen {
+
     final String domain;
     final String name;
     int startPageIndex;
@@ -41,6 +43,7 @@ public class DocViewer extends GuiScreen {
     public static HashMap<String, PersistentState> per_domain_state = new HashMap<String, PersistentState>();
 
     public static class PersistentState {
+
         public boolean dark_color_scheme = false;
         public Deque<HistoryPage> the_pageHistory = new ArrayDeque<HistoryPage>();
         public String current_page = "index";
@@ -57,39 +60,39 @@ public class DocViewer extends GuiScreen {
             the_pageHistory.add(new HistoryPage(name, page));
         }
     }
-    
+
     public static class HistoryPage {
+
         String docName;
         int offset;
-        
+
         public HistoryPage(String docName, int offset) {
             this.docName = docName;
             this.offset = offset;
         }
     }
 
-    
     int getPageWidth(int pageNum) {
-        return (width*40/100);
+        return (width * 40 / 100);
     }
-    
+
     int getPageLeft(int pageNum) {
-        int avail = width - getPageWidth(pageNum)*2;
+        int avail = width - getPageWidth(pageNum) * 2;
         if (pageNum == 0) {
-            return avail/3;
+            return avail / 3;
         } else {
-            return getPageWidth(pageNum) + avail*2/3;
+            return getPageWidth(pageNum) + avail * 2 / 3;
         }
     }
-    
+
     int getPageTop(int pageNum) {
-        return height*5/100;
+        return height * 5 / 100;
     }
-    
+
     int getPageHeight(int pageNum) {
-        return height*90/100;
+        return height * 90 / 100;
     }
-    
+
     int orig_scale = -1;
 
     public DocViewer(String domain, String name) {
@@ -98,7 +101,7 @@ public class DocViewer extends GuiScreen {
         this.startPageIndex = -1;
         this.state = getStateFor(domain);
     }
-    
+
     public DocViewer(String domain, HistoryPage hist) {
         this.domain = domain;
         this.name = hist.docName;
@@ -121,11 +124,11 @@ public class DocViewer extends GuiScreen {
         per_domain_state.put(domain, ret);
         return ret;
     }
-    
+
     @Override
     public void initGui() {
         super.initGui();
-        
+
         if (orig_scale == -1) {
             mc = Minecraft.getMinecraft();
             orig_scale = mc.gameSettings.guiScale;
@@ -136,7 +139,7 @@ public class DocViewer extends GuiScreen {
             mc.displayGuiScreen(this);
             return;
         }
-        
+
         this.doc = getDocument(name); // Rebuilds the entire document from scratch. Super-inefficient!
         if (doc == null || doc.pages.isEmpty()) {
             mc.displayGuiScreen(null);
@@ -149,19 +152,28 @@ public class DocViewer extends GuiScreen {
             }
             startPageIndex = 0;
         }
-        
+
         int row = getPageHeight(0);
         int arrow_half = 8;
-        
+
         buttonList.add(prevPage = new GuiButtonNextPage(2, getPageLeft(0) - 12, row - arrow_half, false));
-        buttonList.add(nextPage = new GuiButtonNextPage(1, getPageLeft(1) + getPageWidth(1) - 23 /* 23 is the button width */ + 12, row - arrow_half, true));
-        buttonList.add(backButton = new GuiButton(3, (120 + 38)/2, row, 50, 20, "Back"));
+        buttonList.add(
+            nextPage = new GuiButtonNextPage(
+                1,
+                getPageLeft(1) + getPageWidth(1) - 23 /* 23 is the button width */ + 12,
+                row - arrow_half,
+                true));
+        buttonList.add(backButton = new GuiButton(3, (120 + 38) / 2, row, 50, 20, "Back"));
         buttonList.add(homeButton = new GuiButton(4, (120 + 38), row, 50, 20, "Home"));
         state.current_page = doc.name;
     }
-    
+
     Document getDocument(String name) {
-        ClientTypesetter ts = new ClientTypesetter(domain, mc.fontRenderer, getPageWidth(0), getPageHeight(0) - 13*2 /* GuiButtonNextPage.height */);
+        ClientTypesetter ts = new ClientTypesetter(
+            domain,
+            mc.fontRenderer,
+            getPageWidth(0),
+            getPageHeight(0) - 13 * 2 /* GuiButtonNextPage.height */);
         try {
             ts.write(DocumentationModule.readDocument(domain, name));
         } catch (TruthError truthError) {
@@ -169,7 +181,7 @@ public class DocViewer extends GuiScreen {
         }
         return new Document(name, ts.getPages());
     }
-    
+
     AbstractPage getPage(int d) {
         if (doc == null) return null;
         if (d == 0) return page;
@@ -178,7 +190,7 @@ public class DocViewer extends GuiScreen {
         if (i >= doc.pages.size()) return null;
         return doc.pages.get(i);
     }
-    
+
     int getCurrentPageIndex() {
         int i = 0;
         for (AbstractPage pg : doc.pages) {
@@ -187,28 +199,28 @@ public class DocViewer extends GuiScreen {
         }
         return 0;
     }
-    
+
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         GL11.glPushMatrix();
         GL11.glTranslatef(0, 0, 100);
         hot = false;
         drawDefaultBackground();
-        
+
         backButton.visible = !state.the_pageHistory.isEmpty();
         homeButton.visible = !name.equals("index");
         prevPage.visible = doc.pages.indexOf(page) > 0;
         nextPage.visible = doc.pages.indexOf(page) + 2 < doc.pages.size();
-        
+
         {
             for (int pass = 1; pass >= 0; pass--) {
                 int paddingVert = 8 + pass, paddingHoriz = 12 + pass;
-                
+
                 int x0 = getPageLeft(0) - paddingHoriz;
                 int x1 = getPageLeft(1) + getPageWidth(1) + paddingHoriz;
                 int y0 = getPageTop(0) - paddingVert;
                 int y1 = getPageHeight(0) + paddingVert;
-                
+
                 if (pass == 1) {
                     GL11.glColor3f(0, 0, 0);
                 } else if (state.dark_color_scheme) {
@@ -224,20 +236,20 @@ public class DocViewer extends GuiScreen {
                 GL11.glVertex3f(x1, y0, 0);
                 GL11.glEnd();
             }
-            
+
             int paddingVert = 8, paddingHoriz = 12;
             int x0 = getPageLeft(0) + getPageWidth(0) + paddingHoriz;
             int x1 = getPageLeft(1) - paddingHoriz;
             int y0 = getPageTop(0) - paddingVert;
             int y1 = getPageHeight(0) + paddingVert;
-            
+
             float cs;
             if (state.dark_color_scheme) {
                 cs = 0.75F;
-                GL11.glColor3f(0.075F*cs, 0.075F*cs, 0.1125F*cs);
+                GL11.glColor3f(0.075F * cs, 0.075F * cs, 0.1125F * cs);
             } else {
                 cs = 1.75F;
-                GL11.glColor3f(1 - (0.075F*cs), 1 - (0.075F*cs), 1 - (0.1125F*cs));
+                GL11.glColor3f(1 - (0.075F * cs), 1 - (0.075F * cs), 1 - (0.1125F * cs));
             }
             GL11.glBegin(GL11.GL_QUADS);
             GL11.glVertex3f(x0, y0, 0);
@@ -248,23 +260,23 @@ public class DocViewer extends GuiScreen {
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             GL11.glColor3f(1, 1, 1);
         }
-        
+
         super.drawScreen(mouseX, mouseY, partialTicks);
-        
+
         {
             // Enyoinken from GuiContainer.drawScreen
             RenderHelper.enableGUIStandardItemLighting();
             GL11.glEnable(GL12.GL_RESCALE_NORMAL);
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
         }
-        
+
         for (int pass = 0; pass <= 1; pass++) {
             drawPage(0, mouseX, mouseY, pass);
             drawPage(1, mouseX, mouseY, pass);
         }
         GL11.glPopMatrix();
     }
-    
+
     void drawPage(int id, int mouseX, int mouseY, int pass) {
         AbstractPage page = getPage(id);
         if (page == null) return;
@@ -283,10 +295,11 @@ public class DocViewer extends GuiScreen {
             hovered.drawHover(mouseX, mouseY);
         }
     }
-    
+
     public static void drawItem(ItemStack is, int x, int y, FontRenderer font) {
         GL11.glEnable(GL11.GL_DEPTH_TEST);
-        TextureManager tm = Minecraft.getMinecraft().getTextureManager();
+        TextureManager tm = Minecraft.getMinecraft()
+            .getTextureManager();
         GuiContainer.itemRender.renderItemAndEffectIntoGUI(font, tm, is, x, y);
         GuiContainer.itemRender.renderItemOverlayIntoGUI(font, tm, is, x, y);
     }
@@ -299,7 +312,7 @@ public class DocViewer extends GuiScreen {
     }
 
     boolean hot = true;
-    
+
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int button) {
         if (hot) return;
@@ -308,7 +321,7 @@ public class DocViewer extends GuiScreen {
             actionPerformed(backButton);
             return;
         }
-        
+
         for (int i = 0; i <= 1; i++) {
             AbstractPage thisPage = getPage(i);
             if (!(thisPage instanceof WordPage)) continue;
@@ -317,7 +330,8 @@ public class DocViewer extends GuiScreen {
             if (link == null) continue;
             if (link.onClick()) return;
             if (link.getLink() != null) {
-                if (link.getLink().equals(name)) return;
+                if (link.getLink()
+                    .equals(name)) return;
                 DocViewer newDoc = new DocViewer(domain, link.getLink());
                 state.addNewHistoryEntry(name, getCurrentPageIndex());
                 mc.displayGuiScreen(newDoc);
@@ -325,7 +339,7 @@ public class DocViewer extends GuiScreen {
             }
         }
     }
-    
+
     @Override
     public void handleMouseInput() {
         int scroll = Mouse.getEventDWheel();
@@ -337,7 +351,7 @@ public class DocViewer extends GuiScreen {
             actionPerformed(nextPage);
         }
     }
-    
+
     @Override
     protected void actionPerformed(GuiButton button) {
         if (!button.enabled) return;
@@ -361,7 +375,7 @@ public class DocViewer extends GuiScreen {
             }
         }
     }
-    
+
     @Override
     protected void keyTyped(char chr, int keySym) {
         if (keySym == Keyboard.KEY_BACK || chr == 'z') {
@@ -385,10 +399,10 @@ public class DocViewer extends GuiScreen {
             super.keyTyped(chr, keySym);
         }
     }
-    
-    
+
     int startMouseX, startMouseY;
     long last_delay = Long.MAX_VALUE;
+
     @Override
     protected void mouseClickMove(int mouseX, int mouseY, int button, long heldTime) {
         if (heldTime < last_delay) {
@@ -401,7 +415,8 @@ public class DocViewer extends GuiScreen {
                 continue;
             }
             if (getPageLeft(i) <= startMouseX && getPageLeft(i) + getPageWidth(i) >= startMouseX
-                    && getPageTop(i) < startMouseY && getPageTop(i) + getPageHeight(i) > startMouseY) {
+                && getPageTop(i) < startMouseY
+                && getPageTop(i) + getPageHeight(i) > startMouseY) {
                 if (heldTime < last_delay) {
                     p.mouseDragStart();
                 }
@@ -409,9 +424,9 @@ public class DocViewer extends GuiScreen {
             }
         }
         last_delay = heldTime;
-        
+
     }
-    
+
     @Override
     public void onGuiClosed() {
         if (orig_scale != -1) {
@@ -423,12 +438,12 @@ public class DocViewer extends GuiScreen {
         }
         state.current_index = doc.pages.indexOf(getPage(0));
     }
-    
+
     @Override
     public boolean doesGuiPauseGame() {
         return false;
     }
-    
+
     public FontRenderer getFont() {
         return fontRendererObj;
     }

@@ -4,16 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
-import factorization.api.IFurnaceHeatable;
-import factorization.api.crafting.CraftingManagerGeneric;
-import factorization.api.crafting.IVexatiousCrafting;
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.Share;
-import factorization.shared.*;
-import factorization.util.DataUtil;
-import factorization.util.ItemUtil;
-import factorization.util.SpaceUtil;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -22,11 +12,23 @@ import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import factorization.api.IFurnaceHeatable;
+import factorization.api.crafting.CraftingManagerGeneric;
+import factorization.api.crafting.IVexatiousCrafting;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.Share;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
+import factorization.shared.*;
 import factorization.shared.NetworkFactorization.MessageType;
+import factorization.util.DataUtil;
+import factorization.util.ItemUtil;
+import factorization.util.SpaceUtil;
+import io.netty.buffer.ByteBuf;
 
 public class TileEntitySlagFurnace extends TileEntityFactorization implements IFurnaceHeatable {
+
     ItemStack inv[] = new ItemStack[4];
     public int furnaceBurnTime;
     public int currentFuelItemBurnTime;
@@ -69,18 +71,22 @@ public class TileEntitySlagFurnace extends TileEntityFactorization implements IF
         return "Slag Furnace";
     }
 
-    private static final int[] INPUT_s = {inputSlotIndex, inputSlotIndex + 1}, FUEL_s = {fuelSlotIndex}, OUTPUT_s = {outputSlotIndex, outputSlotIndex + 1};
-    
+    private static final int[] INPUT_s = { inputSlotIndex, inputSlotIndex + 1 }, FUEL_s = { fuelSlotIndex },
+        OUTPUT_s = { outputSlotIndex, outputSlotIndex + 1 };
+
     @Override
     public int[] getAccessibleSlotsFromSide(int s) {
         ForgeDirection side = ForgeDirection.getOrientation(s);
         switch (side) {
-        case DOWN: return OUTPUT_s;
-        case UP: return INPUT_s;
-        default: return FUEL_s;
+            case DOWN:
+                return OUTPUT_s;
+            case UP:
+                return INPUT_s;
+            default:
+                return FUEL_s;
         }
     }
-    
+
     @Override
     public boolean isItemValidForSlot(int slotIndex, ItemStack itemstack) {
         if (slotIndex == 0) {
@@ -104,15 +110,17 @@ public class TileEntitySlagFurnace extends TileEntityFactorization implements IF
 
     @Override
     public void doLogic() {
-        //Not gonna use
+        // Not gonna use
     }
 
     @Override
     public void putData(DataHelper data) throws IOException {
         super.putData(data);
         putSlots(data);
-        furnaceBurnTime = data.as(Share.VISIBLE, "burnTime").putInt(furnaceBurnTime);
-        furnaceCookTime = data.as(Share.VISIBLE, "cookTime").putInt(furnaceCookTime);
+        furnaceBurnTime = data.as(Share.VISIBLE, "burnTime")
+            .putInt(furnaceBurnTime);
+        furnaceCookTime = data.as(Share.VISIBLE, "cookTime")
+            .putInt(furnaceCookTime);
     }
 
     public boolean isBurning() {
@@ -120,6 +128,7 @@ public class TileEntitySlagFurnace extends TileEntityFactorization implements IF
     }
 
     boolean prevBurnState = false;
+
     @Override
     public void updateEntity() {
         if (worldObj.isRemote) {
@@ -132,18 +141,18 @@ public class TileEntitySlagFurnace extends TileEntityFactorization implements IF
         boolean invChanged = false;
 
         if (this.furnaceBurnTime <= 0 && this.canSmelt()) {
-            this.currentFuelItemBurnTime = this.furnaceBurnTime = TileEntityFurnace.getItemBurnTime(this.inv[fuelSlotIndex]) / 2;
+            this.currentFuelItemBurnTime = this.furnaceBurnTime = TileEntityFurnace
+                .getItemBurnTime(this.inv[fuelSlotIndex]) / 2;
 
-            if (this.furnaceBurnTime > 0)
-            {
+            if (this.furnaceBurnTime > 0) {
                 invChanged = true;
 
-                if (this.inv[fuelSlotIndex] != null)
-                {
+                if (this.inv[fuelSlotIndex] != null) {
                     --this.inv[fuelSlotIndex].stackSize;
 
                     if (this.inv[fuelSlotIndex].stackSize == 0) {
-                        this.inv[fuelSlotIndex] = this.inv[fuelSlotIndex].getItem().getContainerItem(inv[fuelSlotIndex]);
+                        this.inv[fuelSlotIndex] = this.inv[fuelSlotIndex].getItem()
+                            .getContainerItem(inv[fuelSlotIndex]);
                     }
                 }
             }
@@ -160,8 +169,7 @@ public class TileEntitySlagFurnace extends TileEntityFactorization implements IF
                 this.smeltItem();
                 invChanged = true;
             }
-        }
-        else {
+        } else {
             this.furnaceCookTime = 0;
         }
 
@@ -178,6 +186,7 @@ public class TileEntitySlagFurnace extends TileEntityFactorization implements IF
     }
 
     IVexatiousCrafting<TileEntitySlagFurnace> current_recipe = null;
+
     public boolean canSmelt() {
         if (this.inv[inputSlotIndex] == null) {
             return false;
@@ -245,9 +254,11 @@ public class TileEntitySlagFurnace extends TileEntityFactorization implements IF
         return isBurning();
     }
 
-    public static final CraftingManagerGeneric<TileEntitySlagFurnace> recipes = CraftingManagerGeneric.get(TileEntitySlagFurnace.class);
+    public static final CraftingManagerGeneric<TileEntitySlagFurnace> recipes = CraftingManagerGeneric
+        .get(TileEntitySlagFurnace.class);
 
     public static class SmeltingResult implements IVexatiousCrafting<TileEntitySlagFurnace> {
+
         public ItemStack input;
         public float prob1, prob2;
         public ItemStack output1, output2;
@@ -319,11 +330,13 @@ public class TileEntitySlagFurnace extends TileEntityFactorization implements IF
 
         @Override
         public boolean isUnblocked(TileEntitySlagFurnace machine) {
-            return checkFit(machine.inv[outputSlotIndex + 0], output1, (int) prob1) && checkFit(machine.inv[outputSlotIndex + 1], output2, (int) prob2);
+            return checkFit(machine.inv[outputSlotIndex + 0], output1, (int) prob1)
+                && checkFit(machine.inv[outputSlotIndex + 1], output2, (int) prob2);
         }
     }
 
     public static class SlagRecipes {
+
         public static ArrayList<SmeltingResult> smeltingResults = (ArrayList<SmeltingResult>) (ArrayList) (recipes.list); // Compatibility!
 
         static ItemStack obj2is(Object o) {
@@ -360,7 +373,7 @@ public class TileEntitySlagFurnace extends TileEntityFactorization implements IF
         }
         return false;
     }
-    
+
     @Override
     public boolean rotate(ForgeDirection axis) {
         if (axis.offsetY != 0) {
@@ -373,7 +386,7 @@ public class TileEntitySlagFurnace extends TileEntityFactorization implements IF
         }
         return false;
     }
-    
+
     @Override
     public void spawnDisplayTickParticles(Random rand) {
         if (draw_active <= 0) {
@@ -386,7 +399,7 @@ public class TileEntitySlagFurnace extends TileEntityFactorization implements IF
         float pz = zCoord + 0.5F;
         float d = 0.52F;
         float rng = rand.nextFloat() * 0.6F - 0.3F;
-        
+
         if (direction == 4) {
             w.spawnParticle("smoke", px - d, py, pz + rng, 0, 0, 0);
             w.spawnParticle("flame", px - d, py, pz + rng, 0, 0, 0);

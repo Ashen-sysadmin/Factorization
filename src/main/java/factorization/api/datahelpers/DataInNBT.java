@@ -3,24 +3,24 @@ package factorization.api.datahelpers;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import factorization.shared.Core;
-
-import factorization.util.DataUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
 
-public class DataInNBT extends DataHelperNBT {	
+import factorization.shared.Core;
+
+public class DataInNBT extends DataHelperNBT {
+
     public DataInNBT(NBTTagCompound theTag) {
         tag = theTag;
     }
-    
+
     @Override
     protected boolean shouldStore(Share share) {
-        return !share.is_transient /*&& tag.hasKey(name)*/;
+        return !share.is_transient /* && tag.hasKey(name) */;
     }
-    
+
     @Override
     public boolean isReader() {
         return true;

@@ -1,14 +1,15 @@
 package factorization.fzds;
 
-import factorization.fzds.interfaces.IDeltaChunk;
-import factorization.util.SpaceUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.Vec3;
 
+import factorization.fzds.interfaces.IDeltaChunk;
+import factorization.util.SpaceUtil;
+
 public class ShadowPlayerAligner {
+
     final EntityPlayer real, shadow;
     final IDeltaChunk idc;
-
 
     public ShadowPlayerAligner(EntityPlayer real, EntityPlayer shadow, IDeltaChunk idc) {
         this.real = real;
@@ -28,7 +29,8 @@ public class ShadowPlayerAligner {
         Vec3 shadowLook = tmp_shadowLookEnd;
         double xz_len = Math.hypot(shadowLook.xCoord, shadowLook.zCoord);
         double shadow_pitch = -Math.toDegrees(Math.atan2(shadowLook.yCoord, xz_len)); // erm, negative? Dunno.
-        double shadow_yaw = Math.toDegrees(Math.atan2(-shadowLook.xCoord, shadowLook.zCoord)); // Another weird negative!
+        double shadow_yaw = Math.toDegrees(Math.atan2(-shadowLook.xCoord, shadowLook.zCoord)); // Another weird
+                                                                                               // negative!
 
         shadow.posX = shadowPos.xCoord;
         shadow.posY = shadowPos.yCoord;

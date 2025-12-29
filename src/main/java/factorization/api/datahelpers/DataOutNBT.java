@@ -3,17 +3,19 @@ package factorization.api.datahelpers;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import factorization.util.DataUtil;
-import factorization.util.ItemUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
+import factorization.util.DataUtil;
+import factorization.util.ItemUtil;
+
 public class DataOutNBT extends DataHelperNBT {
+
     public DataOutNBT(NBTTagCompound theTag) {
         tag = theTag;
     }
-    
+
     public DataOutNBT() {
         this(new NBTTagCompound());
     }
@@ -103,7 +105,7 @@ public class DataOutNBT extends DataHelperNBT {
     protected boolean shouldStore(Share share) {
         return !share.is_transient;
     }
-    
+
     @Override
     public boolean isReader() {
         return false;

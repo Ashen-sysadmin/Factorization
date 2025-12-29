@@ -3,21 +3,22 @@ package factorization.servo;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import factorization.api.DeltaCoord;
-import factorization.util.SpaceUtil;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.FzColor;
 import factorization.api.FzOrientation;
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.Share;
 import factorization.shared.Core;
+import factorization.util.SpaceUtil;
 
 public class MotionHandler {
+
     public final AbstractServoMachine motor;
-    
+
     Coord pos_prev, pos_next;
     public float pos_progress;
     public FzOrientation prevOrientation = FzOrientation.UNKNOWN, orientation = FzOrientation.UNKNOWN;
@@ -28,33 +29,45 @@ public class MotionHandler {
     double accumulated_motion;
     boolean stopped = false;
     public FzColor color = FzColor.NO_COLOR;
-    
-    //For client-side rendering
+
+    // For client-side rendering
     public double sprocket_rotation = 0, prev_sprocket_rotation = 0;
     public double servo_reorient = 0, prev_servo_reorient = 0;
 
-    private static final byte normal_speed_byte = (byte) (max_speed_b/4);
-    private static final byte[] target_speeds_b = {normal_speed_byte/3, normal_speed_byte/2, normal_speed_byte, normal_speed_byte*2, normal_speed_byte*4};
+    private static final byte normal_speed_byte = (byte) (max_speed_b / 4);
+    private static final byte[] target_speeds_b = { normal_speed_byte / 3, normal_speed_byte / 2, normal_speed_byte,
+        normal_speed_byte * 2, normal_speed_byte * 4 };
     private static final double normal_speed_double = 0.0875;
-    private static final double max_speed_double = normal_speed_double*4;
-    
+    private static final double max_speed_double = normal_speed_double * 4;
+
     public MotionHandler(AbstractServoMachine motor) {
         this.motor = motor;
         pos_prev = new Coord(motor.worldObj, 0, 0, 0);
         pos_next = pos_prev.copy();
     }
-    
+
     protected void putData(DataHelper data) throws IOException {
-        orientation = data.as(Share.VISIBLE, "Orient").putFzOrientation(orientation);
-        nextDirection = data.as(Share.VISIBLE, "nextDir").putEnum(nextDirection);
-        lastDirection = data.as(Share.VISIBLE, "lastDir").putEnum(lastDirection);
-        speed_b = data.as(Share.VISIBLE, "speedb").putByte(speed_b);
-        setTargetSpeed(data.as(Share.VISIBLE, "speedt").putByte(target_speed_index));
-        accumulated_motion = data.as(Share.VISIBLE, "accumulated_motion").putDouble(accumulated_motion);
-        stopped = data.as(Share.VISIBLE, "stop").putBoolean(stopped);
-        pos_next = data.as(Share.VISIBLE, "pos_next").putIDS(pos_next);
-        pos_prev = data.as(Share.VISIBLE, "pos_prev").putIDS(pos_prev);
-        pos_progress = data.as(Share.VISIBLE, "pos_progress").putFloat(pos_progress);
+        orientation = data.as(Share.VISIBLE, "Orient")
+            .putFzOrientation(orientation);
+        nextDirection = data.as(Share.VISIBLE, "nextDir")
+            .putEnum(nextDirection);
+        lastDirection = data.as(Share.VISIBLE, "lastDir")
+            .putEnum(lastDirection);
+        speed_b = data.as(Share.VISIBLE, "speedb")
+            .putByte(speed_b);
+        setTargetSpeed(
+            data.as(Share.VISIBLE, "speedt")
+                .putByte(target_speed_index));
+        accumulated_motion = data.as(Share.VISIBLE, "accumulated_motion")
+            .putDouble(accumulated_motion);
+        stopped = data.as(Share.VISIBLE, "stop")
+            .putBoolean(stopped);
+        pos_next = data.as(Share.VISIBLE, "pos_next")
+            .putIDS(pos_next);
+        pos_prev = data.as(Share.VISIBLE, "pos_prev")
+            .putIDS(pos_prev);
+        pos_progress = data.as(Share.VISIBLE, "pos_progress")
+            .putFloat(pos_progress);
         if (target_speed_index < 0) {
             target_speed_index = 0;
         } else if (target_speed_index >= target_speeds_b.length) {
@@ -65,12 +78,13 @@ public class MotionHandler {
                 color = FzColor.NO_COLOR;
             }
         }
-        color = data.as(Share.VISIBLE, "color").putEnum(color);
+        color = data.as(Share.VISIBLE, "color")
+            .putEnum(color);
         if (color == null) {
             color = FzColor.NO_COLOR;
         }
     }
-    
+
     public void setTargetSpeed(byte newSpeed) {
         if (newSpeed < 0) {
             newSpeed = 0;
@@ -79,7 +93,7 @@ public class MotionHandler {
         }
         target_speed_index = newSpeed;
     }
-    
+
     void beforeSpawn() {
         pos_prev = new Coord(motor);
         pos_next = pos_prev.copy();
@@ -88,25 +102,24 @@ public class MotionHandler {
         interpolatePosition(0);
         prevOrientation = orientation;
     }
-    
 
     public void interpolatePosition(float interp) {
         motor.setPosition(
-                ip(pos_prev.x, pos_next.x, interp),
-                ip(pos_prev.y, pos_next.y, interp),
-                ip(pos_prev.z, pos_next.z, interp));
+            ip(pos_prev.x, pos_next.x, interp),
+            ip(pos_prev.y, pos_next.y, interp),
+            ip(pos_prev.z, pos_next.z, interp));
     }
-    
+
     static double ip(int a, int b, float interp) {
-        return a + (b - a)*interp;
+        return a + (b - a) * interp;
     }
 
     void updateSpeed() {
         byte target_speed_b = target_speeds_b[target_speed_index];
-        
+
         boolean should_accelerate = speed_b < target_speed_b && orientation != FzOrientation.UNKNOWN;
         if (speed_b > target_speed_b) {
-            speed_b = (byte)Math.max(target_speed_b, speed_b*3/4 - 1);
+            speed_b = (byte) Math.max(target_speed_b, speed_b * 3 / 4 - 1);
             return;
         }
         long now = motor.worldObj.getTotalWorldTime();
@@ -119,16 +132,18 @@ public class MotionHandler {
 
     public Vec3 getVelocity() {
         double speed = getProperSpeed();
-        Vec3 direction = pos_next.difference(pos_prev).toVector().normalize();
+        Vec3 direction = pos_next.difference(pos_prev)
+            .toVector()
+            .normalize();
         return SpaceUtil.incrScale(direction, speed);
     }
-    
+
     public void penalizeSpeed() {
         if (speed_b > 4) {
             speed_b--;
         }
     }
-    
+
     boolean validPosition(Coord c, boolean desperate) {
         TileEntityServoRail sr = c.getTE(TileEntityServoRail.class);
         if (sr == null) {
@@ -153,14 +168,13 @@ public class MotionHandler {
         }
         return validDirection(d, desperate);
     }
-    
-    
+
     boolean pickNextOrientation() {
         boolean ret = pickNextOrientation_impl();
         pos_next = pos_prev.add(orientation.facing);
         return ret;
     }
-    
+
     public void changeOrientation(ForgeDirection dir) {
         ForgeDirection orig_direction = orientation.facing;
         ForgeDirection orig_top = orientation.top;
@@ -168,14 +182,14 @@ public class MotionHandler {
         FzOrientation perfect = start.pointTopTo(orig_top);
         if (perfect == FzOrientation.UNKNOWN) {
             if (dir == orig_top) {
-                //convex turn
+                // convex turn
                 perfect = start.pointTopTo(orig_direction.getOpposite());
             } else if (dir == orig_top.getOpposite()) {
-                //concave turn
+                // concave turn
                 perfect = start.pointTopTo(orig_direction);
             }
             if (perfect == FzOrientation.UNKNOWN) {
-                perfect = start; //Might be impossible?
+                perfect = start; // Might be impossible?
             }
         }
         orientation = perfect;
@@ -190,7 +204,7 @@ public class MotionHandler {
         int available_nonbackwards_directions = 0;
         Coord look = pos_next.copy();
         int all_count = 0;
-        //noinspection ForLoopReplaceableByForEach
+        // noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < dirs.size(); i++) {
             ForgeDirection fd = dirs.get(i);
             look.set(pos_next);
@@ -212,17 +226,17 @@ public class MotionHandler {
                 available_nonbackwards_directions++;
             }
         }
-        
+
         if (all_count == 0) {
-            //Sadness
+            // Sadness
             speed_b = 0;
             return false;
         }
-        
+
         final boolean desperate = available_nonbackwards_directions < 1;
         final ForgeDirection direction = orientation.facing;
         final ForgeDirection opposite = direction.getOpposite();
-        
+
         if (nextDirection != opposite && testDirection(nextDirection, desperate)) {
             // We can go the way we were told to go next
             changeOrientation(nextDirection);
@@ -243,7 +257,7 @@ public class MotionHandler {
             changeOrientation(top);
             return true;
         }
-        
+
         // We'll pick a random direction; we're re-using the list from before, should be fine.
         // Going backwards is our last resort.
         for (int i = 0; i < 6; i++) {
@@ -268,7 +282,7 @@ public class MotionHandler {
         speed_b += 1;
         speed_b = (byte) Math.min(speed_b, max_speed_b);
     }
-    
+
     protected void moveMotor() {
         if (accumulated_motion == 0) {
             return;
@@ -278,7 +292,7 @@ public class MotionHandler {
         pos_progress += move;
         if (motor.worldObj.isRemote) {
             sprocket_rotation += move;
-            
+
             if (orientation != prevOrientation) {
                 servo_reorient += move;
                 if (servo_reorient >= 0.95 /* Floating point inaccuracy!? */) {
@@ -291,17 +305,17 @@ public class MotionHandler {
             }
         }
     }
-    
+
     public double getProperSpeed() {
-        double perc = speed_b/(double)(max_speed_b);
-        return max_speed_double*perc;
+        double perc = speed_b / (double) (max_speed_b);
+        return max_speed_double * perc;
     }
-    
+
     public void setStopped(boolean newState) {
         if (stopped == newState) return;
         stopped = newState;
     }
-    
+
     protected void updateServoMotion() {
         prev_sprocket_rotation = sprocket_rotation;
         prev_servo_reorient = servo_reorient;
@@ -310,18 +324,19 @@ public class MotionHandler {
     }
 
     protected void tryUnstop() {
-        if (stopped && motor.getCurrentPos().isWeaklyPowered()) {
+        if (stopped && motor.getCurrentPos()
+            .isWeaklyPowered()) {
             setStopped(false);
         }
     }
-    
+
     void doMotionLogic() {
         doLogic();
         if (stopped) {
             speed_b = 0;
         }
     }
-    
+
     private void doLogic() {
         if (stopped) {
             tryUnstop();
@@ -362,8 +377,8 @@ public class MotionHandler {
 
     void onEnterNewBlock() {
         final int m = target_speed_index + 1;
-        if (!motor.extractCharge(m*2)) {
-            speed_b = (byte) Math.max(0, speed_b*3/4 - 1);
+        if (!motor.extractCharge(m * 2)) {
+            speed_b = (byte) Math.max(0, speed_b * 3 / 4 - 1);
         }
     }
 }

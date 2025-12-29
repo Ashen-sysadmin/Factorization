@@ -1,11 +1,5 @@
 package factorization.truth.word;
 
-import factorization.shared.Core;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiConfirmOpenLink;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiYesNoCallback;
-
 import java.awt.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,7 +7,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiConfirmOpenLink;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiYesNoCallback;
+
+import factorization.shared.Core;
+
 public class URIWord extends TextWord implements GuiYesNoCallback {
+
     final String uriString;
 
     public URIWord(String text, String uri) {
@@ -30,7 +32,8 @@ public class URIWord extends TextWord implements GuiYesNoCallback {
         try {
             uri = new URI(uriString);
 
-            final String scheme = uri.getScheme().toLowerCase(Locale.ROOT);
+            final String scheme = uri.getScheme()
+                .toLowerCase(Locale.ROOT);
             if (!safeProtocolSchemes.contains(scheme)) {
                 uri = null;
                 throw new URISyntaxException(uriString, "Unsupported protocol: " + scheme);
@@ -56,12 +59,14 @@ public class URIWord extends TextWord implements GuiYesNoCallback {
             visitLink(uri);
         }
         uri = null;
-        Minecraft.getMinecraft().displayGuiScreen(origGui);
+        Minecraft.getMinecraft()
+            .displayGuiScreen(origGui);
     }
 
     public static void visitLink(URI uri) {
         try {
-            Desktop.getDesktop().browse(uri);
+            Desktop.getDesktop()
+                .browse(uri);
         } catch (Throwable throwable) {
             Core.logWarning("Couldn't open link", throwable);
         }

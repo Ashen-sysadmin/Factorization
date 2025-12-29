@@ -4,7 +4,9 @@ import factorization.truth.api.*;
 import factorization.truth.export.ExportHtml;
 
 public class CmdLink implements ITypesetCommand {
+
     final boolean isIndex;
+
     public CmdLink(boolean isIndex) {
         this.isIndex = isIndex;
     }

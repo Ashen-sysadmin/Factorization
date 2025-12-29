@@ -2,11 +2,6 @@ package factorization.weird;
 
 import java.util.List;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.common.*;
-import factorization.coremodhooks.UnhandledGuiKeyEvent;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,20 +10,26 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
+
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.common.*;
+import factorization.coremodhooks.UnhandledGuiKeyEvent;
 import factorization.shared.Core;
 import factorization.shared.Core.TabType;
 import factorization.shared.FactorizationTextureLoader;
 import factorization.shared.ItemFactorization;
 
 public class ItemPocketTable extends ItemFactorization {
-    
+
     public ItemPocketTable() {
         super("tool/pocket_crafting_table", TabType.TOOLS);
         setMaxStackSize(1);
         setFull3D();
         Core.loadBus(this);
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public void registerIcons(IIconRegister reg) {
@@ -40,35 +41,38 @@ public class ItemPocketTable extends ItemFactorization {
     public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
         return activateTable(stack, world, player);
     }
-    
+
     ItemStack activateTable(ItemStack stack, World world, EntityPlayer player) {
         ItemStack save = player.inventory.getItemStack();
         if (save != null) {
             player.inventory.setItemStack(null);
         }
-        if (!world.isRemote){ 
+        if (!world.isRemote) {
             player.openGui(Core.instance, FactoryType.POCKETCRAFTGUI.gui, player.worldObj, 0, 0, 0);
         }
         if (save != null) {
-            player.inventory.setItemStack(save); // NORELEASE: This doesn't work properly! Client doesn't know it's holding it... (may be working now; needs server test)
+            player.inventory.setItemStack(save); // NORELEASE: This doesn't work properly! Client doesn't know it's
+                                                 // holding it... (may be working now; needs server test)
             if (!player.worldObj.isRemote && player instanceof EntityPlayerMP) {
                 ((EntityPlayerMP) player).updateHeldItem();
             }
         }
         return stack;
     }
-    
+
     public ItemStack findPocket(EntityPlayer player) {
         InventoryPlayer inv = player.inventory;
         int need_to_move = -1;
         int a_free_space = -1;
         for (int i = 0; i < inv.mainInventory.length; i++) {
             boolean in_crafting_area = i % 9 >= (9 - 3) && i > 9;
-            ItemStack is = inv.mainInventory[i]; // A little bit gross; using it the proper causes us to check armor slots.
+            ItemStack is = inv.mainInventory[i]; // A little bit gross; using it the proper causes us to check armor
+                                                 // slots.
             if (is == null) {
                 if (!in_crafting_area) {
                     if (a_free_space == -1 || a_free_space < 9) {
-                        // Silly condition because: If it's not set, we should set it. If it's < 9, it's in the hotbar, which is a poor choice.
+                        // Silly condition because: If it's not set, we should set it. If it's < 9, it's in the hotbar,
+                        // which is a poor choice.
                         // If it is going to the hotbar, it'll end up in the last empty slot.
                         a_free_space = i;
                     }
@@ -104,7 +108,7 @@ public class ItemPocketTable extends ItemFactorization {
         activateTable(is, player.worldObj, player);
         return true;
     }
-    
+
     @Override
     public void addExtraInformation(ItemStack is, EntityPlayer player, List infoList, boolean verbose) {
         if (player.worldObj.isRemote) {

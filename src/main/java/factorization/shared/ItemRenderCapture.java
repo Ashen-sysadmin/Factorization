@@ -4,19 +4,20 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.IItemRenderer;
 
 public class ItemRenderCapture implements IItemRenderer {
+
     private static ItemStack rendering;
     private static ItemRenderType renderType;
-    
+
     public static ItemStack getRenderingItem() {
         ItemStack ret = rendering;
         rendering = null;
         return ret;
     }
-    
+
     public static ItemRenderType getRenderType() {
         return renderType;
     }
-    
+
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {
         rendering = item;
@@ -32,6 +33,6 @@ public class ItemRenderCapture implements IItemRenderer {
     }
 
     @Override
-    public void renderItem(ItemRenderType type, ItemStack item, Object... data) { }
+    public void renderItem(ItemRenderType type, ItemStack item, Object... data) {}
 
 }

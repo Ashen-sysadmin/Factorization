@@ -6,6 +6,7 @@ import factorization.truth.api.ITypesetter;
 import factorization.truth.api.TruthError;
 
 public class CmdMacro extends AgnosticCommand {
+
     int parameter_count = 0;
     final String src;
 

@@ -3,13 +3,12 @@ package factorization.servo;
 import java.util.Arrays;
 import java.util.Locale;
 
-import org.lwjgl.opengl.GL11;
-
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.FzColor;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
@@ -21,7 +20,7 @@ public class BlockRenderServoRail extends FactorizationBlockRender {
     IIcon[] central = new IIcon[6];
     boolean[] sides = new boolean[6];
     BlockRenderHelper block;
-    
+
     void removeTextures(int i, int j) {
         if (!world_mode) {
             return;
@@ -33,14 +32,15 @@ public class BlockRenderServoRail extends FactorizationBlockRender {
             block.setTexture(j, null);
         }
     }
-    
+
     void restoreTextures(int a, int b) {
         IIcon icon = BlockIcons.servo$rail;
         block.setTexture(a, icon);
         block.setTexture(b, icon);
     }
-    
+
     boolean[] extend = new boolean[6];
+
     @Override
     public boolean render(RenderBlocks rb) {
         TileEntityServoRail rail = null;
@@ -60,7 +60,7 @@ public class BlockRenderServoRail extends FactorizationBlockRender {
                 sides[i] = true;
             }
         }
-        
+
         if (world_mode && rail != null) {
             boolean has_comment = rail.comment != null && rail.comment.length() > 0;
             drawWithTexture(rb, has_comment ? BlockIcons.servo$rail_comment : BlockIcons.servo$rail);
@@ -84,13 +84,13 @@ public class BlockRenderServoRail extends FactorizationBlockRender {
         }
         return true;
     }
-    
+
     void drawWithTexture(RenderBlocks rb, IIcon icon) {
         final float fL = TileEntityServoRail.width;
         final float fH = 1 - fL;
-        
+
         block.useTexture(null);
-        
+
         for (ForgeDirection fd : ForgeDirection.VALID_DIRECTIONS) {
             int i = fd.ordinal();
             block.setTexture(i, icon);
@@ -102,19 +102,19 @@ public class BlockRenderServoRail extends FactorizationBlockRender {
                 int ord = other.ordinal();
                 any |= (extend[ord] = sides[ord]);
             }
-            block.setTexture(i, sides[i] && !any? null : icon);
-            
+            block.setTexture(i, sides[i] && !any ? null : icon);
+
             block.setBlockBounds(
-                    extend[4] ? 0 : fL,
-                    extend[0] ? 0 : fL,
-                    extend[2] ? 0 : fL,
-                    extend[5] ? 1 : fH,
-                    extend[1] ? 1 : fH,
-                    extend[3] ? 1 : fH);
+                extend[4] ? 0 : fL,
+                extend[0] ? 0 : fL,
+                extend[2] ? 0 : fL,
+                extend[5] ? 1 : fH,
+                extend[1] ? 1 : fH,
+                extend[3] ? 1 : fH);
 
             block.beginWithHipsterUVs();
             block.renderRotated(Tessellator.instance, x, y, z);
-            
+
             Arrays.fill(extend, false);
             block.setTexture(i, null);
         }
@@ -126,10 +126,13 @@ public class BlockRenderServoRail extends FactorizationBlockRender {
     }
 
     public static IIcon[] coloredRails = new IIcon[FzColor.VALID_COLORS.length];
+
     public static void registerColoredIcons(IIconRegister reg) {
         for (int i = 0; i < FzColor.VALID_COLORS.length; i++) {
             FzColor color = FzColor.VALID_COLORS[i];
-            coloredRails[i] = reg.registerIcon("factorization:servo/colored_rails/" + color.toString().toLowerCase(Locale.ROOT));
+            coloredRails[i] = reg.registerIcon(
+                "factorization:servo/colored_rails/" + color.toString()
+                    .toLowerCase(Locale.ROOT));
         }
     }
 }

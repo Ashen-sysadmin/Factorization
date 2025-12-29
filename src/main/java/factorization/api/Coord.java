@@ -1,24 +1,14 @@
 package factorization.api;
 
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.IDataSerializable;
-import factorization.notify.ISaneCoord;
-import factorization.shared.*;
-import factorization.shared.NetworkFactorization.MessageType;
-import factorization.util.FzUtil;
-import factorization.util.ItemUtil;
-import factorization.util.PlayerUtil;
-import factorization.util.SpaceUtil;
-import io.netty.buffer.ByteBuf;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -42,20 +32,32 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.IFluidBlock;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteArrayDataOutput;
+
+import cpw.mods.fml.common.network.internal.FMLProxyPacket;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.IDataSerializable;
+import factorization.notify.ISaneCoord;
+import factorization.shared.*;
+import factorization.shared.NetworkFactorization.MessageType;
+import factorization.util.FzUtil;
+import factorization.util.ItemUtil;
+import factorization.util.PlayerUtil;
+import factorization.util.SpaceUtil;
+import io.netty.buffer.ByteBuf;
 
 // Note: The rules for holding on to references to Coord are the same as for holding on to World.
 // Don't keep references to them outside of things that are in worlds to avoid mem-leaks; or be careful about it.
 public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Coord> {
+
     public World w;
     public int x, y, z;
     private static final Random rand = new Random();
     private static final ThreadLocal<Coord> staticCoord = new ThreadLocal<Coord>();
-    
+
     public static final Coord ZERO = new Coord(null, 0, 0, 0);
 
     public Coord(World w, int x, int y, int z) {
@@ -75,7 +77,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
 
     public Coord(World w, double x, double y, double z) {
         this(w, (int) x, (int) y, (int) z);
-        //this(w, (int) Math.floor(x + 0.5), (int) Math.floor(y + 0.5), (int) Math.floor(z + 0.5));
+        // this(w, (int) Math.floor(x + 0.5), (int) Math.floor(y + 0.5), (int) Math.floor(z + 0.5));
     }
 
     public Coord(World w, Vec3 v) {
@@ -88,19 +90,35 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     }
 
     public static Coord fromMop(World world, MovingObjectPosition mop) {
-        if (mop.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY && mop.entityHit != null) return new Coord(mop.entityHit);
+        if (mop.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY && mop.entityHit != null)
+            return new Coord(mop.entityHit);
         return new Coord(world, mop.blockX, mop.blockY, mop.blockZ);
     }
-    
+
     public Coord(Chunk chunk) {
         this(chunk.worldObj, chunk.xPosition * 16, 0, chunk.zPosition * 16);
     }
-    
-    @Override public World w() { return w; }
-    @Override public int x() { return x; }
-    @Override public int y() { return y; }
-    @Override public int z() { return z; }
-    
+
+    @Override
+    public World w() {
+        return w;
+    }
+
+    @Override
+    public int x() {
+        return x;
+    }
+
+    @Override
+    public int y() {
+        return y;
+    }
+
+    @Override
+    public int z() {
+        return z;
+    }
+
     public static Coord tryLoad(World world, Object o) {
         if (o instanceof Coord) {
             return (Coord) o;
@@ -119,15 +137,15 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         }
         return null;
     }
-    
+
     public static Coord of(int x, int y, int z) {
         return of((World) null, x, y, z);
     }
-    
+
     public static Coord of(double x, double y, double z) {
         return of((World) null, (int) x, (int) y, (int) z);
     }
-    
+
     public static Coord of(World w, int x, int y, int z) {
         Coord ret = staticCoord.get();
         if (ret == null) {
@@ -151,7 +169,8 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
             } else {
                 Block b = getBlock();
                 if (b != null) {
-                    ret += " " + getBlock().getClass().getSimpleName();
+                    ret += " " + getBlock().getClass()
+                        .getSimpleName();
                     ret += " " + b.getUnlocalizedName();
                 } else {
                     ret += " null";
@@ -160,10 +179,11 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
                 ret += "#" + md;
                 TileEntity te = getTE();
                 if (te != null) {
-                    ret += " " + te.getClass().getSimpleName();
+                    ret += " " + te.getClass()
+                        .getSimpleName();
                 }
-                //Chunk chunk = getChunk();
-                //ret += " " + chunk;
+                // Chunk chunk = getChunk();
+                // ret += " " + chunk;
             }
         }
         return ret;
@@ -173,37 +193,37 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         String ws = w == null ? "(null)" : ("[" + FzUtil.getWorldDimension(w) + "]");
         return ws + " " + x + "," + y + "," + z;
     }
-    
+
     public void set(World w, int x, int y, int z) {
         this.w = w;
         this.x = x;
         this.y = y;
         this.z = z;
     }
-    
+
     public void set(ChunkCoordinates cc) {
         set(w, cc.posX, cc.posY, cc.posZ);
     }
-    
+
     public void set(Coord c) {
         set(c.w, c.x, c.y, c.z);
     }
-    
+
     public void set(Vec3 v) {
-        set(w, (int)v.xCoord, (int)v.yCoord, (int)v.zCoord);
+        set(w, (int) v.xCoord, (int) v.yCoord, (int) v.zCoord);
     }
-    
+
     public void set(DeltaCoord dc) {
         set(w, dc.x, dc.y, dc.z);
     }
-    
+
     public void set(TileEntity te) {
         set(te.getWorldObj(), te.xCoord, te.yCoord, te.zCoord);
     }
 
     @Override
     public int hashCode() {
-        return (((x * 11) % 71) << 7) + ((z * 7) % 479) + y; //TODO: This hashcode is probably terrible.
+        return (((x * 11) % 71) << 7) + ((z * 7) % 479) + y; // TODO: This hashcode is probably terrible.
     }
 
     @Override
@@ -218,29 +238,40 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public Coord copy() {
         return new Coord(w, x, y, z);
     }
-    
+
     public int get(int axis) {
         switch (axis) {
-        case 0: return x;
-        case 1: return y;
-        case 2: return z;
-        default: throw new RuntimeException("Invalid argument");
+            case 0:
+                return x;
+            case 1:
+                return y;
+            case 2:
+                return z;
+            default:
+                throw new RuntimeException("Invalid argument");
         }
     }
-    
+
     public void set(int axis, int value) {
         switch (axis) {
-        case 0: x = value; return;
-        case 1: y = value; return;
-        case 2: z = value; return;
-        default: throw new RuntimeException("Invalid argument");
+            case 0:
+                x = value;
+                return;
+            case 1:
+                y = value;
+                return;
+            case 2:
+                z = value;
+                return;
+            default:
+                throw new RuntimeException("Invalid argument");
         }
     }
-    
+
     public Vec3 createVector() {
         return Vec3.createVectorHelper(x, y, z);
     }
-    
+
     public MovingObjectPosition createMop(ForgeDirection side, Vec3 hitVec) {
         return new MovingObjectPosition(x, y, z, side.ordinal(), hitVec);
     }
@@ -258,7 +289,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public DeltaCoord difference(Coord b) {
         return new DeltaCoord(x - b.x, y - b.y, z - b.z);
     }
-    
+
     public DeltaCoord asDeltaCoord() {
         return new DeltaCoord(x, y, z);
     }
@@ -297,7 +328,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         }
         return ret;
     }
-    
+
     public <T> List<T> getAdjacentTEs(Class<T> clazz) {
         ArrayList<T> ret = new ArrayList<T>(6);
         for (Coord n : getNeighborsAdjacent()) {
@@ -342,61 +373,37 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     }
 
     public Coord[] getNeighborsInPlane(int side) {
-        //For god's sake, don't change the order of these return values.
-        //That would mess up wire rendering.
+        // For god's sake, don't change the order of these return values.
+        // That would mess up wire rendering.
         switch (side) {
-        case 0:
-        case 1: //y
-            return new Coord[] {
-                    add(-1, 0, 0),
-                    add(+1, 0, 0),
-                    add(0, 0, -1),
-                    add(0, 0, +1)
-            };
-        case 2:
-        case 3: //z
-            return new Coord[] {
-                    add(-1, 0, 0),
-                    add(+1, 0, 0),
-                    add(0, -1, 0),
-                    add(0, +1, 0)
-            };
-        case 4:
-        case 5: //x
-            return new Coord[] {
-                    add(0, 0, -1),
-                    add(0, 0, +1),
-                    add(0, -1, 0),
-                    add(0, +1, 0)
-            };
+            case 0:
+            case 1: // y
+                return new Coord[] { add(-1, 0, 0), add(+1, 0, 0), add(0, 0, -1), add(0, 0, +1) };
+            case 2:
+            case 3: // z
+                return new Coord[] { add(-1, 0, 0), add(+1, 0, 0), add(0, -1, 0), add(0, +1, 0) };
+            case 4:
+            case 5: // x
+                return new Coord[] { add(0, 0, -1), add(0, 0, +1), add(0, -1, 0), add(0, +1, 0) };
         }
         return null;
     }
 
     public Coord[] getNeighborsOutOfPlane(int side) {
         switch (side) {
-        case 0:
-        case 1: //y
-            return new Coord[] {
-                    add(0, -1, 0),
-                    add(0, +1, 0)
-            };
-        case 2:
-        case 3: //z
-            return new Coord[] {
-                    add(0, 0, -1),
-                    add(0, 0, +1),
-            };
-        case 4:
-        case 5: //x
-            return new Coord[] {
-                    add(-1, 0, 0),
-                    add(+1, 0, 0),
-            };
+            case 0:
+            case 1: // y
+                return new Coord[] { add(0, -1, 0), add(0, +1, 0) };
+            case 2:
+            case 3: // z
+                return new Coord[] { add(0, 0, -1), add(0, 0, +1), };
+            case 4:
+            case 5: // x
+                return new Coord[] { add(-1, 0, 0), add(+1, 0, 0), };
         }
         return null;
     }
-    
+
     @Override
     public int compareTo(Coord o) {
         int d = y - o.y;
@@ -412,11 +419,11 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public boolean isSubmissiveTo(Coord o) {
         return y < o.y || x < o.x || z < o.z;
     }
-    
+
     public boolean inside(Coord lower, Coord upper) { // "within"
         return lower.lesserOrEqual(this) && lesserOrEqual(upper);
     }
-    
+
     public boolean lesserOrEqual(Coord o) {
         return x <= o.x && y <= o.y && z <= o.z;
     }
@@ -428,7 +435,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public Coord add(DeltaCoord d) {
         return add(d.x, d.y, d.z);
     }
-    
+
     public Coord add(ForgeDirection d) {
         return add(d.offsetX, d.offsetY, d.offsetZ);
     }
@@ -440,69 +447,69 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public Coord add(Vec3 v) {
         return new Coord(w, this.x + v.xCoord, this.y + v.yCoord, this.z + v.zCoord);
     }
-    
+
     public Coord center(Coord o) {
-        return new Coord(w, (x + o.x)/2, (y + o.y)/2, (z + o.z)/2);
+        return new Coord(w, (x + o.x) / 2, (y + o.y) / 2, (z + o.z) / 2);
     }
-    
+
     public Vec3 centerVec(Coord o) {
-        return Vec3.createVectorHelper((x + o.x)/2.0, (y + o.y)/2.0, (z + o.z)/2.0);
+        return Vec3.createVectorHelper((x + o.x) / 2.0, (y + o.y) / 2.0, (z + o.z) / 2.0);
     }
-    
+
     /**
      * Adjusts position. 0, 1: y; 2, 3: z; 4, 5: x
      * 
      */
     public Coord towardSide(int side) {
         switch (side) {
-        case 0:
-            y -= 1;
-            break;
-        case 1:
-            y += 1;
-            break;
-        case 2:
-            z -= 1;
-            break;
-        case 3:
-            z += 1;
-            break;
-        case 4:
-            x -= 1;
-            break;
-        case 5:
-            x += 1;
-            break;
+            case 0:
+                y -= 1;
+                break;
+            case 1:
+                y += 1;
+                break;
+            case 2:
+                z -= 1;
+                break;
+            case 3:
+                z += 1;
+                break;
+            case 4:
+                x -= 1;
+                break;
+            case 5:
+                x += 1;
+                break;
         }
         return this;
     }
-    
+
     public Coord adjust(DeltaCoord dc) { // aka incrAdd
         x += dc.x;
         y += dc.y;
         z += dc.z;
         return this;
     }
-    
+
     public Coord adjust(ForgeDirection dc) {
         x += dc.offsetX;
         y += dc.offsetY;
         z += dc.offsetZ;
         return this;
     }
-    
+
     public Coord adjust(int dx, int dy, int dz) {
         x += dx;
         y += dy;
         z += dz;
         return this;
     }
-    
-    //Methods on the world
-    
+
+    // Methods on the world
+
     public void markBlockForUpdate() {
-        //this will re-send block values & TE description to the client, which will also do a redraw()
-        //...is what it used to do. Now you have to use syncAndDraw()?
+        // this will re-send block values & TE description to the client, which will also do a redraw()
+        // ...is what it used to do. Now you have to use syncAndDraw()?
         w.markBlockForUpdate(x, y, z);
     }
 
@@ -511,14 +518,14 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
             w.markBlockForUpdate(x, y, z);
         }
     }
-    
+
     public void syncTE() {
         TileEntityCommon tec = getTE(TileEntityCommon.class);
         if (tec == null) return;
         FMLProxyPacket description = tec.getDescriptionPacket();
         Core.network.broadcastPacket(null, this, description);
     }
-    
+
     public void sendRedraw() {
         if (w.isRemote) {
             redraw();
@@ -526,40 +533,40 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
             Core.network.broadcastMessage(null, this, MessageType.RedrawOnClient);
         }
     }
-    
+
     public void syncAndRedraw() {
         syncTE();
         sendRedraw();
     }
-    
+
     public void notifyNeighbors() {
         w.notifyBlocksOfNeighborChange(x, y, z, getBlock());
     }
 
     public void updateLight() {
-        w.func_147451_t(x, y, z); //w.updateAllLightTypes(x, y, z);
+        w.func_147451_t(x, y, z); // w.updateAllLightTypes(x, y, z);
     }
-    
+
     public void updateBlockLight() {
         w.updateLightByType(EnumSkyBlock.Block, x, y, z);
     }
-    
+
     public int getCombinedLight() {
-        return w.getBlockLightValue(x, y, z); 
+        return w.getBlockLightValue(x, y, z);
     }
-    
+
     public int getLightLevelBlock() {
         return w.getSavedLightValue(EnumSkyBlock.Block, x, y, z);
     }
-    
+
     public int getLightLevelSky() {
         return w.getSavedLightValue(EnumSkyBlock.Sky, x, y, z);
     }
-    
+
     public void setLightLevelBlock(int light) {
         getChunk().setLightValue(EnumSkyBlock.Block, x & 0xF, y & 0xF, z & 0xF, light);
     }
-    
+
     public void setLightLevelSky(int light) {
         getChunk().setLightValue(EnumSkyBlock.Sky, x & 0xF, y & 0xF, z & 0xF, light);
     }
@@ -567,7 +574,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public void setTE(TileEntity te) {
         w.setTileEntity(x, y, z, te);
     }
-    
+
     public void rmTE() {
         w.removeTileEntity(x, y, z);
     }
@@ -580,7 +587,8 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
             return null;
         }
         return w.getTileEntity(x, y, z);
-        // Could check blockHasTE() first. Might only be needed for TE-scanning, which is often better done w/ hashmap iteration instead
+        // Could check blockHasTE() first. Might only be needed for TE-scanning, which is often better done w/ hashmap
+        // iteration instead
     }
 
     public TileEntity forceGetTE() {
@@ -600,11 +608,11 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         }
         return null;
     }
-    
+
     public Chunk getChunk() {
         return w.getChunkFromBlockCoords(x, z);
     }
-    
+
     public BiomeGenBase getBiome() {
         return w.getBiomeGenForCoords(x, z);
     }
@@ -631,7 +639,6 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
             watcher.addPlayer(player);
         }
 
-
         Packet packet = new S21PacketChunkData(chunk, true, -1);
         FzNetDispatch.addPacketFrom(packet, chunk);
     }
@@ -647,7 +654,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public int getMd() {
         return w.getBlockMetadata(x, y, z);
     }
-    
+
     public int getRawId() {
         return Block.getIdFromBlock(w.getBlock(x, y, z));
     }
@@ -663,7 +670,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         }
         return b.isNormalCube(w, x, y, z);
     }
-    
+
     public float getHardness() {
         Block b = getBlock();
         if (b == null) {
@@ -680,11 +687,11 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public boolean isSolidOnSide(int side) {
         return w.isSideSolid(x, y, z, ForgeDirection.getOrientation(side));
     }
-    
+
     public boolean isSolidOnSide(ForgeDirection side) {
         return w.isSideSolid(x, y, z, side);
     }
-    
+
     public boolean isBlockBurning() {
         Block b = getBlock();
         if (b == null) {
@@ -712,7 +719,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public boolean isTop() {
         return w.getHeightValue(x, z) == y;
     }
-    
+
     public int getColumnHeight() {
         return w.getHeightValue(x, z);
     }
@@ -730,17 +737,17 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
             }
         }
         return true;
-        //...okay, so apparently this doesn't get updated or something? wtf?
-        //		int top = w.getHeightValue(x, z);
-        //		if (top <= y) {
-        //			return true;
-        //		}
-        //		for (int i = top; i > y; i--) {
-        //			if (!w.isAirBlock(x, i, z)) {
-        //				return false;
-        //			}
-        //		}
-        //		return true;
+        // ...okay, so apparently this doesn't get updated or something? wtf?
+        // int top = w.getHeightValue(x, z);
+        // if (top <= y) {
+        // return true;
+        // }
+        // for (int i = top; i > y; i--) {
+        // if (!w.isAirBlock(x, i, z)) {
+        // return false;
+        // }
+        // }
+        // return true;
     }
 
     public boolean is(Block b) {
@@ -750,9 +757,10 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public boolean is(Block b, int md) {
         return getId() == b && getMd() == md;
     }
-    
-    public static final int NOTIFY_NEIGHBORS = 1, UPDATE = 2, ONLY_UPDATE_SERVERSIDE = 4; //TODO, this'll end up in Forge probably
-    
+
+    public static final int NOTIFY_NEIGHBORS = 1, UPDATE = 2, ONLY_UPDATE_SERVERSIDE = 4; // TODO, this'll end up in
+                                                                                          // Forge probably
+
     public boolean setId(Block block, boolean notify) {
         int notifyFlag = notify ? NOTIFY_NEIGHBORS | UPDATE : 0;
         return w.setBlock(x, y, z, block, 0, notifyFlag);
@@ -762,12 +770,12 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         int notifyFlag = notify ? NOTIFY_NEIGHBORS | UPDATE : 0;
         return w.setBlockMetadataWithNotify(x, y, z, md, notifyFlag);
     }
-    
+
     public boolean setIdMd(Block block, int md, boolean notify) {
         int notifyFlag = notify ? NOTIFY_NEIGHBORS | UPDATE : 0;
         return w.setBlock(x, y, z, block, md, notifyFlag);
     }
-    
+
     public void setAir() {
         w.setBlockToAir(x, y, z);
     }
@@ -779,7 +787,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public boolean setMd(int md) {
         return setMd(md, true);
     }
-    
+
     public void notifyBlockChange() {
         w.notifyBlockChange(x, y, z, getId());
     }
@@ -795,36 +803,39 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         y = tag.getInteger(prefix + "y");
         z = tag.getInteger(prefix + "z");
     }
-    
+
     public void writeToStream(ByteArrayDataOutput dos) {
         dos.writeInt(x);
         dos.writeInt(y);
         dos.writeInt(z);
     }
-    
+
     public void writeToStream(ByteBuf dos) {
         dos.writeInt(x);
         dos.writeInt(y);
         dos.writeInt(z);
     }
-    
+
     public void readFromStream(ByteArrayDataInput dis) {
         x = dis.readInt();
         y = dis.readInt();
         z = dis.readInt();
     }
-    
+
     public void readFromStream(ByteBuf dis) {
         x = dis.readInt();
         y = dis.readInt();
         z = dis.readInt();
     }
-    
+
     @Override
     public IDataSerializable serialize(String prefix, DataHelper data) throws IOException {
-        x = data.asSameShare(prefix + "x").putInt(x);
-        y = data.asSameShare(prefix + "y").putInt(y);
-        z = data.asSameShare(prefix + "z").putInt(z);
+        x = data.asSameShare(prefix + "x")
+            .putInt(x);
+        y = data.asSameShare(prefix + "y")
+            .putInt(y);
+        z = data.asSameShare(prefix + "z")
+            .putInt(z);
         return this;
     }
 
@@ -832,15 +843,15 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         World use_world = w;
         use_world.spawnParticle("reddust", x + 0.5, y + 0.5, z + 0.5, 0, 0, 0);
     }
-    
+
     public boolean remote() {
         return w.isRemote;
     }
-    
+
     public boolean local() {
         return !w.isRemote;
     }
-    
+
     public Entity spawnItem(ItemStack is) {
         Entity ent = new EntityItem(w, x + 0.5, y + 0.5, z + 0.5, is);
         Item item = is.getItem();
@@ -854,7 +865,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public Entity spawnItem(Item it) {
         return spawnItem(new ItemStack(it));
     }
-    
+
     public AxisAlignedBB getCollisionBoundingBoxFromPool() {
         Block b = getBlock();
         if (b == null) {
@@ -862,7 +873,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         }
         return b.getCollisionBoundingBoxFromPool(w, x, y, z);
     }
-    
+
     @SideOnly(Side.CLIENT)
     public AxisAlignedBB getSelectedBoundingBoxFromPool() {
         Block b = getBlock();
@@ -882,35 +893,35 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         double maxZ = block.getBlockBoundsMaxZ();
         return AxisAlignedBB.getBoundingBox(x + minX, y + minY, z + minZ, x + maxX, y + maxY, z + maxZ);
     }
-    
+
     public static AxisAlignedBB aabbFromRange(Coord min, Coord max) {
         Coord.sort(min, max);
         return AxisAlignedBB.getBoundingBox(min.x, min.y, min.z, max.x, max.y, max.z);
     }
-    
+
     public void scheduleUpdate(int delay) {
         w.scheduleBlockUpdate(x, y, z, getId(), delay);
     }
-    
+
     public void setAsEntityLocation(Entity ent) {
         ent.worldObj = w;
         ent.setLocationAndAngles(x + 0.5, y, z + 0.5, ent.rotationYaw, ent.rotationPitch);
     }
-    
+
     public void setAsEntityLocationUnsafe(Entity ent) {
         ent.worldObj = w;
         ent.posX = x + 0.5;
         ent.posY = y;
         ent.posZ = z + 0.5;
     }
-    
+
     public void setAsTileEntityLocation(TileEntity te) {
         te.setWorldObj(w);
         te.xCoord = x;
         te.yCoord = y;
         te.zCoord = z;
     }
-    
+
     public void setAsVector(Vec3 vec) {
         vec.xCoord = x;
         vec.yCoord = y;
@@ -930,7 +941,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         vec.zCoord += 0.5;
         return vec;
     }
-    
+
     public static void sort(Coord lower, Coord upper) {
         Coord a = lower.copy();
         Coord b = upper.copy();
@@ -941,19 +952,19 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         upper.y = Math.max(a.y, b.y);
         upper.z = Math.max(a.z, b.z);
     }
-    
+
     public void moveToTopBlock() {
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
-                y = Math.max(y,  w.getTopSolidOrLiquidBlock(x + dx, z + dz));
+                y = Math.max(y, w.getTopSolidOrLiquidBlock(x + dx, z + dz));
             }
         }
     }
-    
+
     public boolean isPowered() {
         return w.getBlockPowerInput(x, y, z) > 0;
     }
-    
+
     public boolean isWeaklyPowered() {
         return w.isBlockIndirectlyGettingPowered(x, y, z);
     }
@@ -961,7 +972,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     public int getPowerInput() {
         return w.getBlockPowerInput(x, y, z);
     }
-    
+
     public static void iterateCube(Coord a, Coord b, ICoordFunction func) {
         a = a.copy();
         b = b.copy();
@@ -976,7 +987,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
             }
         }
     }
-    
+
     public static void iterateEmptyBox(Coord min, Coord max, ICoordFunction func) {
         // Warning: Probably broken; check it before you use it
         min = min.copy();
@@ -1026,7 +1037,7 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
             }
         }
     }
-    
+
     public static void drawLine(Coord start, Coord end, ICoordFunction func) {
         Coord at = start.copy();
         double len = start.distance(end);
@@ -1046,11 +1057,11 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
             t += dt;
         }
     }
-    
+
     public boolean hasSimilarCoordinate(Coord other) {
         return x == other.x || y == other.y || z == other.z;
     }
-    
+
     public int getComparatorOverride(ForgeDirection side) {
         Block b = getBlock();
         if (b == null || !b.hasComparatorInputOverride()) {
@@ -1058,14 +1069,14 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
         }
         return b.getComparatorInputOverride(w, x, y, z, side.ordinal());
     }
-    
+
     private static final Vec3 nullVec = Vec3.createVectorHelper(0, 0, 0);
     private static boolean spam = false;
 
     public ItemStack getPickBlock(ForgeDirection dir) {
-       return getPickBlock(createMop(dir, nullVec));
+        return getPickBlock(createMop(dir, nullVec));
     }
-    
+
     public ItemStack getPickBlock(MovingObjectPosition mop) {
         Block b = getBlock();
         if (b == null) {
@@ -1075,19 +1086,23 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
             return b.getPickBlock(mop, w, x, y, z, PlayerUtil.makePlayer(this, "Lookup"));
         } catch (NoSuchMethodError t) {
             if (!spam) {
-                /*Core.logWarning("Blocks.getPickBlock is unusable on the server." +
-            " A workaround prevents crashes, but may possibly allow dupe bugs." +
-            " The developer is no longer interested in wasting his time, energy, and vitality on this matter." +
-            " This is not a bug, it is a fact of life." +
-            " Do not attempt to report it. If you have happened somehow to have actually improved the situation in Forge/Vanilla," +
-            " the developer would, of course, be happy to learn of it. Otherwise, if I hear about it, I will ban you or something.");
-                t.printStackTrace();*/
+                /*
+                 * Core.logWarning("Blocks.getPickBlock is unusable on the server." +
+                 * " A workaround prevents crashes, but may possibly allow dupe bugs." +
+                 * " The developer is no longer interested in wasting his time, energy, and vitality on this matter." +
+                 * " This is not a bug, it is a fact of life." +
+                 * " Do not attempt to report it. If you have happened somehow to have actually improved the situation in Forge/Vanilla,"
+                 * +
+                 * " the developer would, of course, be happy to learn of it. Otherwise, if I hear about it, I will ban you or something."
+                 * );
+                 * t.printStackTrace();
+                 */
                 spam = true;
             }
             return BlockHelper.getPlacingItem(b, mop, w, x, y, z);
         }
     }
-    
+
     public ItemStack getBrokenBlock() {
         Block b = getBlock();
         if (b == null) {
@@ -1137,7 +1152,8 @@ public final class Coord implements IDataSerializable, ISaneCoord, Comparable<Co
     }
 
     public boolean isNormalCube() {
-        return w.getBlock(x, y, z).isNormalCube(w, x, y, z);
+        return w.getBlock(x, y, z)
+            .isNormalCube(w, x, y, z);
     }
 
     public boolean isInvalid() {

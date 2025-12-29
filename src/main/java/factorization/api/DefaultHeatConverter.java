@@ -8,6 +8,7 @@ import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.world.World;
 
 class DefaultHeatConverter implements HeatConverters.IHeatConverter {
+
     @Override
     public IFurnaceHeatable convert(World w, int x, int y, int z) {
         TileEntity te = w.getTileEntity(x, y, z);
@@ -17,7 +18,9 @@ class DefaultHeatConverter implements HeatConverters.IHeatConverter {
     }
 
     private static class FurnaceHeating implements IFurnaceHeatable {
+
         final TileEntityFurnace furnace;
+
         FurnaceHeating(TileEntityFurnace furnace) {
             this.furnace = furnace;
         }
@@ -27,7 +30,8 @@ class DefaultHeatConverter implements HeatConverters.IHeatConverter {
             // copy of private function for TileEntityFurnace.canSmelt. Lame. AT it?
             final ItemStack inputItem = furnace.getStackInSlot(0);
             if (inputItem == null) return false;
-            ItemStack smeltOutput = FurnaceRecipes.smelting().getSmeltingResult(inputItem);
+            ItemStack smeltOutput = FurnaceRecipes.smelting()
+                .getSmeltingResult(inputItem);
             if (smeltOutput == null) return false;
             final ItemStack outputSlot = furnace.getStackInSlot(2);
             if (outputSlot == null) return true;
@@ -43,7 +47,12 @@ class DefaultHeatConverter implements HeatConverters.IHeatConverter {
             if (furnace.furnaceBurnTime < topBurnTime) {
                 furnace.furnaceBurnTime += 1;
                 if (needStart) {
-                    BlockFurnace.updateFurnaceBlockState(furnace.furnaceBurnTime > 0, furnace.getWorldObj(), furnace.xCoord, furnace.yCoord, furnace.zCoord);
+                    BlockFurnace.updateFurnaceBlockState(
+                        furnace.furnaceBurnTime > 0,
+                        furnace.getWorldObj(),
+                        furnace.xCoord,
+                        furnace.yCoord,
+                        furnace.zCoord);
                 }
             } else {
                 furnace.furnaceCookTime += 1;

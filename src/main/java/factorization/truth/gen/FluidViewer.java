@@ -1,17 +1,18 @@
 package factorization.truth.gen;
 
+import java.util.Map.Entry;
+
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.IIcon;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+
 import factorization.truth.api.IDocGenerator;
 import factorization.truth.api.ITypesetter;
 import factorization.truth.api.TruthError;
 import factorization.truth.word.IconWord;
 import factorization.truth.word.ItemWord;
 import factorization.truth.word.Word;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
-
-import java.util.Map.Entry;
 
 public class FluidViewer implements IDocGenerator {
 
@@ -27,7 +28,8 @@ public class FluidViewer implements IDocGenerator {
 
     @Override
     public void process(ITypesetter out, String arg) throws TruthError {
-        for (Entry<String, Fluid> entry : FluidRegistry.getRegisteredFluids().entrySet()) {
+        for (Entry<String, Fluid> entry : FluidRegistry.getRegisteredFluids()
+            .entrySet()) {
             String name = entry.getKey();
             Fluid fluid = entry.getValue();
             out.write("\\seg \\nl \\nl");
@@ -42,8 +44,8 @@ public class FluidViewer implements IDocGenerator {
             }
             out.write(String.format("\\nl Temperature: %s°K", fluid.getTemperature()));
             out.write(String.format("\\nl Density: %s kg/block", fluid.getDensity()));
-            //out.write(String.format("\\nlViscoscity: %s", fluid.getViscosity()));
-            
+            // out.write(String.format("\\nlViscoscity: %s", fluid.getViscosity()));
+
             out.write("\\endseg");
         }
     }

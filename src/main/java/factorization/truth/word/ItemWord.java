@@ -1,20 +1,23 @@
 package factorization.truth.word;
 
-import factorization.truth.DocViewer;
-import factorization.truth.WordPage;
-import factorization.truth.api.IHtmlTypesetter;
-import factorization.util.ItemUtil;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import org.lwjgl.opengl.GL11;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+
+import org.lwjgl.opengl.GL11;
+
+import factorization.truth.DocViewer;
+import factorization.truth.WordPage;
+import factorization.truth.api.IHtmlTypesetter;
+import factorization.util.ItemUtil;
+
 public class ItemWord extends Word {
+
     public ItemStack is = null;
     public ItemStack[] entries = null;
 
@@ -32,6 +35,7 @@ public class ItemWord extends Word {
         this.is = is;
         cleanWildlings();
     }
+
     public ItemWord(ItemStack[] entries) {
         if (entries.length == 0) entries = null;
         this.entries = entries;
@@ -61,7 +65,7 @@ public class ItemWord extends Word {
         }
         return "cgi/recipes/" + is.getUnlocalizedName();
     }
-    
+
     static String getDefaultHyperlink(ItemStack[] items) {
         if (items == null || items.length == 0) return null;
         if (items.length == 1) return getDefaultHyperlink(items[0]);
@@ -74,7 +78,8 @@ public class ItemWord extends Word {
         }
         if (ItemUtil.isWildcard(is, false)) {
             List<ItemStack> out = ItemUtil.getSubItems(is);
-            entries = out.toArray(new ItemStack[out.size()]); // If you give me a wildcard here, then it's your own damn fault if that causes a crash
+            entries = out.toArray(new ItemStack[out.size()]); // If you give me a wildcard here, then it's your own damn
+                                                              // fault if that causes a crash
             if (entries.length == 0) {
                 is = is.copy();
                 is.setItemDamage(0);
@@ -102,7 +107,7 @@ public class ItemWord extends Word {
                     }
                     if (!ItemUtil.isWildcard(nonWild, true)) wildingChildren.add(nonWild);
                 }
-                for (Iterator<ItemStack> iterator = wildingChildren.iterator(); iterator.hasNext(); ) {
+                for (Iterator<ItemStack> iterator = wildingChildren.iterator(); iterator.hasNext();) {
                     ItemStack is = iterator.next();
                     if (is == null || is.getItem() == null) iterator.remove();
                 }
@@ -115,23 +120,24 @@ public class ItemWord extends Word {
     public String toString() {
         return is + " ==> " + getLink();
     }
-    
+
     @Override
     public int getWidth(FontRenderer font) {
         return 16;
     }
-    
+
     @Override
     public int getPaddingAbove() {
         return (16 - WordPage.TEXT_HEIGHT) / 2;
     }
-    
+
     @Override
     public int getWordHeight() {
         return WordPage.TEXT_HEIGHT + getPaddingAbove();
     }
 
     static int active_index;
+
     public ItemStack getItem() {
         active_index = 0;
         if (is != null) return is;
@@ -156,22 +162,22 @@ public class ItemWord extends Word {
         ItemStack toDraw = getItem();
         if (toDraw == null) return 16;
         y -= 4;
-        
+
         {
             GL11.glDisable(GL11.GL_TEXTURE_2D);
-            float gray = DocViewer.dark() ? 0.2F : 139F/0xFF;
+            float gray = DocViewer.dark() ? 0.2F : 139F / 0xFF;
             GL11.glColor3f(gray, gray, gray);
-            
+
             float z = 0;
             float d = 16;
-            
+
             GL11.glBegin(GL11.GL_QUADS);
             GL11.glVertex3f(x + 0, y + 0, z);
             GL11.glVertex3f(x + 0, y + d, z);
             GL11.glVertex3f(x + d, y + d, z);
             GL11.glVertex3f(x + d, y + 0, z);
             GL11.glEnd();
-            
+
             if (hover) {
                 int color = getLinkColor(hover);
                 byte r = (byte) ((color >> 16) & 0xFF);
@@ -179,7 +185,7 @@ public class ItemWord extends Word {
                 byte b = (byte) ((color >> 0) & 0xFF);
                 GL11.glColor3b(r, g, b);
                 GL11.glLineWidth(1);
-                
+
                 GL11.glBegin(GL11.GL_LINE_LOOP);
                 GL11.glVertex3f(x + 0, y + 0, z);
                 GL11.glVertex3f(x + 0, y + d, z);
@@ -187,11 +193,11 @@ public class ItemWord extends Word {
                 GL11.glVertex3f(x + d, y + 0, z);
                 GL11.glEnd();
             }
-            
+
             GL11.glColor3f(1, 1, 1);
             GL11.glEnable(GL11.GL_TEXTURE_2D);
         }
-        
+
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
         try {
             DocViewer.drawItem(toDraw, x, y, font);
@@ -207,7 +213,7 @@ public class ItemWord extends Word {
         GL11.glPopAttrib();
         return 16;
     }
-    
+
     @Override
     public void drawHover(int mouseX, int mouseY) {
         ItemStack toDraw = getItem();

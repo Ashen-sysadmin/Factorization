@@ -17,12 +17,13 @@ import com.google.common.base.Joiner;
 import factorization.shared.Core;
 
 public class MaskLoader {
+
     public static ArrayList<MaskTemplate> mask_templates = new ArrayList();
-    
+
     public static void addMask(MaskTemplate mask) {
         mask_templates.add(mask);
     }
-    
+
     public static MaskTemplate pickMask(Random rand, ForgeDirection anchor_direction, int min_size, int max_size) {
         ArrayList<MaskTemplate> valid = new ArrayList();
         int total_weight = 0;
@@ -43,15 +44,18 @@ public class MaskLoader {
         }
         return null;
     }
-    
+
     public static void mask(int weight, String... template) {
         MaskTemplate original = new MaskTemplate(template);
         String[] flipped = new String[template.length];
         boolean any = false;
         for (int i = 0; i < template.length; i++) {
             String line = template[i];
-            String reversed = new StringBuilder(line).reverse().toString();
-            reversed = reversed.replace("<", "L").replace(">", "<").replace("L", ">");
+            String reversed = new StringBuilder(line).reverse()
+                .toString();
+            reversed = reversed.replace("<", "L")
+                .replace(">", "<")
+                .replace("L", ">");
             flipped[i] = reversed;
             any |= !reversed.equals(line);
         }
@@ -66,12 +70,12 @@ public class MaskLoader {
             addMask(original);
         }
     }
-    
+
     public static void reloadMasks() {
         mask_templates.clear();
         loadMasks();
     }
-    
+
     public static void loadMasks() {
         String resource_name = "/colossus_masks.txt";
         try {
@@ -81,8 +85,9 @@ public class MaskLoader {
             throw new RuntimeException("Failed to load masks", e);
         }
     }
-    
+
     private static int weight = 100;
+
     public static void readMasks(InputStream is) throws IOException {
         if (is == null) {
             throw new NullPointerException();
@@ -98,7 +103,8 @@ public class MaskLoader {
                     emitMask(lineNumber, set);
                     break;
                 }
-                line = line.replace("\n", "").replace("\r", "");
+                line = line.replace("\n", "")
+                    .replace("\r", "");
                 if (line.length() == 0) {
                     emitMask(lineNumber, set);
                     continue;
@@ -116,7 +122,7 @@ public class MaskLoader {
             is.close();
         }
     }
-    
+
     private static void emitMask(int lineNumber, ArrayList<String> template) {
         if (!template.isEmpty()) {
             String[] mask = template.toArray(new String[template.size()]);
@@ -125,18 +131,23 @@ public class MaskLoader {
             } catch (Throwable t) {
                 if (Core.dev_environ) {
                     Core.logSevere("Near line " + lineNumber);
-                    Core.logSevere("Parsing template: " + "\n" + Joiner.on("\n").join(template));
+                    Core.logSevere(
+                        "Parsing template: " + "\n"
+                            + Joiner.on("\n")
+                                .join(template));
                 }
                 CrashReport crashreport = CrashReport.makeCrashReport(t, "Loading mask data");
                 CrashReportCategory maskInfo = crashreport.makeCategory("Mask Info");
                 maskInfo.addCrashSection("Near line", lineNumber);
-                maskInfo.addCrashSection("Parsing template", "\n" + Joiner.on("\n").join(template));
+                maskInfo.addCrashSection(
+                    "Parsing template",
+                    "\n" + Joiner.on("\n")
+                        .join(template));
                 throw new ReportedException(crashreport);
             }
         }
         weight = 100;
         template.clear();
     }
-    
-    
+
 }

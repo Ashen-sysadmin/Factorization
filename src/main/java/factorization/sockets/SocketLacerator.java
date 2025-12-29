@@ -4,13 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import factorization.common.FzConfig;
-import factorization.shared.*;
-import factorization.util.InvUtil;
-import factorization.util.ItemUtil;
-import factorization.util.NumUtil;
-import factorization.util.PlayerUtil;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EffectRenderer;
@@ -50,33 +43,41 @@ import factorization.api.datahelpers.IDataSerializable;
 import factorization.api.datahelpers.Share;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
+import factorization.common.FzConfig;
 import factorization.notify.Notice;
 import factorization.oreprocessing.TileEntityGrinder;
 import factorization.oreprocessing.TileEntityGrinder.GrinderRecipe;
 import factorization.oreprocessing.TileEntityGrinderRender;
 import factorization.servo.RenderServoMotor;
 import factorization.servo.ServoMotor;
+import factorization.shared.*;
 import factorization.shared.NetworkFactorization.MessageType;
+import factorization.util.InvUtil;
+import factorization.util.ItemUtil;
+import factorization.util.NumUtil;
+import factorization.util.PlayerUtil;
 import factorization.weird.TileEntityDayBarrel;
+import io.netty.buffer.ByteBuf;
 
 public class SocketLacerator extends TileEntitySocketBase implements IChargeConductor, ICaptureDrops {
+
     Charge charge = new Charge(this);
-    
+
     @Override
     public String getInfo() {
-        int s = speed*100/max_speed;
+        int s = speed * 100 / max_speed;
         String msg = s + "% speed";
         if (!buffer.isEmpty()) {
             msg += "\nBuffered output";
         }
         return msg;
     }
-    
+
     @Override
     public Charge getCharge() {
         return charge;
     }
-    
+
     short speed = 0;
     short progress;
     short last_shared_speed = 0;
@@ -84,42 +85,42 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
     long targetHash = -1;
     boolean ticked = false;
     boolean isPowered = false;
-    
+
     final static byte grind_time = 25;
     final static short max_speed = 200;
-    final static short min_speed = max_speed/10;
+    final static short min_speed = max_speed / 10;
     ArrayList<ItemStack> buffer = new ArrayList();
-    
+
     private float rotation = 0, prev_rotation = 0;
-    
+
     MovingObjectPosition present_breaking_target = null, previous_breaking_target = null;
-    
+
     @Override
     public FactoryType getFactoryType() {
         return FactoryType.SOCKET_LACERATOR;
     }
-    
+
     @Override
     public ItemStack getCreatingItem() {
         return new ItemStack(Core.registry.diamond_cutting_head);
     }
-    
+
     @Override
     public FactoryType getParentFactoryType() {
         return FactoryType.SOCKET_BARE_MOTOR;
     }
-    
+
     @Override
     public boolean canUpdate() {
         return true;
     }
-    
+
     @Override
     public void updateEntity() {
         charge.update();
         super.updateEntity();
     }
-    
+
     @Override
     public boolean activate(EntityPlayer player, ForgeDirection side) {
         if (worldObj.isRemote) {
@@ -134,16 +135,16 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
         }
         return false;
     }
-    
+
     void slowDown() {
         speed = (short) Math.max(0, speed - 1);
     }
-    
+
     void destroyPartially(MovingObjectPosition mop, int amount) {
         if (mop == null) return;
         worldObj.destroyBlockInWorldPartially(hashCode(), mop.blockX, mop.blockY, mop.blockZ, amount);
     }
-    
+
     @Override
     public void genericUpdate(ISocketHolder socket, Coord coord, boolean powered) {
         if (worldObj.isRemote) {
@@ -158,24 +159,24 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             socket.sendMessage(MessageType.LaceratorSpeed, speed);
             last_shared_speed = speed;
         }
-        
+
         if (previous_breaking_target != null && present_breaking_target != null) {
             if (previous_breaking_target.blockX != present_breaking_target.blockX
-                    || previous_breaking_target.blockY != present_breaking_target.blockY
-                    || previous_breaking_target.blockZ != present_breaking_target.blockZ) {
+                || previous_breaking_target.blockY != present_breaking_target.blockY
+                || previous_breaking_target.blockZ != present_breaking_target.blockZ) {
                 destroyPartially(previous_breaking_target, 99);
             }
         } else if (present_breaking_target == null) {
             destroyPartially(previous_breaking_target, 99);
         }
-        
+
         previous_breaking_target = present_breaking_target;
         if (progress == 0) {
             destroyPartially(present_breaking_target, 99);
             present_breaking_target = null;
         }
     }
-    
+
     private void genericUpdate_implementation(ISocketHolder socket, Coord coord, boolean powered) {
         if (getBackingInventory(socket) == null) {
             slowDown();
@@ -191,12 +192,14 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             slowDown();
             return;
         }
-        FzOrientation orientation = FzOrientation.fromDirection(facing).getSwapped();
+        FzOrientation orientation = FzOrientation.fromDirection(facing)
+            .getSwapped();
         if (powered) {
             slowDown();
             progress = 0;
         } else {
-            RayTracer tracer = new RayTracer(this, socket, coord, orientation, powered).onlyFrontBlock().checkEnts();
+            RayTracer tracer = new RayTracer(this, socket, coord, orientation, powered).onlyFrontBlock()
+                .checkEnts();
             if (!tracer.trace()) {
                 slowDown();
                 progress = 0;
@@ -204,8 +207,9 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
         }
         if (grab_items) {
             grab_items = false;
-            
-            for (EntityItem ei : (Iterable<EntityItem>)worldObj.getEntitiesWithinAABB(EntityItem.class, getEntityBox(socket, coord, orientation.top, 1.75))) {
+
+            for (EntityItem ei : (Iterable<EntityItem>) worldObj
+                .getEntitiesWithinAABB(EntityItem.class, getEntityBox(socket, coord, orientation.top, 1.75))) {
                 if (ei.isDead) continue;
                 if (ei.ticksExisted > 1) continue;
                 ItemStack is = ei.getEntityItem();
@@ -214,7 +218,7 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             }
         }
     }
-    
+
     @Override
     public boolean handleMessageFromServer(MessageType messageType, ByteBuf input) throws IOException {
         if (super.handleMessageFromServer(messageType, input)) {
@@ -226,7 +230,7 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
         }
         return false;
     }
-    
+
     void processCollectedItem(ItemStack is) {
         if (!grind_items) {
             buffer.add(is);
@@ -248,13 +252,13 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             }
         }
         if (appliedRecipe) {
-            grind_items = false; //We only grind 1 drop, to prevent hax
+            grind_items = false; // We only grind 1 drop, to prevent hax
         }
         buffer.add(is);
     }
-    
+
     boolean cantDoWork(ISocketHolder socket) {
-        //Calls this in two places in handleRay because we may have unlacerable mops
+        // Calls this in two places in handleRay because we may have unlacerable mops
         if (!isPowered && socket.extractCharge(8)) {
             speed = (short) Math.min(max_speed, speed + 32);
             if (speed == max_speed) {
@@ -265,12 +269,13 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
         }
         return !workCheck();
     }
-    
+
     boolean workCheck() {
-        return speed > min_speed && worldObj.rand.nextInt(max_speed) < speed/4;
+        return speed > min_speed && worldObj.rand.nextInt(max_speed) < speed / 4;
     }
-    
+
     public static final DamageSource laceration = new DamageSource("laceration") {
+
         @Override
         public IChatComponent func_151519_b(EntityLivingBase victim) {
             String ret = "death.attack.laceration.";
@@ -280,19 +285,23 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             } else {
                 ret += "1";
             }
-            
+
             EntityLivingBase attacker = victim.func_94060_bK();
             String fightingMessage = ret + ".player";
             if (attacker != null && StatCollector.canTranslate(fightingMessage)) {
-                return new ChatComponentTranslation(fightingMessage, victim.func_145748_c_(), attacker.func_145748_c_());
+                return new ChatComponentTranslation(
+                    fightingMessage,
+                    victim.func_145748_c_(),
+                    attacker.func_145748_c_());
             } else {
                 return new ChatComponentTranslation(ret, victim.func_145748_c_());
             }
         }
     };
-    
+
     @Override
-    public boolean handleRay(ISocketHolder socket, MovingObjectPosition mop, World mopWorld, boolean mopIsThis, boolean powered) {
+    public boolean handleRay(ISocketHolder socket, MovingObjectPosition mop, World mopWorld, boolean mopIsThis,
+        boolean powered) {
         DropCaptureHandler.startCapture(this, Coord.fromMop(mopWorld, mop), 3);
         try {
             return _handleRay(socket, mop, mopWorld, mopIsThis, powered);
@@ -300,7 +309,7 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             DropCaptureHandler.endCapture();
         }
     }
-    
+
     @Override
     public boolean captureDrops(ArrayList<ItemStack> stacks) {
         for (int i = 0; i < stacks.size(); i++) {
@@ -310,11 +319,12 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
         }
         return true;
     }
-    
-    private boolean _handleRay(ISocketHolder socket, MovingObjectPosition mop, World mopWorld, boolean mopIsThis, boolean powered) {
+
+    private boolean _handleRay(ISocketHolder socket, MovingObjectPosition mop, World mopWorld, boolean mopIsThis,
+        boolean powered) {
         if (mop == null) return false;
         if (mopIsThis) return false;
-        
+
         if (mop.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY) {
             if (!(mop.entityHit instanceof EntityLivingBase)) {
                 return false;
@@ -322,8 +332,8 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             EntityLivingBase elb = (EntityLivingBase) mop.entityHit;
             if (elb.isDead || elb.getHealth() <= 0) return false;
             if (cantDoWork(socket)) return !grab_items;
-            socket.extractCharge(1); //It's fine if it fails
-            float damage = 4F*speed/max_speed;
+            socket.extractCharge(1); // It's fine if it fails
+            float damage = 4F * speed / max_speed;
             if (elb.getHealth() <= damage && worldObj.rand.nextInt(20) == 1) {
                 elb.recentlyHit = 100;
             }
@@ -359,18 +369,18 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
                 }
             }
             if (cantDoWork(socket)) return true;
-            socket.extractCharge(1); //It's fine if it fails
-            
-            //Below: A brief demonstration of why Coord exists
+            socket.extractCharge(1); // It's fine if it fails
+
+            // Below: A brief demonstration of why Coord exists
             long foundHash = (mop.blockX) + (mop.blockY << 2) + (mop.blockZ << 4);
             float hardness = block.getBlockHardness(mopWorld, mop.blockX, mop.blockY, mop.blockZ);
             if (hardness < 0) {
-                speed -= max_speed/5;
+                speed -= max_speed / 5;
                 return true;
             }
             foundHash = (foundHash << 4) + block.hashCode() + md;
             if (barrel != null) {
-                foundHash += barrel.item.hashCode()*5 + barrel.item.getItemDamage()*10;
+                foundHash += barrel.item.hashCode() * 5 + barrel.item.getItemDamage() * 10;
             }
             if (foundHash != targetHash) {
                 targetHash = foundHash;
@@ -379,7 +389,10 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
                 progress++;
                 if (socket == this && worldObj.rand.nextInt(4) == 0) {
                     // Torsion!?
-                    TileEntity partner = mopWorld.getTileEntity(mop.blockX + facing.offsetX, mop.blockY + facing.offsetY, mop.blockZ + facing.offsetZ);
+                    TileEntity partner = mopWorld.getTileEntity(
+                        mop.blockX + facing.offsetX,
+                        mop.blockY + facing.offsetY,
+                        mop.blockZ + facing.offsetZ);
                     if (partner instanceof SocketLacerator) {
                         SocketLacerator pardner = (SocketLacerator) partner;
                         if (pardner.workCheck()) {
@@ -388,10 +401,10 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
                     }
                 }
             }
-            boolean doBreak = progress >= grind_time*hardness || Core.cheat;
+            boolean doBreak = progress >= grind_time * hardness || Core.cheat;
             if (barrel == null && !doBreak) {
-                float perc = progress/((float)grind_time*hardness);
-                int breakage = (int) (perc*10);
+                float perc = progress / ((float) grind_time * hardness);
+                int breakage = (int) (perc * 10);
                 if (mopWorld == worldObj) {
                     destroyPartially(mop, breakage);
                 }
@@ -405,8 +418,9 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
                 grab_items = true;
                 grind_items = true;
                 if (barrel == null) {
-                    mopWorld.playAuxSFX(2001, mop.blockX, mop.blockY, mop.blockZ, Block.getIdFromBlock(block) + md << 12);
-                    
+                    mopWorld
+                        .playAuxSFX(2001, mop.blockX, mop.blockY, mop.blockZ, Block.getIdFromBlock(block) + md << 12);
+
                     EntityPlayer player = getFakePlayer();
                     ItemStack pick = new ItemStack(Items.diamond_pickaxe);
                     pick.addEnchantment(Enchantment.silkTouch, 1);
@@ -414,9 +428,16 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
                     {
                         boolean canHarvest = false;
                         canHarvest = block.canHarvestBlock(player, md);
-                        canHarvest = true; //Hack-around for cobalt/ardite. Hmm.
+                        canHarvest = true; // Hack-around for cobalt/ardite. Hmm.
 
-                        boolean didRemove = removeBlock(player, block, md, mopWorld, mop.blockX, mop.blockY, mop.blockZ);
+                        boolean didRemove = removeBlock(
+                            player,
+                            block,
+                            md,
+                            mopWorld,
+                            mop.blockX,
+                            mop.blockY,
+                            mop.blockZ);
                         if (didRemove) {
                             block.harvestBlock(mopWorld, player, mop.blockX, mop.blockY, mop.blockZ, md);
                         }
@@ -442,7 +463,7 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             return false;
         }
     }
-    
+
     private boolean removeBlock(EntityPlayer thisPlayerMP, Block block, int md, World mopWorld, int x, int y, int z) {
         if (block == null) return false;
         block.onBlockHarvested(mopWorld, x, y, z, md, thisPlayerMP);
@@ -452,19 +473,26 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
         }
         return false;
     }
-    
+
     @Override
     public IDataSerializable serialize(String prefix, DataHelper data) throws IOException {
-        charge = data.as(Share.PRIVATE, "charge").putIDS(charge);
-        speed = data.as(Share.VISIBLE, "spd").putShort(speed);
-        progress = data.as(Share.PRIVATE, "prg").putShort(progress);
-        buffer = data.as(Share.PRIVATE, "buf").putItemList(buffer);
-        grab_items = data.as(Share.PRIVATE, "grb").putBoolean(grab_items);
-        targetHash = data.as(Share.PRIVATE, "hsh").putLong(targetHash);
-        grind_items = data.as(Share.PRIVATE, "grn").putBoolean(grind_items);
+        charge = data.as(Share.PRIVATE, "charge")
+            .putIDS(charge);
+        speed = data.as(Share.VISIBLE, "spd")
+            .putShort(speed);
+        progress = data.as(Share.PRIVATE, "prg")
+            .putShort(progress);
+        buffer = data.as(Share.PRIVATE, "buf")
+            .putItemList(buffer);
+        grab_items = data.as(Share.PRIVATE, "grb")
+            .putBoolean(grab_items);
+        targetHash = data.as(Share.PRIVATE, "hsh")
+            .putLong(targetHash);
+        grind_items = data.as(Share.PRIVATE, "grn")
+            .putBoolean(grind_items);
         return this;
     }
-    
+
     @Override
     protected void onRemove() {
         super.onRemove();
@@ -473,33 +501,33 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             InvUtil.spawnItemStack(here, is);
         }
     }
-    
+
     @Override
     public void click(EntityPlayer entityplayer) {
         InvUtil.emptyBuffer(entityplayer, buffer, this);
     }
-    
-    
-    //Render code
+
+    // Render code
     @Override
     @SideOnly(Side.CLIENT)
     public void renderTesr(ServoMotor motor, float partial) {
         float d = 0.5F;
         GL11.glTranslatef(d, d, d);
-        Quaternion.fromOrientation(FzOrientation.fromDirection(facing.getOpposite())).glRotate();
+        Quaternion.fromOrientation(FzOrientation.fromDirection(facing.getOpposite()))
+            .glRotate();
         float turn = NumUtil.interp(prev_rotation, rotation, partial) / 5.0F;
         GL11.glRotatef(turn, 0, 1, 0);
-        float sd = motor == null ? 1F/16F : 3F/16F;
-        GL11.glTranslatef(0, -4F/16F + sd + (float) Math.abs(Math.sin(turn/800))/32F, 0);
+        float sd = motor == null ? 1F / 16F : 3F / 16F;
+        GL11.glTranslatef(0, -4F / 16F + sd + (float) Math.abs(Math.sin(turn / 800)) / 32F, 0);
         TileEntityGrinderRender.renderGrindHead();
         if (ticked) {
             ticked = false;
-            if (speed > max_speed/3) {
+            if (speed > max_speed / 3) {
                 addParticles();
             }
         }
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public void renderStatic(ServoMotor motor, Tessellator tess) {
@@ -507,18 +535,15 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
         float d = 4.0F / 16.0F;
         float yd = -d + 0.003F;
         BlockRenderHelper block = BlockRenderHelper.instance;
-        block.useTextures(null, null,
-                metal, metal,
-                metal, metal);
-        float yoffset = 5F/16F;
-        float sd = motor == null ? 0 : 2F/16F;
-        block.setBlockBounds(d, d + yd + yoffset + 2F/16F + sd, d, 1 - d, 1 - (d + 0F/16F) + yd + yoffset, 1 - d);
+        block.useTextures(null, null, metal, metal, metal, metal);
+        float yoffset = 5F / 16F;
+        float sd = motor == null ? 0 : 2F / 16F;
+        block.setBlockBounds(d, d + yd + yoffset + 2F / 16F + sd, d, 1 - d, 1 - (d + 0F / 16F) + yd + yoffset, 1 - d);
         block.beginWithMirroredUVs();
         block.rotateCenter(Quaternion.fromOrientation(FzOrientation.fromDirection(facing.getOpposite())));
         block.renderRotated(tess, xCoord, yCoord, zCoord);
     }
-    
-    
+
     @SideOnly(Side.CLIENT)
     static EffectRenderer particleTweaker, origER;
     @SideOnly(Side.CLIENT)
@@ -527,7 +552,7 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
     static int px, py, pz;
     @SideOnly(Side.CLIENT)
     static double facex, facey, facez;
-    
+
     @SideOnly(Side.CLIENT)
     void addParticles() {
         Minecraft mc = Minecraft.getMinecraft();
@@ -537,13 +562,13 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
         px = xCoord + facing.offsetX;
         py = yCoord + facing.offsetY;
         pz = zCoord + facing.offsetZ;
-        
+
         ForgeDirection op = facing.getOpposite();
-        
-        facex = px + 0.5 + 0.5*op.offsetX;
-        facey = py + 0.5 + 0.5*op.offsetY;
-        facez = pz + 0.5 + 0.5*op.offsetZ;
-        
+
+        facex = px + 0.5 + 0.5 * op.offsetX;
+        facey = py + 0.5 + 0.5 * op.offsetY;
+        facez = pz + 0.5 + 0.5 * op.offsetZ;
+
         Block b = worldObj.getBlock(px, py, pz);
         if (b == null) {
             return;
@@ -560,13 +585,13 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             mc.effectRenderer = origER;
         }
     }
-    
+
     static class ParticleWarper extends EffectRenderer {
 
         public ParticleWarper(World world, TextureManager textureManager) {
             super(world, textureManager);
         }
-        
+
         @Override
         public void addEffect(EntityFX particle) {
             if (particle == null || origER == null || me == null) {
@@ -580,13 +605,11 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             particle.posX = facex;
             particle.posY = facey;
             particle.posZ = facez;
-            float theta = (float) (Math.random()*Math.PI*2);
-            double dist = 4.0/16.0;
-            
-            
+            float theta = (float) (Math.random() * Math.PI * 2);
+            double dist = 4.0 / 16.0;
+
             Vec3 dir = Vec3.createVectorHelper(0, dist, 0);
-            
-            
+
             if (fd.offsetX != 0) {
                 dir.rotateAroundX(theta);
             } else if (fd.offsetY != 0) {
@@ -597,7 +620,7 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             particle.posX += dir.xCoord;
             particle.posY += dir.yCoord;
             particle.posZ += dir.zCoord;
-            theta = (float) (Math.PI/2);
+            theta = (float) (Math.PI / 2);
             if (fd.offsetX != 0) {
                 dir.rotateAroundX(theta);
             } else if (fd.offsetY != 0) {
@@ -605,24 +628,24 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             } else if (fd.offsetZ != 0) {
                 dir.rotateAroundZ(theta);
             }
-            float speed = 0.8F*me.speed/max_speed;
-            particle.motionX = dir.xCoord*speed;
-            particle.motionY = dir.yCoord*speed;
-            particle.motionZ = dir.zCoord*speed;
-            if (particle.motionY > speed/4) {
+            float speed = 0.8F * me.speed / max_speed;
+            particle.motionX = dir.xCoord * speed;
+            particle.motionY = dir.yCoord * speed;
+            particle.motionZ = dir.zCoord * speed;
+            if (particle.motionY > speed / 4) {
                 particle.motionY *= 3;
             }
-            particle.multipleParticleScaleBy(1 + worldObj.rand.nextFloat()*2/3);
+            particle.multipleParticleScaleBy(1 + worldObj.rand.nextFloat() * 2 / 3);
             origER.addEffect(particle);
         }
     }
-    
+
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void resetEffectRenderer(WorldEvent.Unload loadEvent) {
         particleTweaker = null;
     }
-    
+
     @Override
     public void uninstall() {
         if (!worldObj.isRemote) {
@@ -630,16 +653,16 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             destroyPartially(previous_breaking_target, 99);
         }
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public void renderItemOnServo(RenderServoMotor render, ServoMotor motor, ItemStack is, float partial) {
-        //super.renderItemOnServo(render, motor, is, partial);
+        // super.renderItemOnServo(render, motor, is, partial);
         GL11.glPushMatrix();
-        GL11.glTranslatef(0, 6F/16F, 0);
+        GL11.glTranslatef(0, 6F / 16F, 0);
         float turn = NumUtil.interp(prev_rotation, rotation, partial) / 5.0F;
         GL11.glRotatef(-turn, 0, 1, 0);
-        float s = 12F/16F;
+        float s = 12F / 16F;
         GL11.glScalef(s, s, s);
         int count = 6;
 
@@ -647,14 +670,14 @@ public class SocketLacerator extends TileEntitySocketBase implements IChargeCond
             is = motor.getStackInSlot(i);
             if (is == null) continue;
             GL11.glPushMatrix();
-            GL11.glRotatef(360*i/4, 0, 1, 0);
-            GL11.glTranslatef(0, count--/16F, 5F/16F);
+            GL11.glRotatef(360 * i / 4, 0, 1, 0);
+            GL11.glTranslatef(0, count-- / 16F, 5F / 16F);
             render.renderItem(is);
             GL11.glPopMatrix();
         }
         GL11.glPopMatrix();
     }
-    
+
     @Override
     public void installedOnServo(ServoMotor servoMotor) {
         super.installedOnServo(servoMotor);

@@ -1,7 +1,6 @@
 package factorization.coremodhooks;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 public abstract class MixinEntityKinematicsTracker extends Entity implements IKinematicTracker {
@@ -10,9 +9,10 @@ public abstract class MixinEntityKinematicsTracker extends Entity implements IKi
         super(w);
     }
 
-    private long kinematics_last_change; // Should be initialized to somehting negative, but our mixins don't support that
+    private long kinematics_last_change; // Should be initialized to somehting negative, but our mixins don't support
+                                         // that
     double kinematics_motX, kinematics_motY, kinematics_motZ;
-    
+
     @Override
     public double getKinematics_motX() {
         return kinematics_motX;
@@ -34,7 +34,7 @@ public abstract class MixinEntityKinematicsTracker extends Entity implements IKi
     }
 
     double kinematics_yaw;
-    
+
     @Override
     public void reset(long now) {
         if (now == kinematics_last_change) return;
@@ -44,5 +44,5 @@ public abstract class MixinEntityKinematicsTracker extends Entity implements IKi
         kinematics_motZ = this.motionZ;
         kinematics_yaw = this.rotationYaw;
     }
-    
+
 }

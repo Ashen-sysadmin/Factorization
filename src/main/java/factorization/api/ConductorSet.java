@@ -6,14 +6,15 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 class ConductorSet implements Comparable {
+
     int totalCharge = 0;
     int memberCount = 0;
     static final int maxMemberCount = 24;
-    
+
     IChargeConductor leader = null;
     TreeSet<ConductorSet> neighbors = null;
     Iterator<ConductorSet> neighborIterator = null;
-    
+
     ConductorSet(IChargeConductor leader) {
         this.leader = leader;
         this.memberCount = 1;
@@ -22,13 +23,13 @@ class ConductorSet implements Comparable {
         lc.isConductorSetLeader = true;
         lc.justCreated = true;
     }
-    
+
     boolean addConductor(IChargeConductor other) {
         other.getCharge().conductorSet = this;
         memberCount++;
         return true;
     }
-    
+
     void update() {
         if (neighbors == null || neighbors.size() == 0) {
             neighbors = null;
@@ -37,17 +38,17 @@ class ConductorSet implements Comparable {
         if (neighborIterator == null || !neighborIterator.hasNext()) {
             neighborIterator = neighbors.iterator();
         }
-        ConductorSet luckyNeighbor = neighborIterator.next(); //balance our charge with this neighbor
+        ConductorSet luckyNeighbor = neighborIterator.next(); // balance our charge with this neighbor
         if (luckyNeighbor.memberCount <= 0) {
             neighborIterator.remove();
             return;
         }
         if (luckyNeighbor.memberCount + memberCount < maxMemberCount && luckyNeighbor.memberCount <= memberCount) {
-            //EAT our neighbor! Oh my!
+            // EAT our neighbor! Oh my!
             Iterable<IChargeConductor> noms = luckyNeighbor.getMembers(luckyNeighbor.leader);
             totalCharge += luckyNeighbor.totalCharge;
             for (IChargeConductor nom : noms) {
-                //nom.om();
+                // nom.om();
                 addConductor(nom);
             }
             luckyNeighbor.totalCharge = 0;
@@ -56,15 +57,15 @@ class ConductorSet implements Comparable {
             neighborIterator.remove();
             return;
         }
-        //balance our charge with the random neighbor
+        // balance our charge with the random neighbor
         int ourCharge = totalCharge + luckyNeighbor.totalCharge;
         int ourMemberCount = memberCount + luckyNeighbor.memberCount;
-        
+
         int hisNewCharge = ourCharge * luckyNeighbor.memberCount / ourMemberCount;
         luckyNeighbor.totalCharge = hisNewCharge;
         totalCharge = ourCharge - hisNewCharge;
     }
-    
+
     boolean addNeighbor(ConductorSet neighbor) {
         if (neighbor == this || neighbor == null) {
             return false;
@@ -74,15 +75,15 @@ class ConductorSet implements Comparable {
         }
         if (neighbors.add(neighbor)) {
             neighborIterator = null;
-            neighbor.addNeighbor(this); //Recurses thrice. ({b}, {}) -> ({b}, {a}) -> ({b, b}, {a})
+            neighbor.addNeighbor(this); // Recurses thrice. ({b}, {}) -> ({b}, {a}) -> ({b, b}, {a})
             return true;
         }
         return false;
     }
-    
+
     private static ArrayList<IChargeConductor> frontier = new ArrayList<IChargeConductor>(5 * 5 * 4);
     private static HashSet<IChargeConductor> visited = new HashSet<IChargeConductor>(5 * 5 * 5);
-    
+
     Iterable<IChargeConductor> getMembers(IChargeConductor seed) {
         if (seed == null) {
             return new ArrayList<IChargeConductor>(0);
@@ -113,7 +114,5 @@ class ConductorSet implements Comparable {
     public int compareTo(Object arg0) {
         return this.hashCode() - arg0.hashCode();
     }
-    
-    
-    
+
 }

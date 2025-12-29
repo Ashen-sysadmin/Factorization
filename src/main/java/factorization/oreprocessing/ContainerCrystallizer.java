@@ -1,11 +1,13 @@
 package factorization.oreprocessing;
 
-import factorization.common.ContainerFactorization;
-import factorization.shared.TileEntityFactorization;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ICrafting;
 
+import factorization.common.ContainerFactorization;
+import factorization.shared.TileEntityFactorization;
+
 public class ContainerCrystallizer extends ContainerFactorization {
+
     TileEntityCrystallizer crys;
 
     public ContainerCrystallizer(EntityPlayer entityplayer, TileEntityFactorization factory) {

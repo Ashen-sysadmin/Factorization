@@ -4,6 +4,7 @@ import net.minecraft.client.audio.MovingSound;
 import net.minecraft.util.ResourceLocation;
 
 public class WinchSound extends MovingSound {
+
     SocketPoweredCrank source;
     byte direction;
 

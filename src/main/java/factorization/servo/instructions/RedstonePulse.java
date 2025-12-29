@@ -7,6 +7,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.IDataSerializable;
@@ -28,9 +29,10 @@ public class RedstonePulse extends Instruction {
         if (motor.worldObj.isRemote) {
             return;
         }
-        TileEntityCommon tef = motor.getCurrentPos().getTE(TileEntityCommon.class);
+        TileEntityCommon tef = motor.getCurrentPos()
+            .getTE(TileEntityCommon.class);
         if (tef == null) {
-            return; //Just back away, very slowly...
+            return; // Just back away, very slowly...
         }
         tef.pulse();
     }
@@ -59,7 +61,7 @@ public class RedstonePulse extends Instruction {
     protected ItemStack getRecipeItem() {
         return new ItemStack(Blocks.stone_pressure_plate);
     }
-    
+
     @Override
     public CpuBlocking getBlockingBehavior() {
         return CpuBlocking.BLOCK_UNTIL_NEXT_ENTRY;

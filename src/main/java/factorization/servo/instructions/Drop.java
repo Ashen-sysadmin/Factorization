@@ -2,20 +2,20 @@ package factorization.servo.instructions;
 
 import java.io.IOException;
 
-import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.IDataSerializable;
 import factorization.common.BlockIcons;
-import factorization.servo.Executioner;
 import factorization.servo.Instruction;
 import factorization.servo.ServoMotor;
 import factorization.servo.ServoStack;
 
 public class Drop extends Instruction {
+
     @Override
     public IDataSerializable putData(String prefix, DataHelper data) throws IOException {
         return this;
@@ -41,5 +41,5 @@ public class Drop extends Instruction {
     public String getName() {
         return "fz.instruction.drop";
     }
-    
+
 }

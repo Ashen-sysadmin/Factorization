@@ -12,11 +12,14 @@ import factorization.common.FactoryType;
 import factorization.shared.TileEntityCommon;
 
 public class DayBarrelItemRenderer implements IItemRenderer {
+
     BlockRenderDayBarrel render_barrel;
     TileEntitySpecialRenderer tesr = null;
+
     public DayBarrelItemRenderer(BlockRenderDayBarrel render) {
         this.render_barrel = render;
     }
+
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {
         return true;

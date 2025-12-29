@@ -2,32 +2,32 @@ package factorization.colossi;
 
 import java.util.ArrayList;
 
-import factorization.util.SpaceUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.IconFlipped;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
-import factorization.common.BlockIcons;
+import factorization.util.SpaceUtil;
 
 public class GargantuanBlock extends Block {
 
     public GargantuanBlock() {
         super(Material.rock);
-        setHardness(2.0F).setResistance(10.0F).setStepSound(soundTypePiston);
+        setHardness(2.0F).setResistance(10.0F)
+            .setStepSound(soundTypePiston);
     }
-    
+
     @SideOnly(Side.CLIENT)
     IIcon end, low, high, low_f, high_f, low_fu, high_fu;
-    
+
     @Override
     public void registerBlockIcons(IIconRegister registry) {
         end = registry.registerIcon("factorization:colossi/gargantuan_end");
@@ -38,11 +38,11 @@ public class GargantuanBlock extends Block {
         low_fu = new IconFlipped(low_f, true, false);
         high_fu = new IconFlipped(high_f, true, false);
     }
-    
+
     ForgeDirection getDir(int md) {
         return ForgeDirection.getOrientation(md);
     }
-    
+
     @Override
     public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
         Coord at = new Coord(world, x, y, z);
@@ -64,7 +64,7 @@ public class GargantuanBlock extends Block {
         }
         return super.removedByPlayer(world, player, x, y, z, willHarvest) && good;
     }
-    
+
     @Override
     public IIcon getIcon(int side_, int md) {
         ForgeDirection dir = getDir(md);
@@ -77,7 +77,7 @@ public class GargantuanBlock extends Block {
         }
         if (dir == ForgeDirection.SOUTH) {
             if (side == ForgeDirection.DOWN) return high_fu;
-            if (side == ForgeDirection.UP) return high_fu; //return high_f;
+            if (side == ForgeDirection.UP) return high_fu; // return high_f;
             if (side == ForgeDirection.EAST) return low;
             if (side == ForgeDirection.WEST) return high;
         }
@@ -95,14 +95,16 @@ public class GargantuanBlock extends Block {
         }
         return end;
     }
-    
+
     @Override
     public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
-        /*ForgeDirection dir = getDir(metadata);
-        if (SpaceUtil.sign(dir) < 0) {
-            Coord mate = new Coord(world, x, y, z).add(dir);
-            if (mate.getBlock() != this || getDir(mate.getMd()) != dir.getOpposite()) return new ArrayList<ItemStack>();
-        }*/
+        /*
+         * ForgeDirection dir = getDir(metadata);
+         * if (SpaceUtil.sign(dir) < 0) {
+         * Coord mate = new Coord(world, x, y, z).add(dir);
+         * if (mate.getBlock() != this || getDir(mate.getMd()) != dir.getOpposite()) return new ArrayList<ItemStack>();
+         * }
+         */
         return super.getDrops(world, x, y, z, metadata, fortune);
     }
 

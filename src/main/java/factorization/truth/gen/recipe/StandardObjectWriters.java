@@ -1,14 +1,8 @@
 package factorization.truth.gen.recipe;
 
-import cpw.mods.fml.relauncher.ReflectionHelper;
-import factorization.api.adapter.Adapter;
-import factorization.api.adapter.GenericAdapter;
-import factorization.common.FzConfig;
-import factorization.truth.api.IObjectWriter;
-import factorization.truth.gen.FluidViewer;
-import factorization.truth.word.ItemWord;
-import factorization.truth.word.TextWord;
-import factorization.truth.word.Word;
+import java.lang.reflect.Array;
+import java.util.*;
+
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -21,15 +15,24 @@ import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
-import java.lang.reflect.Array;
-import java.util.*;
+import cpw.mods.fml.relauncher.ReflectionHelper;
+import factorization.api.adapter.Adapter;
+import factorization.api.adapter.GenericAdapter;
+import factorization.common.FzConfig;
+import factorization.truth.api.IObjectWriter;
+import factorization.truth.gen.FluidViewer;
+import factorization.truth.word.ItemWord;
+import factorization.truth.word.TextWord;
+import factorization.truth.word.Word;
 
 class StandardObjectWriters {
+
     private static void reg(Class<?> klass, IObjectWriter out) {
         IObjectWriter.adapter.register(klass, out);
     }
 
     static boolean is_setup = false;
+
     static void setup() {
         if (is_setup) return;
         is_setup = true;
@@ -51,11 +54,13 @@ class StandardObjectWriters {
 
         IObjectWriter.adapter.register(new ArrayAdapter());
         if (FzConfig.enableRecipeReflection) {
-            IObjectWriter.adapter.setFallbackAdapter(new GenericAdapter<Object, IObjectWriter>(Object.class, new ReflectionWriter()));
+            IObjectWriter.adapter
+                .setFallbackAdapter(new GenericAdapter<Object, IObjectWriter>(Object.class, new ReflectionWriter()));
         }
     }
 
     private static class WriteItemStack implements IObjectWriter<ItemStack> {
+
         @Override
         public void writeObject(List out, ItemStack val, IObjectWriter<Object> generic) {
             out.add(new ItemWord(val));
@@ -63,6 +68,7 @@ class StandardObjectWriters {
     }
 
     private static class WriteItem implements IObjectWriter<Item> {
+
         @Override
         public void writeObject(List out, Item val, IObjectWriter<Object> generic) {
             out.add(new ItemWord(new ItemStack(val)));
@@ -70,6 +76,7 @@ class StandardObjectWriters {
     }
 
     private static class WriteBlock implements IObjectWriter<Block> {
+
         @Override
         public void writeObject(List out, Block val, IObjectWriter<Object> generic) {
             out.add(new ItemWord(new ItemStack(val)));
@@ -77,10 +84,12 @@ class StandardObjectWriters {
     }
 
     private static class WriteStringOreDictionary /* get it? D'ya get it? ha ha ha */ implements IObjectWriter<String> {
+
         final HashSet<String> knownOres = new HashSet<String>();
         {
             Collections.addAll(knownOres, OreDictionary.getOreNames());
         }
+
         @Override
         public void writeObject(List out, String val, IObjectWriter<Object> generic) {
             if (knownOres.contains(val)) {
@@ -95,6 +104,7 @@ class StandardObjectWriters {
     }
 
     private static class WriteObjectToString implements IObjectWriter<Object> {
+
         @Override
         public void writeObject(List out, Object val, IObjectWriter<Object> generic) {
             out.add(new TextWord(val.toString()));
@@ -102,6 +112,7 @@ class StandardObjectWriters {
     }
 
     private static class WriteFluidStack implements IObjectWriter<FluidStack> {
+
         @Override
         public void writeObject(List out, FluidStack val, IObjectWriter<Object> generic) {
             out.add(FluidViewer.convert(val.getFluid()));
@@ -116,8 +127,8 @@ class StandardObjectWriters {
         }
     }
 
-
     private static class WriteFluid implements IObjectWriter<Fluid> {
+
         @Override
         public void writeObject(List out, Fluid val, IObjectWriter<Object> generic) {
             out.add(FluidViewer.convert(val));
@@ -126,16 +137,18 @@ class StandardObjectWriters {
     }
 
     private static class WriteCollection implements IObjectWriter<Collection<Object>> {
+
         HashSet<Collection> reverseOD = new HashSet<Collection>();
         {
             for (String name : OreDictionary.getOreNames()) {
                 reverseOD.add(OreDictionary.getOres(name));
             }
         }
+
         @Override
         public void writeObject(List out, Collection<Object> val, IObjectWriter<Object> generic) {
             if (reverseOD.contains(val)) {
-                //noinspection SuspiciousToArrayCall -- We know it must contain only ItemStacks
+                // noinspection SuspiciousToArrayCall -- We know it must contain only ItemStacks
                 ItemStack[] items = val.toArray(new ItemStack[val.size()]);
                 out.add(new ItemWord(items));
                 return;
@@ -171,10 +184,11 @@ class StandardObjectWriters {
     }
 
     private static class WriteShapedOreRecipe implements IObjectWriter<ShapedOreRecipe> {
+
         @Override
         public void writeObject(List out, ShapedOreRecipe val, IObjectWriter<Object> generic) {
             int width = ReflectionHelper.getPrivateValue(ShapedOreRecipe.class, val, "width");
-            //int height = ReflectionHelper.getPrivateValue(ShapedOreRecipe.class, val, "height");
+            // int height = ReflectionHelper.getPrivateValue(ShapedOreRecipe.class, val, "height");
             Object[] input = val.getInput();
             int i = 0;
             for (Object in : input) {
@@ -188,6 +202,7 @@ class StandardObjectWriters {
     }
 
     private static class WriteShapedRecipe implements IObjectWriter<ShapedRecipes> {
+
         @Override
         public void writeObject(List out, ShapedRecipes val, IObjectWriter<Object> generic) {
             int width = val.recipeWidth;
@@ -201,6 +216,7 @@ class StandardObjectWriters {
     }
 
     private static class WriteShapelessOreRecipe implements IObjectWriter<ShapelessOreRecipe> {
+
         @Override
         public void writeObject(List out, ShapelessOreRecipe val, IObjectWriter<Object> generic) {
             ArrayList<Object> input = val.getInput();
@@ -213,6 +229,7 @@ class StandardObjectWriters {
     }
 
     private static class WriteShapelessRecipe implements IObjectWriter<ShapelessRecipes> {
+
         @Override
         public void writeObject(List out, ShapelessRecipes val, IObjectWriter<Object> generic) {
             if (val.recipeItems == null) return;
@@ -224,6 +241,7 @@ class StandardObjectWriters {
     }
 
     private static class WriteEntry implements IObjectWriter<Map.Entry> {
+
         @Override
         public void writeObject(List out, Map.Entry val, IObjectWriter<Object> generic) {
             generic.writeObject(out, val.getKey(), generic);
@@ -232,7 +250,8 @@ class StandardObjectWriters {
         }
     }
 
-    private static class ArrayAdapter implements Adapter<Object,IObjectWriter>, IObjectWriter<Object> {
+    private static class ArrayAdapter implements Adapter<Object, IObjectWriter>, IObjectWriter<Object> {
+
         @Override
         public IObjectWriter adapt(Object val) {
             return this;

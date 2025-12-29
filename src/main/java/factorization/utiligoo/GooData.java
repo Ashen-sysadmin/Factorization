@@ -17,17 +17,18 @@ import factorization.api.Coord;
 import factorization.notify.Notice;
 
 public class GooData extends WorldSavedData {
+
     public GooData(String dataName) {
         super(dataName);
     }
 
     int dimensionId;
     int[] coords = new int[0];
-    
+
     int change_counts = 0;
     WeakHashMap<Entity, Integer> player_updates = new WeakHashMap<Entity, Integer>();
     int last_traced_index = -1;
-    
+
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         if (!tag.hasKey("dimensionId")) {
@@ -36,14 +37,14 @@ public class GooData extends WorldSavedData {
         dimensionId = tag.getInteger("dimensionId");
         coords = tag.getIntArray("coordData");
     }
-    
+
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         tag.setString("mapname", mapName);
         tag.setInteger("dimensionId", dimensionId);
         tag.setIntArray("coordData", coords);
     }
-    
+
     @Override
     public void setDirty(boolean dirty) {
         super.setDirty(dirty);
@@ -51,7 +52,7 @@ public class GooData extends WorldSavedData {
             change_counts++;
         }
     }
-    
+
     boolean isPlayerOutOfDate(Entity player) {
         if (!(player instanceof EntityPlayer)) return false;
         Integer update_count = player_updates.get(player);
@@ -61,7 +62,7 @@ public class GooData extends WorldSavedData {
         }
         return false;
     }
-    
+
     void wipe(ItemStack is, World world) {
         coords = new int[0];
         dimensionId = 0;
@@ -72,13 +73,13 @@ public class GooData extends WorldSavedData {
             markDirty();
         }
     }
-    
+
     static final String fz_goo = "fz_goo";
-    
+
     static String getGooName(ItemStack is) {
         return fz_goo + "_" + is.getItemDamage();
     }
-    
+
     static GooData getGooData(ItemStack is, World world) {
         GooData data = (GooData) world.loadItemData(GooData.class, getGooName(is));
         if (data == null && !world.isRemote) {
@@ -95,23 +96,24 @@ public class GooData extends WorldSavedData {
         }
         return data;
     }
-    
+
     static GooData getNullGooData(ItemStack is, World world) {
         if (is == null) return null;
         if (!(is.getItem() instanceof ItemGoo)) return null;
         if (is.getItemDamage() == 0) return null;
         return (GooData) world.loadItemData(GooData.class, getGooName(is));
     }
-    
+
     private void deleteDataFile(World world) {
-        File file = world.getSaveHandler().getMapFileFromName(mapName);
+        File file = world.getSaveHandler()
+            .getMapFileFromName(mapName);
         if (file != null && file.exists()) {
             file.delete();
         }
         world.mapStorage.loadedDataList.remove(this);
         world.mapStorage.loadedDataMap.remove(this);
     }
-    
+
     void removeIndices(ArrayList<Integer> indices, ItemStack is, World world) {
         int[] all = new int[indices.size()];
         int i = 0;
@@ -125,7 +127,7 @@ public class GooData extends WorldSavedData {
             markDirty();
         }
     }
-    
+
     boolean checkWorld(EntityPlayer player, Coord complainAt) {
         if (coords.length == 0) return false;
         if (dimensionId == player.worldObj.provider.dimensionId) return false;

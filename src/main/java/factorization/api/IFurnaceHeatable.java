@@ -1,8 +1,10 @@
 package factorization.api;
 
 public interface IFurnaceHeatable {
+
     /**
-     * @return true if you want to recieve heat, and something useful can be done with it. Return false if there is no valid recipe.
+     * @return true if you want to recieve heat, and something useful can be done with it. Return false if there is no
+     *         valid recipe.
      */
     public boolean acceptsHeat();
 
@@ -15,7 +17,8 @@ public interface IFurnaceHeatable {
     public void giveHeat();
 
     /**
-     * Vanilla furnaces are expensive to transition between started and stopped; they cause a chunk redraw and a lighting update.
+     * Vanilla furnaces are expensive to transition between started and stopped; they cause a chunk redraw and a
+     * lighting update.
      * This method instructs the heater to wait until it has a suffiently large buffer to keep running for a bit;
      * otherwise there may be unsightly flashing if the heater doesn't have enough power to stay on steadily.
      *

@@ -24,12 +24,13 @@ import factorization.servo.ServoStack;
 import factorization.shared.Core;
 
 public class InstructionGroup extends Instruction {
+
     ServoStack stuff = new ServoStack(new Executioner(null));
-    
+
     @Override
-    public IDataSerializable putData(String prefix, DataHelper data)
-            throws IOException {
-        stuff = data.as(Share.VISIBLE, "contents").putIDS(stuff);
+    public IDataSerializable putData(String prefix, DataHelper data) throws IOException {
+        stuff = data.as(Share.VISIBLE, "contents")
+            .putIDS(stuff);
         return this;
     }
 
@@ -37,11 +38,11 @@ public class InstructionGroup extends Instruction {
     protected ItemStack getRecipeItem() {
         return new ItemStack(Items.slime_ball);
     }
-    
+
     @Override
     protected void addRecipes() {
         super.addRecipes();
-        Core.registry.vanillaShapelessRecipe(toItem(), toItem()); 
+        Core.registry.vanillaShapelessRecipe(toItem(), toItem());
     }
 
     @Override
@@ -52,7 +53,7 @@ public class InstructionGroup extends Instruction {
             ss.push(it.next());
         }
     }
-    
+
     @Override
     public boolean onClick(EntityPlayer player, ServoMotor motor) {
         if (stuff.getSize() > 0) return false;
@@ -77,7 +78,7 @@ public class InstructionGroup extends Instruction {
     public String getName() {
         return "fz.instruction.group";
     }
-    
+
     @Override
     public void addInformation(List info) {
         if (stuff.getSize() <= 0) {
@@ -90,12 +91,13 @@ public class InstructionGroup extends Instruction {
             info.add(obj.toString());
         }
     }
-    
+
     @Override
     public String getInfo() {
         ArrayList<String> bits = new ArrayList();
         addInformation(bits);
-        return Joiner.on("\n").join(bits);
+        return Joiner.on("\n")
+            .join(bits);
     }
 
 }

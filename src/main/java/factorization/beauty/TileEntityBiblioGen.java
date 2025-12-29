@@ -1,19 +1,7 @@
 package factorization.beauty;
 
-import factorization.api.Coord;
-import factorization.api.ICoordFunction;
-import factorization.api.IMeterInfo;
-import factorization.api.IRotationalEnergySource;
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.Share;
-import factorization.common.BlockIcons;
-import factorization.common.FactoryType;
-import factorization.notify.Notice;
-import factorization.notify.Style;
-import factorization.shared.BlockClass;
-import factorization.shared.BlockFactorization;
-import factorization.shared.Core;
-import factorization.shared.TileEntityCommon;
+import java.io.IOException;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -21,9 +9,21 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.io.IOException;
+import factorization.api.Coord;
+import factorization.api.ICoordFunction;
+import factorization.api.IMeterInfo;
+import factorization.api.IRotationalEnergySource;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.Share;
+import factorization.common.FactoryType;
+import factorization.notify.Notice;
+import factorization.notify.Style;
+import factorization.shared.BlockClass;
+import factorization.shared.BlockFactorization;
+import factorization.shared.TileEntityCommon;
 
 public class TileEntityBiblioGen extends TileEntityCommon implements IRotationalEnergySource, IMeterInfo {
+
     int bookCount = -1;
     double angle = 0, prev_angle = 0;
     double availablePower = 0;
@@ -42,8 +42,10 @@ public class TileEntityBiblioGen extends TileEntityCommon implements IRotational
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        bookCount = data.as(Share.VISIBLE, "bookCount").putInt(bookCount);
-        availablePower = data.as(Share.PRIVATE, "availablePower").putDouble(availablePower);
+        bookCount = data.as(Share.VISIBLE, "bookCount")
+            .putInt(bookCount);
+        availablePower = data.as(Share.PRIVATE, "availablePower")
+            .putDouble(availablePower);
     }
 
     void countBooks() {
@@ -51,7 +53,8 @@ public class TileEntityBiblioGen extends TileEntityCommon implements IRotational
         int old_count = bookCount;
         bookCount = bookCounter.count();
         if (bookCounter.interference != null) {
-            new Notice(bookCounter.interference, "x").withStyle(Style.LONG, Style.DRAWFAR, Style.SCALE_SIZE).sendToAll();
+            new Notice(bookCounter.interference, "x").withStyle(Style.LONG, Style.DRAWFAR, Style.SCALE_SIZE)
+                .sendToAll();
             new Notice(this, "factorization:bibliogen.interference").sendToAll();
         }
         if (bookCount != old_count) {
@@ -122,6 +125,7 @@ public class TileEntityBiblioGen extends TileEntityCommon implements IRotational
     }
 
     class BookCounter implements ICoordFunction {
+
         int books = 1; // We're a book
         TileEntity interference = null;
         final Coord min, max;

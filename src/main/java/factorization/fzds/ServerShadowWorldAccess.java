@@ -1,23 +1,30 @@
 package factorization.fzds;
 
-import factorization.api.Coord;
-import factorization.fzds.interfaces.IDeltaChunk;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.IWorldAccess;
 import net.minecraft.world.World;
 
+import factorization.api.Coord;
+import factorization.fzds.interfaces.IDeltaChunk;
+
 public final class ServerShadowWorldAccess implements IWorldAccess {
+
     // "IWorldAccess" is poorly named; "IWorldWatcher" would be better.
     static final World world = DeltaChunk.getServerShadowWorld();
 
-    @Override public void spawnParticle(String var1, double var2, double var4, double var6, double var8, double var10, double var12) { }
+    @Override
+    public void spawnParticle(String var1, double var2, double var4, double var6, double var8, double var10,
+        double var12) {}
 
-    @Override public void onEntityCreate(Entity entity) { }
+    @Override
+    public void onEntityCreate(Entity entity) {}
 
-    @Override public void onEntityDestroy(Entity entity) { }
+    @Override
+    public void onEntityDestroy(Entity entity) {}
 
-    @Override public void playSound(String sound, double var2, double var4, double var6, float var8, float var9) {
+    @Override
+    public void playSound(String sound, double var2, double var4, double var6, float var8, float var9) {
         // Doesn't seem to be used on the server
     }
 
@@ -42,7 +49,8 @@ public final class ServerShadowWorldAccess implements IWorldAccess {
     }
 
     @Override
-    public void playSoundToNearExcept(EntityPlayer player, String sound, double x, double y, double z, float volume, float pitch) {
+    public void playSoundToNearExcept(EntityPlayer player, String sound, double x, double y, double z, float volume,
+        float pitch) {
         final Coord here = new Coord(world, x, y, z);
         for (IDeltaChunk idc : DeltaChunk.getSlicesContainingPoint(here)) {
             Coord at = here.copy();
@@ -52,7 +60,6 @@ public final class ServerShadowWorldAccess implements IWorldAccess {
             at.w.playSoundToNearExcept(player, sound, volume, pitch);
         }
     }
-
 
     @Override
     public void broadcastSound(int soundType, int x, int y, int z, int type) {
@@ -85,15 +92,18 @@ public final class ServerShadowWorldAccess implements IWorldAccess {
         Coord upper = new Coord(null, hx, hy, hz);
         for (IDeltaChunk idc : DeltaChunk.getSlicesInRange(realClientWorld, lx, ly, lz, hx, hy, hz)) {
             DimensionSliceEntity dse = (DimensionSliceEntity) idc;
-            if (dse.getCorner().inside(lower, upper) || dse.getFarCorner().inside(lower, upper)) {
+            if (dse.getCorner()
+                .inside(lower, upper)
+                || dse.getFarCorner()
+                    .inside(lower, upper)) {
                 dse.blocksChanged(lx, ly, lz);
                 dse.blocksChanged(hx, hy, hz);
             }
         }
     }
 
-    @Override public void destroyBlockPartially(int var1, int var2, int var3, int var4, int var5) { }
-
+    @Override
+    public void destroyBlockPartially(int var1, int var2, int var3, int var4, int var5) {}
 
     @Override
     public void onStaticEntitiesChanged() {

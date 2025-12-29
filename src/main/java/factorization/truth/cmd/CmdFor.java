@@ -6,6 +6,7 @@ import factorization.truth.api.ITypesetter;
 import factorization.truth.api.TruthError;
 
 public class CmdFor extends AgnosticCommand {
+
     @Override
     protected void call(ITypesetter out, ITokenizer tokenizer) throws TruthError {
         String varname = tokenizer.getParameter("for variable name");

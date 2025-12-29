@@ -1,15 +1,18 @@
 package factorization.api;
 
-import factorization.api.adapter.InterfaceAdapter;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import factorization.api.adapter.InterfaceAdapter;
 
 /**
  * Modeled after IC2ex's {@link ic2.api.energy.tile.IKineticSource}.
  *
  */
 public interface IRotationalEnergySource {
-    static InterfaceAdapter<TileEntity, IRotationalEnergySource> adapter = InterfaceAdapter.get(IRotationalEnergySource.class);
+
+    static InterfaceAdapter<TileEntity, IRotationalEnergySource> adapter = InterfaceAdapter
+        .get(IRotationalEnergySource.class);
 
     /**
      * @param direction the direction that this can emit energy from. For example, if this is a vertical windmill,
@@ -22,14 +25,15 @@ public interface IRotationalEnergySource {
     /**
      * @param direction {@see IRotationalEnergySource#canConnect}
      * @return how much power is still available for use this tick. The units are those of torque * angular speed
-     * This value should always be positive, even if the velocity is negative.
+     *         This value should always be positive, even if the velocity is negative.
      */
     double availableEnergy(ForgeDirection direction);
 
     /**
      * Takes the power that is available for this tick.
+     * 
      * @param direction {@see IRotationalEnergySource#canConnect}
-     * @param maxPower The maximum amount of power to deplete. This value must be positive.
+     * @param maxPower  The maximum amount of power to deplete. This value must be positive.
      * @return The amount of power that was actually used, limited by actual availability.
      */
     double takeEnergy(ForgeDirection direction, double maxPower);
@@ -37,9 +41,10 @@ public interface IRotationalEnergySource {
     /**
      * @param direction {@see IRotationalEnergySource#canConnect}
      * @return The angular velocity, in radians per tick. May be negative. If a windmill is causing a shaft to turn
-     * clockwise (looking down the shaft from the position of the windmill), then its angular velocity is positive.
+     *         clockwise (looking down the shaft from the position of the windmill), then its angular velocity is
+     *         positive.
      *
-     * This value should be kept synchronized with the client, but need not be exact.
+     *         This value should be kept synchronized with the client, but need not be exact.
      */
     double getVelocity(ForgeDirection direction);
 

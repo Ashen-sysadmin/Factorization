@@ -1,5 +1,9 @@
 package factorization.servo.stepper;
 
+import java.io.IOException;
+
+import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.FzOrientation;
 import factorization.api.Quaternion;
 import factorization.api.datahelpers.DataHelper;
@@ -7,18 +11,18 @@ import factorization.api.datahelpers.Share;
 import factorization.fzds.interfaces.IDeltaChunk;
 import factorization.fzds.interfaces.Interpolation;
 import factorization.servo.MotionHandler;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.IOException;
 
 public class StepperMotionHandler extends MotionHandler {
+
     final StepperEngine engine;
     int stepperReorient = 0, reorientDistance = 0;
     EnumObstructionKind obstruction = EnumObstructionKind.NONE;
     static int TICKS_PER_HALF_TURN = 40;
 
     enum EnumObstructionKind {
-        NONE, LINEAR, ROTATIONAL;
+        NONE,
+        LINEAR,
+        ROTATIONAL;
     }
 
     public StepperMotionHandler(StepperEngine stepperEngine) {
@@ -65,10 +69,14 @@ public class StepperMotionHandler extends MotionHandler {
     @Override
     protected void putData(DataHelper data) throws IOException {
         super.putData(data);
-        stepperReorient = data.as(Share.VISIBLE, "stepperReorient").putInt(stepperReorient);
-        obstruction = data.as(Share.VISIBLE, "obstruction").putEnum(obstruction);
-        stepperReorient = data.as(Share.VISIBLE, "stepperReorient").putInt(stepperReorient);
-        reorientDistance = data.as(Share.VISIBLE, "stepperReorientDistance").putInt(reorientDistance);
+        stepperReorient = data.as(Share.VISIBLE, "stepperReorient")
+            .putInt(stepperReorient);
+        obstruction = data.as(Share.VISIBLE, "obstruction")
+            .putEnum(obstruction);
+        stepperReorient = data.as(Share.VISIBLE, "stepperReorient")
+            .putInt(stepperReorient);
+        reorientDistance = data.as(Share.VISIBLE, "stepperReorientDistance")
+            .putInt(reorientDistance);
     }
 
     boolean waitForObstructionClear(EntityGrabController grabber, IDeltaChunk idc) {

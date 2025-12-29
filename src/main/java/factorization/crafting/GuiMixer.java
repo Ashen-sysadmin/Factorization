@@ -6,6 +6,7 @@ import factorization.shared.Core;
 import factorization.shared.FactorizationGui;
 
 public class GuiMixer extends FactorizationGui {
+
     TileEntityMixer mixer;
 
     public GuiMixer(ContainerMixer cont) {

@@ -1,22 +1,10 @@
 package factorization.shared;
 
-import cpw.mods.fml.common.event.FMLModIdMappingEvent;
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.api.*;
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.DataInNBT;
-import factorization.api.datahelpers.DataOutByteBuf;
-import factorization.api.datahelpers.DataOutNBT;
-import factorization.common.BlockIcons;
-import factorization.common.FactoryType;
-import factorization.migration.MigrationHelper;
-import factorization.shared.NetworkFactorization.MessageType;
-import factorization.util.ItemUtil;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -34,19 +22,29 @@ import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import cpw.mods.fml.common.event.FMLModIdMappingEvent;
+import cpw.mods.fml.common.network.internal.FMLProxyPacket;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.api.*;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.DataInNBT;
+import factorization.api.datahelpers.DataOutByteBuf;
+import factorization.api.datahelpers.DataOutNBT;
+import factorization.common.BlockIcons;
+import factorization.common.FactoryType;
+import factorization.migration.MigrationHelper;
+import factorization.shared.NetworkFactorization.MessageType;
+import factorization.util.ItemUtil;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 public abstract class TileEntityCommon extends TileEntity implements ICoord, IFactoryType {
+
     public static final byte serialization_version = 2;
     public static final String serialization_version_key = ".";
 
     public String customName = null;
-
 
     public abstract BlockClass getBlockClass();
 
@@ -66,8 +64,7 @@ public abstract class TileEntityCommon extends TileEntity implements ICoord, IFa
         Core.loadBus(this);
     }
 
-    public void mappingsChanged(FMLModIdMappingEvent event) { }
-
+    public void mappingsChanged(FMLModIdMappingEvent event) {}
 
     @Override
     public FMLProxyPacket getDescriptionPacket() {
@@ -181,16 +178,16 @@ public abstract class TileEntityCommon extends TileEntity implements ICoord, IFa
         Core.network.broadcastPacket(who, getCoord(), toSend);
     }
 
-    public void spawnPacketReceived() { }
+    public void spawnPacketReceived() {}
 
     public boolean redrawOnSync() {
         return false;
     }
 
-
     protected void onRemove() {
         if (this instanceof IChargeConductor) {
-            ((IChargeConductor) this).getCharge().remove();
+            ((IChargeConductor) this).getCharge()
+                .remove();
         }
     }
 
@@ -208,12 +205,10 @@ public abstract class TileEntityCommon extends TileEntity implements ICoord, IFa
         return worldObj.setBlockToAir(xCoord, yCoord, zCoord);
     }
 
-    public void click(EntityPlayer entityplayer) {
-    }
+    public void click(EntityPlayer entityplayer) {}
 
     /** Called when there's a block update. */
-    public void neighborChanged() {
-    }
+    public void neighborChanged() {}
 
     public void neighborChanged(Block neighbor) {
         neighborChanged();
@@ -241,7 +236,8 @@ public abstract class TileEntityCommon extends TileEntity implements ICoord, IFa
 
     public AxisAlignedBB getCollisionBoundingBoxFromPool() {
         setBlockBounds(Core.registry.resource_block);
-        AxisAlignedBB ret = Core.registry.resource_block.getCollisionBoundingBoxFromPool(worldObj, xCoord, yCoord, zCoord);
+        AxisAlignedBB ret = Core.registry.resource_block
+            .getCollisionBoundingBoxFromPool(worldObj, xCoord, yCoord, zCoord);
         Core.registry.resource_block.setBlockBounds(0, 0, 0, 1, 1, 1);
         return ret;
     }
@@ -278,7 +274,8 @@ public abstract class TileEntityCommon extends TileEntity implements ICoord, IFa
     public void invalidate() {
         if (this instanceof IChargeConductor) {
             IChargeConductor me = (IChargeConductor) this;
-            me.getCharge().invalidate();
+            me.getCharge()
+                .invalidate();
         }
         super.invalidate();
     }
@@ -289,20 +286,20 @@ public abstract class TileEntityCommon extends TileEntity implements ICoord, IFa
     }
 
     public static final ForgeDirection[] empty_rotation_array = new ForgeDirection[0];
-    public static final ForgeDirection[] flat_rotation_array = new ForgeDirection[] {
-            ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST
-    };
+    public static final ForgeDirection[] flat_rotation_array = new ForgeDirection[] { ForgeDirection.NORTH,
+        ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST };
     public static final ForgeDirection[] full_rotation_array = new ForgeDirection[6];
     static {
         for (int i = 0; i < 6; i++) {
             full_rotation_array[i] = ForgeDirection.getOrientation(i);
         }
     }
+
     public ForgeDirection[] getValidRotations() {
         return empty_rotation_array;
     }
 
-    //Requires the BlockClass to be MachineDynamicLightable
+    // Requires the BlockClass to be MachineDynamicLightable
     public int getDynamicLight() {
         return 0;
     }
@@ -313,7 +310,6 @@ public abstract class TileEntityCommon extends TileEntity implements ICoord, IFa
         }
         return 0;
     }
-
 
     public ItemStack getDroppedBlock() {
         return new ItemStack(Core.registry.item_factorization, 1, getFactoryType().md);
@@ -326,16 +322,16 @@ public abstract class TileEntityCommon extends TileEntity implements ICoord, IFa
     /** Called when there's a comparatory-inventory-ish update */
     public void onNeighborTileChanged(int tilex, int tiley, int tilez) {}
 
-    public boolean recolourBlock(ForgeDirection side, FzColor fzColor) { return false; }
+    public boolean recolourBlock(ForgeDirection side, FzColor fzColor) {
+        return false;
+    }
 
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(ForgeDirection dir) {
         return BlockIcons.error;
     }
 
-
-
-    public void spawnDisplayTickParticles(Random rand) { }
+    public void spawnDisplayTickParticles(Random rand) {}
 
     public void blockUpdateTick(Block myself) {
         worldObj.notifyBlockChange(xCoord, yCoord, zCoord, myself);

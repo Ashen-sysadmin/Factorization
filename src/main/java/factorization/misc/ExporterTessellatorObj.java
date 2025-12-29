@@ -1,15 +1,16 @@
 package factorization.misc;
 
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.shader.TesselatorVertexState;
-
 import java.io.*;
 import java.nio.ByteOrder;
 
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.shader.TesselatorVertexState;
+
 public class ExporterTessellatorObj extends Tessellator {
+
     final File filename;
     OutputStreamWriter out;
-    
+
     public ExporterTessellatorObj(File filename) {
         this.filename = filename;
         try {
@@ -18,7 +19,7 @@ public class ExporterTessellatorObj extends Tessellator {
             throw new RuntimeException(e);
         }
     }
-    
+
     void writeLine(String line) {
         try {
             out.write(line + "\n");
@@ -26,16 +27,15 @@ public class ExporterTessellatorObj extends Tessellator {
             throw new RuntimeException(e);
         }
     }
-    
+
     @Override
-    public void startDrawing(int par1) {
-    }
-    
+    public void startDrawing(int par1) {}
+
     @Override
     public int draw() {
         return 0;
     }
-    
+
     public void doneDumping() {
         try {
             out.flush();
@@ -46,20 +46,20 @@ public class ExporterTessellatorObj extends Tessellator {
         out = null;
         dumpTextureMap();
     }
-    
+
     void dumpTextureMap() {
         // :/
     }
-    
+
     int vertexNumber = 0;
     double textureU, textureV;
-    
+
     @Override
     public void setTextureUV(double textureU, double textureV) {
         this.textureU = textureU;
         this.textureV = -textureV; // Texture's flipped vertically
     }
-    
+
     @Override
     public void addVertex(double x, double y, double z) {
         x += xOffset;
@@ -92,7 +92,7 @@ public class ExporterTessellatorObj extends Tessellator {
             writeLine("f" + make(-3) + make(-2) + make(-1) + make(0));
         }
     }
-    
+
     private String make(int delta) {
         int i = vertexNumber + delta;
         if (i <= 0) {

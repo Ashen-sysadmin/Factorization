@@ -1,11 +1,13 @@
 package factorization.migration;
 
+import net.minecraft.nbt.NBTTagCompound;
+
 import factorization.common.FactoryType;
 import factorization.shared.TileEntityCommon;
 import factorization.sockets.TileEntitySocketBase;
-import net.minecraft.nbt.NBTTagCompound;
 
 public class MigrationHelper {
+
     public static boolean migrate(byte oldVersion, FactoryType ft, TileEntityCommon tec, NBTTagCompound tag) {
         boolean any = false;
         if (tec instanceof TileEntitySocketBase && oldVersion < 2) {

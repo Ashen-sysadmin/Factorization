@@ -1,12 +1,10 @@
 package factorization.beauty;
 
-import cpw.mods.fml.common.registry.GameRegistry;
-import factorization.algos.ReservoirSampler;
-import factorization.shared.Core;
-import factorization.shared.ItemFactorization;
-import factorization.util.DataUtil;
-import factorization.util.ItemUtil;
-import factorization.util.PlayerUtil;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,23 +16,31 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.OreDictionary;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Random;
+import cpw.mods.fml.common.registry.GameRegistry;
+import factorization.algos.ReservoirSampler;
+import factorization.shared.Core;
+import factorization.shared.ItemFactorization;
+import factorization.util.DataUtil;
+import factorization.util.ItemUtil;
+import factorization.util.PlayerUtil;
 
 public class ItemLeafBomb extends ItemFactorization {
+
     public ItemLeafBomb() {
         super("leafBomb", Core.TabType.TOOLS);
     }
 
     public ItemStack getLeaves(ItemStack stack) {
         if (!stack.hasTagCompound()) return null;
-        return DataUtil.tag2item(stack.getTagCompound().getCompoundTag("leaves"), null);
+        return DataUtil.tag2item(
+            stack.getTagCompound()
+                .getCompoundTag("leaves"),
+            null);
     }
 
     public void setLeaves(ItemStack stack, ItemStack leaves) {
-        ItemUtil.getTag(stack).setTag("leaves", DataUtil.item2tag(leaves));
+        ItemUtil.getTag(stack)
+            .setTag("leaves", DataUtil.item2tag(leaves));
     }
 
     @Override
@@ -61,10 +67,13 @@ public class ItemLeafBomb extends ItemFactorization {
     @Override
     public void getSubItems(Item item, CreativeTabs tab, List list) {
         if (todays_leaves == null) {
-            Random rand = new Random(Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
+            Random rand = new Random(
+                Calendar.getInstance()
+                    .get(Calendar.DAY_OF_WEEK));
             ReservoirSampler<ItemStack> sampler = new ReservoirSampler<ItemStack>(4, rand);
             for (ItemStack is : all) {
-                if (is.getDisplayName().contains(".")) continue;
+                if (is.getDisplayName()
+                    .contains(".")) continue;
                 sampler.give(is);
             }
             todays_leaves = sampler.getSamples();
@@ -96,17 +105,18 @@ public class ItemLeafBomb extends ItemFactorization {
             if (is == null) continue;
             if (!ItemUtil.isWildcard(is, false)) {
                 add(is);
-            } else if (!is.getItem().getHasSubtypes()) {
-                is = is.copy();
-                is.setItemDamage(0);
-                add(is);
-            } else {
-                for (int i = 0; i < 16; i++) {
-                    ItemStack leaf = is.copy();
-                    leaf.setItemDamage(i);
-                    add(leaf);
+            } else if (!is.getItem()
+                .getHasSubtypes()) {
+                    is = is.copy();
+                    is.setItemDamage(0);
+                    add(is);
+                } else {
+                    for (int i = 0; i < 16; i++) {
+                        ItemStack leaf = is.copy();
+                        leaf.setItemDamage(i);
+                        add(leaf);
+                    }
                 }
-            }
         }
 
         for (ItemStack leaf : _leaves) {
@@ -142,6 +152,8 @@ public class ItemLeafBomb extends ItemFactorization {
     protected void addExtraInformation(ItemStack is, EntityPlayer player, List list, boolean verbose) {
         ItemStack leaves = getLeaves(is);
         if (leaves == null) return;
-        list.add(leaves.getItem().getItemStackDisplayName(leaves));
+        list.add(
+            leaves.getItem()
+                .getItemStackDisplayName(leaves));
     }
 }

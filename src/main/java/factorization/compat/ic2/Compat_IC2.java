@@ -1,29 +1,26 @@
 package factorization.compat.ic2;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLInterModComms;
 import factorization.api.IRotationalEnergySource;
 import factorization.compat.CompatBase;
-import factorization.shared.Core;
 import factorization.truth.DocumentationModule;
 import factorization.truth.api.IObjectWriter;
 import factorization.truth.word.ItemWord;
 import ic2.api.recipe.Recipes;
 import ic2.core.AdvRecipe;
 import ic2.core.AdvShapelessRecipe;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class Compat_IC2 extends CompatBase {
+
     List<String> handled = new ArrayList<String>();
 
     @Override
@@ -50,7 +47,10 @@ public class Compat_IC2 extends CompatBase {
             field.setAccessible(true);
             String name = field.getName();
             if (handled.contains(name)) continue;
-            FMLInterModComms.sendMessage(DocumentationModule.modid, "AddRecipeCategory", "fzdoc.ic2.recipe." + name + "|ic2.api.recipe.Recipes|" + name);
+            FMLInterModComms.sendMessage(
+                DocumentationModule.modid,
+                "AddRecipeCategory",
+                "fzdoc.ic2.recipe." + name + "|ic2.api.recipe.Recipes|" + name);
         }
         IObjectWriter.adapter.register(AdvRecipe.class, new WriteShapedRecipe());
         IObjectWriter.adapter.register(AdvShapelessRecipe.class, new WriteShapelessRecipe());
@@ -70,6 +70,7 @@ public class Compat_IC2 extends CompatBase {
     }
 
     private static class WriteShapedRecipe implements IObjectWriter<AdvRecipe> {
+
         @Override
         public void writeObject(List out, AdvRecipe val, IObjectWriter<Object> generic) {
             int mask = val.masks[0];
@@ -88,6 +89,7 @@ public class Compat_IC2 extends CompatBase {
     }
 
     private static class WriteShapelessRecipe implements IObjectWriter<AdvShapelessRecipe> {
+
         @Override
         public void writeObject(List out, AdvShapelessRecipe val, IObjectWriter<Object> generic) {
             out.add("Shapeless: ");

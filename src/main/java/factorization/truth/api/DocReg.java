@@ -1,11 +1,11 @@
 package factorization.truth.api;
 
-import net.minecraft.util.StringUtils;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.TreeMap;
+
+import net.minecraft.util.StringUtils;
 
 public class DocReg {
 
@@ -22,14 +22,15 @@ public class DocReg {
 
     /**
      * @param machineName A localization key for the name of the crafting machine
-     * @param recipeList A list of recipes.
+     * @param recipeList  A list of recipes.
      *
-     * This method can also be invoked via IMC.
-     * Send to mod: "factorization"
-     * MessageType: "AddRecipeCategory"
-     * Format: "category localization key|reference.to.classContainingRecipes|nameOfStaticFieldIterable"
-     * The field's value must either be Iterable or a Map, or it must be an
-     * object with a 'getRecipes' method returning Iterable or Map.
+     *                    This method can also be invoked via IMC.
+     *                    Send to mod: "factorization"
+     *                    MessageType: "AddRecipeCategory"
+     *                    Format: "category localization
+     *                    key|reference.to.classContainingRecipes|nameOfStaticFieldIterable"
+     *                    The field's value must either be Iterable or a Map, or it must be an
+     *                    object with a 'getRecipes' method returning Iterable or Map.
      */
     public static void registerRecipeList(String machineName, Iterable recipeList) {
         customRecipes.put(machineName, recipeList);
@@ -66,7 +67,6 @@ public class DocReg {
      * This object is able to open the book. It may be null, particularly on servers.
      */
     public static IDocModule module;
-
 
     // For internal use only.
     public static final HashMap<String, IDocGenerator> generators = new HashMap<String, IDocGenerator>();

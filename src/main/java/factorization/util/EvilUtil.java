@@ -1,6 +1,7 @@
 package factorization.util;
 
-import factorization.api.Coord;
+import java.util.Random;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -13,7 +14,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-import java.util.Random;
+import factorization.api.Coord;
 
 public class EvilUtil {
 
@@ -96,7 +97,12 @@ public class EvilUtil {
         if (stack == null) return null;
         if (stack.stackSize == 0) return null;
         Random rand = player.worldObj.rand;
-        EntityItem entityitem = new EntityItem(player.worldObj, player.posX, player.posY - 0.30000001192092896D + (double) player.getEyeHeight(), player.posZ, stack);
+        EntityItem entityitem = new EntityItem(
+            player.worldObj,
+            player.posX,
+            player.posY - 0.30000001192092896D + (double) player.getEyeHeight(),
+            player.posZ,
+            stack);
         entityitem.delayBeforeCanPickup = 40;
 
         float f = 0.1F;
@@ -110,8 +116,12 @@ public class EvilUtil {
             entityitem.motionY = 0.20000000298023224D;
         } else {
             f = 0.3F;
-            entityitem.motionX = (double) (-MathHelper.sin(player.rotationYaw / 180.0F * (float) Math.PI) * MathHelper.cos(player.rotationPitch / 180.0F * (float) Math.PI) * f);
-            entityitem.motionZ = (double) (MathHelper.cos(player.rotationYaw / 180.0F * (float) Math.PI) * MathHelper.cos(player.rotationPitch / 180.0F * (float) Math.PI) * f);
+            entityitem.motionX = (double) (-MathHelper.sin(player.rotationYaw / 180.0F * (float) Math.PI)
+                * MathHelper.cos(player.rotationPitch / 180.0F * (float) Math.PI)
+                * f);
+            entityitem.motionZ = (double) (MathHelper.cos(player.rotationYaw / 180.0F * (float) Math.PI)
+                * MathHelper.cos(player.rotationPitch / 180.0F * (float) Math.PI)
+                * f);
             entityitem.motionY = (double) (-MathHelper.sin(player.rotationPitch / 180.0F * (float) Math.PI) * f + 0.1F);
             f = 0.02F;
             f1 = rand.nextFloat() * (float) Math.PI * 2.0F;

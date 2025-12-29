@@ -1,17 +1,19 @@
 package factorization.misc;
 
-import com.google.common.base.Joiner;
-import cpw.mods.fml.client.GuiModList;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.aabbdebug.AabbDebugger;
-import factorization.api.Coord;
-import factorization.common.FzConfig;
-import factorization.notify.Notice;
-import factorization.notify.Style;
-import factorization.shared.Core;
-import factorization.util.FzUtil;
-import factorization.util.RenderUtil;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
+import java.nio.IntBuffer;
+import java.text.DateFormat;
+import java.util.*;
+
+import javax.imageio.ImageIO;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.client.renderer.Tessellator;
@@ -33,31 +35,35 @@ import net.minecraft.util.StringUtils;
 import net.minecraft.world.IWorldAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import java.lang.reflect.Method;
-import java.nio.IntBuffer;
-import java.text.DateFormat;
-import java.util.*;
+import com.google.common.base.Joiner;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import cpw.mods.fml.client.GuiModList;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.aabbdebug.AabbDebugger;
+import factorization.api.Coord;
+import factorization.common.FzConfig;
+import factorization.notify.Notice;
+import factorization.notify.Style;
+import factorization.shared.Core;
+import factorization.util.FzUtil;
+import factorization.util.RenderUtil;
 
 public class MiscClientCommands implements ICommand {
+
     static final Minecraft mc = Minecraft.getMinecraft();
     static int queued_action = 0;
     static int queue_delay = 0;
     static final int SHOW_MODS_LIST = 1, CLEAR_CHAT = 2;
-    
+
     public int compareTo(ICommand other) {
-        return this.getCommandName().compareTo(other.getCommandName());
+        return this.getCommandName()
+            .compareTo(other.getCommandName());
     }
 
     @Override
@@ -80,58 +86,59 @@ public class MiscClientCommands implements ICommand {
         return true;
     }
 
-    
     @Override
     public boolean isUsernameIndex(String[] astring, int i) {
         return false;
     }
-    
-    
-    
-    
+
     @Retention(value = RUNTIME)
     @Target(value = METHOD)
     static @interface alias {
+
         public String[] value();
     }
-    
+
     @Retention(value = RUNTIME)
     @Target(value = METHOD)
-    static @interface sketchy { }
-    
+    static @interface sketchy {}
+
     @Retention(value = RUNTIME)
     @Target(value = METHOD)
-    static @interface cheaty { }
-    
+    static @interface cheaty {}
+
     @Retention(value = RUNTIME)
     @Target(value = METHOD)
     static @interface help {
+
         public String value();
     }
-    
+
     public static class miscCommands {
+
         static EntityClientPlayerMP player;
         static String arg0, arg1;
         static List<String> args;
-        
-        @alias({"date", "time"})
+
+        @alias({ "date", "time" })
         @help("Show the real-world time. Notes can be added.")
         public static String now() {
             DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT);
             String ret = "[" + df.format(new Date()) + "]";
             args.remove(0);
             if (!args.isEmpty()) {
-                ret += " " + Joiner.on(" ").join(args);
+                ret += " " + Joiner.on(" ")
+                    .join(args);
             }
             return ret;
         }
-        
-        @alias({"help", "?"})
+
+        @alias({ "help", "?" })
         public static void about() {
-            player.addChatMessage(new ChatComponentText("Miscellaneous Client Commands; from Factorization, by neptunepink"));
+            player.addChatMessage(
+                new ChatComponentText("Miscellaneous Client Commands; from Factorization, by neptunepink"));
             player.addChatMessage(new ChatComponentText("Use /" + FzConfig.f + " list go see the sub-commands."));
         }
-        
+
         @help("Lists available subcommands. Can also search the list.")
         public static void list() {
             String em = "" + EnumChatFormatting.GREEN;
@@ -139,7 +146,7 @@ public class MiscClientCommands implements ICommand {
                 if (!commandAllowed(method)) {
                     continue;
                 }
-                
+
                 String msg = em + method.getName() + EnumChatFormatting.RESET;
                 alias a = method.getAnnotation(alias.class);
                 if (a != null) {
@@ -163,7 +170,7 @@ public class MiscClientCommands implements ICommand {
             }
             String msg = "";
             boolean first = true;
-            for (String v : new String[] {"0", "1", "2", "3", "4", "+", "-"}) {
+            for (String v : new String[] { "0", "1", "2", "3", "4", "+", "-" }) {
                 if (!first) {
                     msg += ", ";
                 }
@@ -175,14 +182,14 @@ public class MiscClientCommands implements ICommand {
                 player.addChatMessage(new ChatComponentText(msg));
             }
         }
-        
-        @alias({"cl"})
+
+        @alias({ "cl" })
         @help("Erases the chat window")
         public static void clear() {
             queued_action = CLEAR_CHAT;
             queue_delay = 10;
         }
-        
+
         @sketchy
         @help("Reveals your coordinates in-chat")
         public static void saycoords() {
@@ -193,19 +200,25 @@ public class MiscClientCommands implements ICommand {
                     append += args.get(i) + " ";
                 }
             }
-            player.sendChatMessage("/me is at " + ((int) player.posX) + ", "
-                    + ((int) player.posY) + ", " + ((int) player.posZ) + " in dimension "
-                    + player.worldObj.provider.dimensionId + append);
+            player.sendChatMessage(
+                "/me is at " + ((int) player.posX)
+                    + ", "
+                    + ((int) player.posY)
+                    + ", "
+                    + ((int) player.posZ)
+                    + " in dimension "
+                    + player.worldObj.provider.dimensionId
+                    + append);
         }
-        
-        @alias({"ss"})
+
+        @alias({ "ss" })
         @help("Saves game settings. (Vanilla seems to need help with this.)")
         public static String savesettings() {
             mc.gameSettings.saveOptions();
             return "Saved settings";
         }
-        
-        @alias({"render_everything_lagfest"})
+
+        @alias({ "render_everything_lagfest" })
         @help("Render a ton of terrain at once (may lock your game up for a while)")
         public static void render_above() {
             WorldRenderer[] lizt = mc.renderGlobal.sortedWorldRenderers;
@@ -215,7 +228,7 @@ public class MiscClientCommands implements ICommand {
             for (WorldRenderer wr : lizt) {
                 total++;
                 if (wr.needsUpdate) {
-                    if (wr.posY - 16*3 > mc.thePlayer.posY && wr.posY < mc.thePlayer.posY + 16*8 || lagfest) {
+                    if (wr.posY - 16 * 3 > mc.thePlayer.posY && wr.posY < mc.thePlayer.posY + 16 * 8 || lagfest) {
                         wr.updateRenderer(mc.thePlayer);
                         wr.needsUpdate = false;
                         did++;
@@ -224,45 +237,45 @@ public class MiscClientCommands implements ICommand {
             }
             player.addChatMessage(new ChatComponentText("Rendered " + did + " chunks out of " + total));
         }
-        
+
         @alias("c")
         @help("Switch between creative and survival mode")
         public static void creative() {
-            //Not sketchy since you wouldn't be able to run it anyways.
+            // Not sketchy since you wouldn't be able to run it anyways.
             player.sendChatMessage("/gamemode " + (player.capabilities.isCreativeMode ? 0 : 1));
         }
-        
-        @alias({"n", "makenice"})
+
+        @alias({ "n", "makenice" })
         @help("Makes it a sunny morning")
         public static void nice() {
             if (player.worldObj.isRaining()) {
                 player.sendChatMessage("/weather clear");
             }
             double angle = player.worldObj.getCelestialAngle(0) % 360;
-            if (angle < 45 || angle > 90+45) {
-                player.sendChatMessage("/time set " + 20*60);
+            if (angle < 45 || angle > 90 + 45) {
+                player.sendChatMessage("/time set " + 20 * 60);
             }
             clear();
         }
 
         @help("Makes it day")
         public static void day() {
-            player.sendChatMessage("/time set " + 20*60);
+            player.sendChatMessage("/time set " + 20 * 60);
         }
 
         @help("Makes it night")
         public static void night() {
             player.sendChatMessage("/time set 18000");
         }
-        
+
         @help("Shows the mods screen")
         @SideOnly(Side.CLIENT)
         public static void mods() {
             queued_action = SHOW_MODS_LIST;
         }
-        
+
         @cheaty
-        @alias({"neo", "deneo", "deninja"})
+        @alias({ "neo", "deneo", "deninja" })
         @help("Makes the world run slowly (single-player client-side only). Can specify custom timerSpeed.")
         public static String ninja() {
             if (mc.isSingleplayer()) {
@@ -288,20 +301,20 @@ public class MiscClientCommands implements ICommand {
             }
             return null;
         }
-        
+
         @help("Sets the watchdog waitInterval")
         public static String watchdog() {
             if (LagssieWatchDog.instance == null) {
                 return "Watchdog disabled. Enable in config, or use /" + FzConfig.f + " startwatchdog";
             }
-            
+
             if (arg1 == null) {
                 return "Usage: /" + FzConfig.f + " watchdog [waitInterval=" + LagssieWatchDog.instance.sleep_time + "]";
             }
             LagssieWatchDog.instance.sleep_time = Double.parseDouble(arg1);
             return "Set waitInterval to " + LagssieWatchDog.instance.sleep_time;
         }
-        
+
         @help("Starts the watchdog")
         public static String startwatchdog() {
             if (LagssieWatchDog.instance == null) {
@@ -312,8 +325,8 @@ public class MiscClientCommands implements ICommand {
                 return "Watchdog already running.";
             }
         }
-        
-        @alias({"td"})
+
+        @alias({ "td" })
         @help("Sets the minimum time dilation (between 0.1 and 1), or disables it (0)")
         public static String timedilation() {
             if (arg1 == null) {
@@ -339,7 +352,7 @@ public class MiscClientCommands implements ICommand {
                 return "Set minimum time dilation to " + dilation;
             }
         }
-        
+
         @cheaty
         @help("Saves terrain to a 3D model. Slow! Watch the console. /f exportWorld [radius] --ply --obj --player-origin --world-origin")
         public static String exportWorld() {
@@ -367,7 +380,7 @@ public class MiscClientCommands implements ICommand {
                 }
             }
             File output = new File("./worldExport." + (use_ply ? "ply" : "obj"));
-            
+
             try {
                 ExporterTessellatorObj ex_obj = null;
                 ExporterTessellatorPly ex_ply = null;
@@ -384,18 +397,21 @@ public class MiscClientCommands implements ICommand {
                     double dx = wr.posX - px;
                     double dy = wr.posY - py;
                     double dz = wr.posZ - pz;
-                    /*if (at_player) {
-                        Tessellator.instance.setTranslation(dx, dy, dz);
-                    } else {
-                        Tessellator.instance.setTranslation(wr.posX, wr.posY, wr.posZ);
-                    }*/
+                    /*
+                     * if (at_player) {
+                     * Tessellator.instance.setTranslation(dx, dy, dz);
+                     * } else {
+                     * Tessellator.instance.setTranslation(wr.posX, wr.posY, wr.posZ);
+                     * }
+                     */
                     Tessellator.instance.setTranslation(0, 0, 0);
-                    double dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                    double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
                     if (dist > maxDist) {
                         skipped++;
                         continue;
                     }
-                    System.out.println("Writing chunk " + i + "/" + total + " at " + wr.posX + " " + wr.posY + " " + wr.posZ);
+                    System.out
+                        .println("Writing chunk " + i + "/" + total + " at " + wr.posX + " " + wr.posY + " " + wr.posZ);
                     wr.markDirty();
                     wr.updateRenderer(mc.thePlayer);
                 }
@@ -410,7 +426,7 @@ public class MiscClientCommands implements ICommand {
             }
             return "Done!";
         }
-        
+
         @cheaty
         @help("Re-renders the chunk as a wireframe")
         public static String wireframe() {
@@ -418,8 +434,10 @@ public class MiscClientCommands implements ICommand {
             double px = mc.thePlayer.posX, py = mc.thePlayer.posY, pz = mc.thePlayer.posZ;
             for (WorldRenderer wr : lizt) {
                 if (wr.posXMinus < px && px < wr.posXPlus
-                        && wr.posYMinus < py && py < wr.posYPlus
-                        && wr.posZMinus < pz && pz < wr.posZPlus) {
+                    && wr.posYMinus < py
+                    && py < wr.posYPlus
+                    && wr.posZMinus < pz
+                    && pz < wr.posZPlus) {
                     Tessellator real_tess = Tessellator.instance;
                     Tessellator.instance = new WireframeTessellator();
                     wr.markDirty();
@@ -430,8 +448,9 @@ public class MiscClientCommands implements ICommand {
             }
             return "You aren't in a rendering chunk. Remarkable.";
         }
-        
+
         static Tessellator orig = null;
+
         @cheaty
         @help("Render all the things with a wireframe")
         public static String wireframeGlobal() {
@@ -445,9 +464,9 @@ public class MiscClientCommands implements ICommand {
                 return "Restored normal Tessellator";
             }
         }
-        
+
         static Map backup = null, empty = new HashMap();
-        
+
         @help("Disable or enable TileEntity special renderers")
         public static String tesrtoggle() {
             if (backup == null) {
@@ -464,19 +483,19 @@ public class MiscClientCommands implements ICommand {
                 return "TESRs enabled; requires chunk update to restart drawing";
             }
         }
-        
+
         @help("Change how large servo instructions are rendered. (This also has a config option.)")
         public static String servoInstructionSize() {
             FzConfig.large_servo_instructions = !FzConfig.large_servo_instructions;
             return "Servo instruction size toggled; requires a chunk update to redraw.";
         }
-        
+
         @help("Sets doDaylightCycle, doMobSpawning, weather, time")
         public static void setupSterileTestWorld() {
             player.sendChatMessage("/gamerule doDaylightCycle false");
             player.sendChatMessage("/gamerule doMobSpawning false");
             player.sendChatMessage("/weather clear 999999");
-            player.sendChatMessage("/time set " + 20*60);
+            player.sendChatMessage("/time set " + 20 * 60);
             MinecraftServer ms = MinecraftServer.getServer();
             if (ms == null) {
                 return;
@@ -494,7 +513,7 @@ public class MiscClientCommands implements ICommand {
                 }
             }
         }
-        
+
         @help("Pass an /f command to the server (for Factions; but see FZ's config)")
         @alias("/f")
         public static void factions() {
@@ -510,7 +529,7 @@ public class MiscClientCommands implements ICommand {
             }
             player.sendChatMessage(cmd);
         }
-        
+
         @help("Copy the unlocalized name of the held item to the clipboard")
         public static String copylocalkey() {
             ItemStack is = mc.thePlayer.getHeldItem();
@@ -538,7 +557,7 @@ public class MiscClientCommands implements ICommand {
             FzUtil.copyStringToClipboard(name);
             return "Copied to clipboard: " + name;
         }
-        
+
         @help("Marks nearby fake air blocks")
         public static void checkFakeAir() {
             Coord at = new Coord(mc.thePlayer);
@@ -548,7 +567,8 @@ public class MiscClientCommands implements ICommand {
                     for (int dx = -d; dx <= d; dx++) {
                         Coord here = at.add(dx, dy, dz);
                         if (here.isAir() && here.getBlock() != Blocks.air) {
-                            new Notice(here, "X").withStyle(Style.FORCE).send(mc.thePlayer);
+                            new Notice(here, "X").withStyle(Style.FORCE)
+                                .send(mc.thePlayer);
                         }
                     }
                 }
@@ -575,7 +595,18 @@ public class MiscClientCommands implements ICommand {
                 }
                 rng = new Random(seed);
             }
-            return pick(coin, rng) + " " + pick(dirs, rng) + " " + pick(blocks, rng, 8) + " " + pick(rng, woods) + " " + rng.nextFloat() + " " + pick(iching, rng) + " " + pick(rng, tc4);
+            return pick(coin, rng) + " "
+                + pick(dirs, rng)
+                + " "
+                + pick(blocks, rng, 8)
+                + " "
+                + pick(rng, woods)
+                + " "
+                + rng.nextFloat()
+                + " "
+                + pick(iching, rng)
+                + " "
+                + pick(rng, tc4);
         }
 
         private static String pick(String s, Random rng) {
@@ -594,7 +625,7 @@ public class MiscClientCommands implements ICommand {
         private static String pick(Random rng, String... args) {
             return args[rng.nextInt(args.length)];
         }
-        
+
         @help("Temp-fix for the entity interaction bug")
         public static String mc2713() {
             int failed = 0;
@@ -613,8 +644,6 @@ public class MiscClientCommands implements ICommand {
             return "Fixed " + failed + " entities";
         }
 
-
-        
         @help("Turns your cape on or off")
         public static void cape() {
             mc.gameSettings.showCape ^= true;
@@ -653,11 +682,12 @@ public class MiscClientCommands implements ICommand {
         }
 
         private static void doSave(ResourceLocation texture, String filename) {
-            mc.getTextureManager().bindTexture(texture);
+            mc.getTextureManager()
+                .bindTexture(texture);
             RenderUtil.checkGLError("Before save texture");
             int width = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH);
             int height = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
-            //int format = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_INTERNAL_FORMAT);
+            // int format = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_INTERNAL_FORMAT);
             int bufferSize = width * height;
             RenderUtil.checkGLError("After get texture info");
             IntBuffer pixelBuffer = BufferUtils.createIntBuffer(bufferSize);
@@ -679,20 +709,20 @@ public class MiscClientCommands implements ICommand {
         }
 
         /*
-        @help("Change the FOV")
-        public static String fov() {
-            // 70 + fov*40
-            float origFov = 70F + mc.gameSettings.fovSetting*40F;
-            float fov = Float.parseFloat(arg1);
-            mc.gameSettings.fovSetting = (fov - 70F)/40F;
-            return "FOV changed: " + origFov + " -> " + fov;
-        }
-        */
-        
+         * @help("Change the FOV")
+         * public static String fov() {
+         * // 70 + fov*40
+         * float origFov = 70F + mc.gameSettings.fovSetting*40F;
+         * float fov = Float.parseFloat(arg1);
+         * mc.gameSettings.fovSetting = (fov - 70F)/40F;
+         * return "FOV changed: " + origFov + " -> " + fov;
+         * }
+         */
+
         // Remember to include 'public static' for anything added here.
         // And also to put the command in this nested class, not the wrong one. :P
     }
-    
+
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
         if (args == null || args.length == 0) {
@@ -705,12 +735,12 @@ public class MiscClientCommands implements ICommand {
         }
         runCommand(better);
     }
-    
+
     @Override
     public String getCommandUsage(ICommandSender icommandsender) {
         return "/" + FzConfig.f + " <subcommand, such as 'help' or 'list'>";
     }
-    
+
     @Override
     public List addTabCompletionOptions(ICommandSender sender, String[] args) {
         try {
@@ -731,7 +761,7 @@ public class MiscClientCommands implements ICommand {
                         availCommands.add(name);
                     }
                 }
-                
+
                 List<String> ret = new LinkedList();
                 for (String name : availCommands) {
                     if (name.startsWith(arg0)) {
@@ -747,7 +777,7 @@ public class MiscClientCommands implements ICommand {
         }
         return new LinkedList();
     }
-    
+
     void runCommand(List<String> args) {
         try {
             if (args == null) {
@@ -791,7 +821,8 @@ public class MiscClientCommands implements ICommand {
                 if (method.getDeclaringClass() == Object.class || method.getParameterTypes().length != 0) {
                     continue;
                 }
-                if (method.getName().equals(n)) {
+                if (method.getName()
+                    .equals(n)) {
                     tryCall(method, args);
                     return;
                 }
@@ -812,9 +843,11 @@ public class MiscClientCommands implements ICommand {
             e.printStackTrace();
         }
     }
-    
+
     private void addBugReport(List<String> args) {
-        String msg = "[" + Calendar.getInstance().getTime().toString() + "]";
+        String msg = "[" + Calendar.getInstance()
+            .getTime()
+            .toString() + "]";
         for (String arg : args) {
             if (arg == args.get(0)) continue;
             msg += " " + arg;
@@ -830,7 +863,7 @@ public class MiscClientCommands implements ICommand {
             t.printStackTrace();
         }
     }
-    
+
     static boolean commandAllowed(Method method) {
         if (method.getDeclaringClass() == Object.class || method.getParameterTypes().length != 0) {
             return false;
@@ -847,7 +880,7 @@ public class MiscClientCommands implements ICommand {
         }
         return true;
     }
-    
+
     void tryCall(Method method, List<String> args) {
         if (!commandAllowed(method)) {
             mc.thePlayer.addChatMessage(new ChatComponentText("That command is disabled"));
@@ -860,7 +893,7 @@ public class MiscClientCommands implements ICommand {
                 miscCommands.arg1 = args.get(1);
             }
             miscCommands.args = args;
-            
+
             Object ret = method.invoke(null);
             if (ret != null) {
                 mc.thePlayer.addChatMessage(new ChatComponentText(ret.toString()));
@@ -873,7 +906,7 @@ public class MiscClientCommands implements ICommand {
             miscCommands.arg0 = miscCommands.arg1 = null;
         }
     }
-    
+
     static void tick() {
         if (queued_action == 0) {
             return;
@@ -883,16 +916,22 @@ public class MiscClientCommands implements ICommand {
             return;
         }
         switch (queued_action) {
-        case CLEAR_CHAT:
-            List cp = new ArrayList();
-            cp.addAll(mc.ingameGUI.getChatGUI().getSentMessages());
-            mc.ingameGUI.getChatGUI().clearChatMessages(); 
-            mc.ingameGUI.getChatGUI().getSentMessages().addAll(cp);
-            new Notice(mc.thePlayer, "").withStyle(Style.CLEAR).send(mc.thePlayer);
-            break;
-        case SHOW_MODS_LIST:
-            mc.displayGuiScreen(new GuiModList(null));
-            break;
+            case CLEAR_CHAT:
+                List cp = new ArrayList();
+                cp.addAll(
+                    mc.ingameGUI.getChatGUI()
+                        .getSentMessages());
+                mc.ingameGUI.getChatGUI()
+                    .clearChatMessages();
+                mc.ingameGUI.getChatGUI()
+                    .getSentMessages()
+                    .addAll(cp);
+                new Notice(mc.thePlayer, "").withStyle(Style.CLEAR)
+                    .send(mc.thePlayer);
+                break;
+            case SHOW_MODS_LIST:
+                mc.displayGuiScreen(new GuiModList(null));
+                break;
         }
         queued_action = 0;
     }

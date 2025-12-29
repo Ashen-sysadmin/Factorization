@@ -5,17 +5,19 @@ import java.util.*;
 /**
  * Ascribes an interface to a type that might not actually implement it.
  * The implementation's a bit hairy; @see AdapterExample for a warm & fuzzy example.
+ * 
  * @param <SOURCE> The input type
  * @param <TARGET> The class that the type shall be cast to.
  */
 @SuppressWarnings("unused")
 public class InterfaceAdapter<SOURCE, TARGET> implements Comparator<Adapter>, Adapter<SOURCE, TARGET> {
+
     public final Class<TARGET> targetInterface;
 
     /**
      * @param targetInterface The class object of the interface that will be adapted.
-     * @param <S> The adaption source
-     * @param <T> The adaption target, and class of {@code targetInterface}.
+     * @param <S>             The adaption source
+     * @param <T>             The adaption target, and class of {@code targetInterface}.
      * @return a globally shared InterfaceAdapter associated with the interface.
      */
     public static <S, T> InterfaceAdapter<S, T> get(Class<T> targetInterface) {
@@ -32,8 +34,8 @@ public class InterfaceAdapter<SOURCE, TARGET> implements Comparator<Adapter>, Ad
 
     /**
      * @param targetInterface The class object of the interface that will be adapted.
-     * @param <S> The adaption source
-     * @param <T> The adaption target, and class of {@code targetInterface}.
+     * @param <S>             The adaption source
+     * @param <T>             The adaption target, and class of {@code targetInterface}.
      * @return an anonymous adapter
      */
     public static <S, T> InterfaceAdapter<S, T> getExtra(Class<T> targetInterface) {
@@ -41,8 +43,10 @@ public class InterfaceAdapter<SOURCE, TARGET> implements Comparator<Adapter>, Ad
     }
 
     /**
-     * Helper method for registering for use in situations where the interface does not rely on 'TARGET.this', such as Block.
-     * @param inClass the class used for outInterface
+     * Helper method for registering for use in situations where the interface does not rely on 'TARGET.this', such as
+     * Block.
+     * 
+     * @param inClass      the class used for outInterface
      * @param outInterface the value that will be returned by cast() if the input is of type inClass.
      */
     public <OBJ extends SOURCE> void register(Class<OBJ> inClass, TARGET outInterface) {
@@ -52,10 +56,12 @@ public class InterfaceAdapter<SOURCE, TARGET> implements Comparator<Adapter>, Ad
 
     /**
      * Registers an adapter.
+     * 
      * @param adapter The adapter to register
      * @return this
      */
-    public <REGISTERED_SOURCE extends SOURCE> InterfaceAdapter<SOURCE, TARGET> register(Adapter<REGISTERED_SOURCE, TARGET> adapter) {
+    public <REGISTERED_SOURCE extends SOURCE> InterfaceAdapter<SOURCE, TARGET> register(
+        Adapter<REGISTERED_SOURCE, TARGET> adapter) {
         adapters.add(adapter);
         adapterCache.clear();
         return this;
@@ -136,7 +142,9 @@ public class InterfaceAdapter<SOURCE, TARGET> implements Comparator<Adapter>, Ad
     private Adapter<? extends SOURCE, TARGET> fallbackAdapter = (Adapter<? extends SOURCE, TARGET>) nullAdapter;
     private static final HashMap<Class, InterfaceAdapter> common_adapters = new HashMap<Class, InterfaceAdapter>();
 
-    private static final Adapter<?, ?> nullAdapter = new GenericAdapter<Object, Object>(null /* rely on canCast() not being called */, null);
+    private static final Adapter<?, ?> nullAdapter = new GenericAdapter<Object, Object>(
+        null /* rely on canCast() not being called */,
+        null);
 
     // Comparator implementation; fewer classes! :D
     @Override

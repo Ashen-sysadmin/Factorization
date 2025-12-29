@@ -1,18 +1,20 @@
 package factorization.beauty;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
+
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+
 import factorization.common.BlockIcons;
 import factorization.shared.Core;
 import factorization.shared.ObjectModel;
 import factorization.util.NumUtil;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 public class TileEntityShaftRenderer extends TileEntitySpecialRenderer {
+
     public static ObjectModel shaftModel = new ObjectModel(new ResourceLocation("factorization", "models/shaft.obj"));
 
     @Override
@@ -20,7 +22,9 @@ public class TileEntityShaftRenderer extends TileEntitySpecialRenderer {
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glPushAttrib(GL11.GL_TRANSFORM_BIT);
         GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-        Minecraft.getMinecraft().getTextureManager().bindTexture(Core.blockAtlas);
+        Minecraft.getMinecraft()
+            .getTextureManager()
+            .bindTexture(Core.blockAtlas);
         GL11.glPushMatrix();
         GL11.glTranslated(dx + 0.5, dy + 0.5, dz + 0.5);
         TileEntityShaft shaft = (TileEntityShaft) te;

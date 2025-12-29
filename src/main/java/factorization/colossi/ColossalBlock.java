@@ -5,12 +5,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-import factorization.citizen.EntityCitizen;
-import factorization.servo.ItemMatrixProgrammer;
-import factorization.util.FzUtil;
-import factorization.util.PlayerUtil;
-import factorization.weird.poster.EntityPoster;
-import factorization.weird.poster.ItemSpawnPoster;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
@@ -27,21 +21,28 @@ import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ChestGenHooks;
-import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
+import factorization.citizen.EntityCitizen;
 import factorization.common.BlockIcons;
 import factorization.fzds.DeltaChunk;
 import factorization.fzds.TransferLib;
 import factorization.fzds.interfaces.IDeltaChunk;
 import factorization.oreprocessing.ItemOreProcessing;
+import factorization.servo.ItemMatrixProgrammer;
 import factorization.shared.Core;
 import factorization.shared.Core.TabType;
+import factorization.util.PlayerUtil;
+import factorization.weird.poster.EntityPoster;
+import factorization.weird.poster.ItemSpawnPoster;
 
 public class ColossalBlock extends Block {
-    static final byte MD_MASK = 0, MD_BODY = 4, MD_BODY_CRACKED = 1, MD_ARM = 2, MD_LEG = 3, MD_EYE = 5, MD_CORE = 6, MD_EYE_OPEN = 7, MD_BODY_COVERED = 8, MD_MASK_CRACKED = 9;
+
+    static final byte MD_MASK = 0, MD_BODY = 4, MD_BODY_CRACKED = 1, MD_ARM = 2, MD_LEG = 3, MD_EYE = 5, MD_CORE = 6,
+        MD_EYE_OPEN = 7, MD_BODY_COVERED = 8, MD_MASK_CRACKED = 9;
 
     static Material collosal_material = new Material(MapColor.purpleColor);
 
@@ -59,28 +60,37 @@ public class ColossalBlock extends Block {
         Core.tab(this, TabType.BLOCKS);
         DeltaChunk.assertEnabled();
     }
-    
 
     @Override
     public IIcon getIcon(int side, int md) {
         switch (md) {
-        case MD_BODY: return BlockIcons.colossi$body;
-        case MD_BODY_COVERED: return BlockIcons.colossi$body;
-        case MD_BODY_CRACKED: return BlockIcons.colossi$body_cracked;
-        case MD_ARM: return BlockIcons.colossi$arm_side; // Item-only
-        case MD_LEG: return BlockIcons.colossi$leg;
-        case MD_MASK: return BlockIcons.colossi$mask;
-        case MD_MASK_CRACKED: return BlockIcons.colossi$mask_cracked;
-        case MD_EYE: return BlockIcons.colossi$eye; // Item-only
-        case MD_CORE: {
-            if (side == EAST) return BlockIcons.colossi$core;
-            return BlockIcons.colossi$core_back;
-        }
-        case MD_EYE_OPEN: return BlockIcons.colossi$eye_open;
-        default: return super.getIcon(side, md);
+            case MD_BODY:
+                return BlockIcons.colossi$body;
+            case MD_BODY_COVERED:
+                return BlockIcons.colossi$body;
+            case MD_BODY_CRACKED:
+                return BlockIcons.colossi$body_cracked;
+            case MD_ARM:
+                return BlockIcons.colossi$arm_side; // Item-only
+            case MD_LEG:
+                return BlockIcons.colossi$leg;
+            case MD_MASK:
+                return BlockIcons.colossi$mask;
+            case MD_MASK_CRACKED:
+                return BlockIcons.colossi$mask_cracked;
+            case MD_EYE:
+                return BlockIcons.colossi$eye; // Item-only
+            case MD_CORE: {
+                if (side == EAST) return BlockIcons.colossi$core;
+                return BlockIcons.colossi$core_back;
+            }
+            case MD_EYE_OPEN:
+                return BlockIcons.colossi$eye_open;
+            default:
+                return super.getIcon(side, md);
         }
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(IBlockAccess w, int x, int y, int z, int side) {
@@ -108,7 +118,7 @@ public class ColossalBlock extends Block {
         }
         return getIcon(side, md);
     }
-    
+
     @Override
     public float getBlockHardness(World world, int x, int y, int z) {
         int md = world.getBlockMetadata(x, y, z);
@@ -125,16 +135,16 @@ public class ColossalBlock extends Block {
         }
         return super.getBlockHardness(world, x, y, z);
     }
-    
+
     boolean isSupportive(World world, int x, int y, int z) {
         if (world.getBlock(x, y, z) != this) return false;
         int md = world.getBlockMetadata(x, y, z);
         return md == MD_BODY || md == MD_BODY_COVERED || md == MD_EYE || md == MD_EYE_OPEN || md == MD_CORE;
     }
-    
+
     @Override
-    public void registerBlockIcons(IIconRegister iconRegistry) { }
-    
+    public void registerBlockIcons(IIconRegister iconRegistry) {}
+
     @Override
     public void getSubBlocks(Item item, CreativeTabs tab, List list) {
         for (byte md = MD_MASK; md <= MD_MASK_CRACKED; md++) {
@@ -142,21 +152,29 @@ public class ColossalBlock extends Block {
             list.add(new ItemStack(this, 1, md));
         }
     }
-    
+
     ChestGenHooks fractureChest = new ChestGenHooks("factorization:colossalFracture");
     boolean setup = false;
+
     ChestGenHooks getChest() {
         if (setup) return fractureChest;
         setup = true;
         // No LMP: only the core drops the LMP.
-        fractureChest.addItem(new WeightedRandomChestContent(new ItemStack(Core.registry.logicMatrixIdentifier), 1, 1, 6));
-        fractureChest.addItem(new WeightedRandomChestContent(new ItemStack(Core.registry.logicMatrixController), 1, 1, 6));
-        fractureChest.addItem(new WeightedRandomChestContent(new ItemStack(Core.registry.ore_crystal, 1, ItemOreProcessing.OreType.DARKIRON.ID), 1, 2, 12));
+        fractureChest
+            .addItem(new WeightedRandomChestContent(new ItemStack(Core.registry.logicMatrixIdentifier), 1, 1, 6));
+        fractureChest
+            .addItem(new WeightedRandomChestContent(new ItemStack(Core.registry.logicMatrixController), 1, 1, 6));
+        fractureChest.addItem(
+            new WeightedRandomChestContent(
+                new ItemStack(Core.registry.ore_crystal, 1, ItemOreProcessing.OreType.DARKIRON.ID),
+                1,
+                2,
+                12));
         fractureChest.addItem(new WeightedRandomChestContent(Core.registry.dark_iron_sprocket.copy(), 2, 4, 1));
 
         return fractureChest;
     }
-    
+
     @Override
     public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int md, int fortune) {
         ArrayList<ItemStack> ret = new ArrayList();
@@ -183,65 +201,69 @@ public class ColossalBlock extends Block {
         }
         return ret;
     }
-    
+
     @Override
     public void randomDisplayTick(World world, int x, int y, int z, Random rand) {
         if (world.provider.dimensionId != DeltaChunk.getDimensionId()) return;
         int md = world.getBlockMetadata(x, y, z);
         int r = md == MD_BODY_CRACKED ? 4 : 2;
-        float px = x - 0.5F + rand.nextFloat()*r;
-        float py = y - 0.5F + rand.nextFloat()*r;
-        float pz = z - 0.5F + rand.nextFloat()*r;
+        float px = x - 0.5F + rand.nextFloat() * r;
+        float py = y - 0.5F + rand.nextFloat() * r;
+        float pz = z - 0.5F + rand.nextFloat() * r;
         switch (md) {
-        case MD_BODY_CRACKED:
-        case MD_MASK_CRACKED:
-            world.spawnParticle("flame", px, py, pz, 0, 0, 0);
-            break;
-        case MD_CORE:
-            world.spawnParticle("reddust", px, py, pz, 0, 0, 0);
-            break;
-        case MD_BODY:
-        case MD_BODY_COVERED:
-            if (rand.nextInt(256) == 0) {
-                world.spawnParticle("explode", px, py, pz, 0, 0, 0);
-            }
-            break;
-        case MD_MASK:
-        case MD_EYE:
-        case MD_EYE_OPEN:
-            world.spawnParticle("depthsuspend", px, py, pz, 0, 0, 0);
-            break;
-        default:
-        case MD_ARM:
-        case MD_LEG:
-            break;
-        } 
+            case MD_BODY_CRACKED:
+            case MD_MASK_CRACKED:
+                world.spawnParticle("flame", px, py, pz, 0, 0, 0);
+                break;
+            case MD_CORE:
+                world.spawnParticle("reddust", px, py, pz, 0, 0, 0);
+                break;
+            case MD_BODY:
+            case MD_BODY_COVERED:
+                if (rand.nextInt(256) == 0) {
+                    world.spawnParticle("explode", px, py, pz, 0, 0, 0);
+                }
+                break;
+            case MD_MASK:
+            case MD_EYE:
+            case MD_EYE_OPEN:
+                world.spawnParticle("depthsuspend", px, py, pz, 0, 0, 0);
+                break;
+            default:
+            case MD_ARM:
+            case MD_LEG:
+                break;
+        }
     }
-    
+
     @SuppressWarnings("deprecation")
     @Override
     public ItemStack getPickBlock(MovingObjectPosition target, World world, int x, int y, int z) {
         return new ItemStack(this, 1, world.getBlockMetadata(x, y, z));
     }
-    
+
     @Override
-    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float vecX, float vecY, float vecZ) {
+    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float vecX,
+        float vecY, float vecZ) {
         if (world.isRemote) return false;
         if (player == null) return false;
         Coord at = new Coord(world, x, y, z);
         ItemStack held = player.getHeldItem();
         int md = at.getMd();
         if (md != MD_CORE) return false;
-        /*if (held != null && held.getItem() == Core.registry.logicMatrixProgrammer && world == DeltaChunk.getServerShadowWorld()) {
-            if (Core.registry.logicMatrixProgrammer.isAuthenticated(held)) return true;
-            EntityPlayer realPlayer = DeltaChunk.getRealPlayer(player);
-            if (realPlayer instanceof FakePlayer || realPlayer == null) {
-                return true;
-            }
-            if (realPlayer.worldObj == world) return true;
-            return giveUserAuthentication(held, realPlayer, at);
-            NORELEASE.fixme("Wither test: player should be able to survive a wither while grabbed by a citizen");
-        }*/
+        /*
+         * if (held != null && held.getItem() == Core.registry.logicMatrixProgrammer && world ==
+         * DeltaChunk.getServerShadowWorld()) {
+         * if (Core.registry.logicMatrixProgrammer.isAuthenticated(held)) return true;
+         * EntityPlayer realPlayer = DeltaChunk.getRealPlayer(player);
+         * if (realPlayer instanceof FakePlayer || realPlayer == null) {
+         * return true;
+         * }
+         * if (realPlayer.worldObj == world) return true;
+         * return giveUserAuthentication(held, realPlayer, at);
+         * NORELEASE.fixme("Wither test: player should be able to survive a wither while grabbed by a citizen");
+         * }
+         */
         if (PlayerUtil.isPlayerCreative(player)) {
             TileEntityColossalHeart heart = at.getTE(TileEntityColossalHeart.class);
             if (heart != null) {
@@ -275,7 +297,14 @@ public class ColossalBlock extends Block {
     }
 
     private void placePoster(ItemStack held, EntityPlayer player, Coord at) {
-        ItemSpawnPoster.PosterPlacer placer = new ItemSpawnPoster.PosterPlacer(new ItemStack(Core.registry.spawnPoster), player, at.w, at.x, at.y, at.z, ForgeDirection.EAST.ordinal());
+        ItemSpawnPoster.PosterPlacer placer = new ItemSpawnPoster.PosterPlacer(
+            new ItemStack(Core.registry.spawnPoster),
+            player,
+            at.w,
+            at.x,
+            at.y,
+            at.z,
+            ForgeDirection.EAST.ordinal());
         placer.invoke();
         final EntityPoster poster = placer.result;
         poster.locked = true;
@@ -297,12 +326,12 @@ public class ColossalBlock extends Block {
         Coord at = new Coord(world, x, y, z);
         at.setTE(new TileEntityColossalHeart());
     }
-    
+
     @Override
     public boolean hasTileEntity(int metadata) {
         return metadata == MD_CORE;
     }
-    
+
     @Override
     public void breakBlock(World world, int x, int y, int z, Block block, int md) {
         super.breakBlock(world, x, y, z, block, md);
@@ -324,7 +353,7 @@ public class ColossalBlock extends Block {
             Awakener.awaken(at);
         }
     }
-    
+
     public ColossusController findController(Coord at) {
         TileEntityColossalHeart heart = Awakener.findNearestHeart(at);
         if (heart == null) return null;
@@ -334,7 +363,8 @@ public class ColossalBlock extends Block {
             Object c = idc.getController();
             if (c instanceof ColossusController) {
                 ColossusController controller = (ColossusController) c;
-                if (controller.getUniqueID().equals(controllerId)) {
+                if (controller.getUniqueID()
+                    .equals(controllerId)) {
                     return controller;
                 }
             }

@@ -1,10 +1,11 @@
 package factorization.api;
 
-import net.minecraft.world.World;
-
 import java.util.ArrayList;
 
+import net.minecraft.world.World;
+
 public class HeatConverters {
+
     private static final ArrayList<IHeatConverter> converters = new ArrayList<IHeatConverter>();
 
     public static void addConverter(IHeatConverter converter) {
@@ -20,6 +21,7 @@ public class HeatConverters {
     }
 
     public interface IHeatConverter {
+
         public IFurnaceHeatable convert(World w, int x, int y, int z);
     }
 

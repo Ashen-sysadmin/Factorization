@@ -7,6 +7,7 @@ import factorization.truth.api.ITypesetter;
 import factorization.truth.api.TruthError;
 
 public class CmdInclude extends AgnosticCommand {
+
     @Override
     protected void call(ITypesetter out, ITokenizer tokenizer) throws TruthError {
         String name = tokenizer.getParameter("\\include{page name}");

@@ -2,26 +2,28 @@ package factorization.servo.instructions;
 
 import java.io.IOException;
 
-import factorization.servo.AbstractServoMachine;
-import factorization.servo.stepper.StepperEngine;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.FzOrientation;
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.IDataSerializable;
 import factorization.api.datahelpers.Share;
 import factorization.common.BlockIcons;
+import factorization.servo.AbstractServoMachine;
 import factorization.servo.CpuBlocking;
 import factorization.servo.Instruction;
 import factorization.servo.ServoMotor;
+import factorization.servo.stepper.StepperEngine;
 import factorization.shared.Core;
 
 public class RotateTop extends Instruction {
+
     ForgeDirection top = ForgeDirection.UP;
-    
+
     @Override
     public IIcon getIcon(ForgeDirection side) {
         if (side == ForgeDirection.UNKNOWN) {
@@ -29,7 +31,7 @@ public class RotateTop extends Instruction {
         }
         return BlockIcons.servo$set_facing.get(top.getOpposite(), side);
     }
-    
+
     @Override
     public boolean onClick(EntityPlayer player, Coord block, ForgeDirection side) {
         if (playerHasProgrammer(player)) {
@@ -41,7 +43,8 @@ public class RotateTop extends Instruction {
     }
 
     void hit(AbstractServoMachine motor) {
-        FzOrientation o = motor.getOrientation().pointTopTo(top.getOpposite());
+        FzOrientation o = motor.getOrientation()
+            .pointTopTo(top.getOpposite());
         if (o != FzOrientation.UNKNOWN) {
             motor.setOrientation(o);
         }
@@ -61,18 +64,19 @@ public class RotateTop extends Instruction {
     public String getName() {
         return "fz.instruction.rotatetop";
     }
-    
+
     @Override
     public IDataSerializable putData(String prefix, DataHelper data) throws IOException {
-        top = data.as(Share.MUTABLE, "top").putEnum(top);
+        top = data.as(Share.MUTABLE, "top")
+            .putEnum(top);
         return this;
     }
-    
+
     @Override
     protected ItemStack getRecipeItem() {
         return new ItemStack(Core.registry.fan);
     }
-    
+
     @Override
     public CpuBlocking getBlockingBehavior() {
         return CpuBlocking.BLOCK_UNTIL_NEXT_ENTRY;

@@ -1,6 +1,8 @@
 package factorization.api;
 
-import factorization.util.ItemUtil;
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCarpet;
 import net.minecraft.block.BlockColored;
@@ -9,10 +11,10 @@ import net.minecraft.block.BlockStainedGlassPane;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
-import java.util.ArrayList;
-import java.util.List;
+import factorization.util.ItemUtil;
 
 public enum FzColor {
+
     NO_COLOR(null, 0xFFFFFF),
     WHITE("dyeWhite", 0xF0F0F0),
     ORANGE("dyeOrange", 0xEB8844),
@@ -30,11 +32,11 @@ public enum FzColor {
     GREEN("dyeGreen", 0x3B511A),
     RED("dyeRed", 0xB3312C),
     BLACK("dyeBlack", 0x1E1B1B);
-    
+
     public final String dyeName;
     public final int hex; // The color values are from ItemDye
     private final List<ItemStack> ore_entries;
-    
+
     FzColor(String dyeName, int hex) {
         this.dyeName = dyeName;
         this.hex = hex;
@@ -60,19 +62,18 @@ public enum FzColor {
     public float getRed() {
         return ((this.hex & 0xFF0000) >> 16) / 255F;
     }
-    
+
     public float getGreen() {
         return ((this.hex & 0x00FF00) >> 8) / 255F;
     }
-    
+
     public float getBlue() {
         return (this.hex & 0x0000FF) / 255F;
     }
-    
-    
+
     private static FzColor[] cache = FzColor.values();
     public static final FzColor[] VALID_COLORS = getValidColors();
-    
+
     public static FzColor readColor(Coord c) {
         if (c == null || c.w == null) {
             return NO_COLOR;
@@ -81,7 +82,9 @@ public enum FzColor {
         if (b == null) {
             return NO_COLOR;
         }
-        if (b instanceof BlockColored || b instanceof BlockStainedGlassPane || b instanceof BlockStainedGlass || b instanceof BlockCarpet) {
+        if (b instanceof BlockColored || b instanceof BlockStainedGlassPane
+            || b instanceof BlockStainedGlass
+            || b instanceof BlockCarpet) {
             int md = c.getMd();
             if (md < 0 || md >= 16) {
                 return NO_COLOR;
@@ -90,7 +93,7 @@ public enum FzColor {
         }
         return NO_COLOR;
     }
-    
+
     private static FzColor[] getValidColors() {
         FzColor[] ret = new FzColor[cache.length - 1];
         int i = 0;
@@ -101,30 +104,30 @@ public enum FzColor {
         }
         return ret;
     }
-    
+
     public boolean conflictsWith(FzColor other) {
         if (this == NO_COLOR || other == NO_COLOR) return false;
         return this != other;
     }
-    
+
     public static FzColor fromOrdinal(byte id) {
         if (id < cache.length && id >= 0) return cache[id];
         return NO_COLOR;
     }
-    
+
     public byte toOrdinal() {
         return (byte) this.ordinal();
     }
-    
+
     public static FzColor fromVanillaColorIndex(int id) {
         return fromOrdinal((byte) (1 + id));
     }
-    
+
     public int toVanillaColorIndex() {
-        if (this == NO_COLOR) return 0; //???
+        if (this == NO_COLOR) return 0; // ???
         return ordinal() - 1;
     }
-    
+
     public static FzColor fromItem(ItemStack is) {
         if (is == null) return NO_COLOR;
         for (FzColor color : VALID_COLORS) {

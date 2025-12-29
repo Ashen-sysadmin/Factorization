@@ -1,30 +1,34 @@
 package factorization.truth.gen;
 
-import cpw.mods.fml.relauncher.ReflectionHelper;
-import factorization.truth.api.IDocGenerator;
-import factorization.truth.api.ITypesetter;
-import factorization.truth.api.TruthError;
-import net.minecraft.util.WeightedRandomChestContent;
-import net.minecraftforge.common.ChestGenHooks;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 
+import net.minecraft.util.WeightedRandomChestContent;
+import net.minecraftforge.common.ChestGenHooks;
+
+import cpw.mods.fml.relauncher.ReflectionHelper;
+import factorization.truth.api.IDocGenerator;
+import factorization.truth.api.ITypesetter;
+import factorization.truth.api.TruthError;
+
 public class TreasureViewer implements IDocGenerator {
 
     @Override
     public void process(ITypesetter out, String arg) throws TruthError {
-        Map<String, ChestGenHooks> chestHooks = ReflectionHelper.<Map<String, ChestGenHooks>, ChestGenHooks>getPrivateValue(ChestGenHooks.class, null, "chestInfo");
+        Map<String, ChestGenHooks> chestHooks = ReflectionHelper
+            .<Map<String, ChestGenHooks>, ChestGenHooks>getPrivateValue(ChestGenHooks.class, null, "chestInfo");
         ArrayList<String> names = new ArrayList<String>(chestHooks.keySet());
         Collections.sort(names);
         for (String chestName : names) {
             ChestGenHooks hook = chestHooks.get(chestName);
-            ArrayList<WeightedRandomChestContent> content = ReflectionHelper.getPrivateValue(ChestGenHooks.class, hook, "contents");
+            ArrayList<WeightedRandomChestContent> content = ReflectionHelper
+                .getPrivateValue(ChestGenHooks.class, hook, "contents");
             if (content == null || content.isEmpty()) continue;
             content = new ArrayList<WeightedRandomChestContent>(content);
             Collections.sort(content, new Comparator<WeightedRandomChestContent>() {
+
                 @Override
                 public int compare(WeightedRandomChestContent a, WeightedRandomChestContent b) {
                     return b.itemWeight - a.itemWeight;
@@ -40,7 +44,10 @@ public class TreasureViewer implements IDocGenerator {
                         descr = " (" + item.theMinimumChanceToGenerateItem + ")";
                     }
                 } else {
-                    descr = " (" + item.theMinimumChanceToGenerateItem + " to " + item.theMaximumChanceToGenerateItem + ")";
+                    descr = " (" + item.theMinimumChanceToGenerateItem
+                        + " to "
+                        + item.theMaximumChanceToGenerateItem
+                        + ")";
                 }
                 if (descr == null) {
                     can_blob = true;

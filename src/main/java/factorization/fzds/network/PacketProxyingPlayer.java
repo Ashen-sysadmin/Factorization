@@ -1,6 +1,25 @@
 package factorization.fzds.network;
 
+import java.lang.ref.WeakReference;
+import java.util.*;
+
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.EnumConnectionState;
+import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Packet;
+import net.minecraft.network.play.server.S26PacketMapChunkBulk;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.ItemInWorldManager;
+import net.minecraft.server.management.ServerConfigurationManager;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.ForgeChunkManager;
+
 import com.mojang.authlib.GameProfile;
+
 import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
 import cpw.mods.fml.relauncher.Side;
 import factorization.api.Coord;
@@ -13,60 +32,39 @@ import factorization.fzds.interfaces.IDeltaChunk;
 import factorization.fzds.interfaces.IFzdsEntryControl;
 import factorization.fzds.interfaces.IFzdsShenanigans;
 import factorization.shared.Core;
-import factorization.util.SpaceUtil;
 import io.netty.channel.*;
 import io.netty.channel.embedded.EmbeddedChannel;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityTracker;
-import net.minecraft.entity.EntityTrackerEntry;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.EnumConnectionState;
-import net.minecraft.network.NetHandlerPlayServer;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.Packet;
-import net.minecraft.network.play.server.S26PacketMapChunkBulk;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.ItemInWorldManager;
-import net.minecraft.server.management.ServerConfigurationManager;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.ForgeChunkManager;
 
-import java.lang.ref.WeakReference;
-import java.util.*;
+public class PacketProxyingPlayer extends EntityPlayerMP implements IFzdsEntryControl, IFzdsShenanigans {
 
-public class PacketProxyingPlayer extends EntityPlayerMP implements
-        IFzdsEntryControl, IFzdsShenanigans {
     WeakReference<DimensionSliceEntity> dimensionSlice = new WeakReference<DimensionSliceEntity>(null);
     static boolean useShortViewRadius = true; // true doesn't actually change the view radius
 
     private HashSet<EntityPlayerMP> listeningPlayers = new HashSet();
-    
-    
-    
+
     EmbeddedChannel proxiedChannel = new EmbeddedChannel(new WrappedMulticastHandler());
     NetworkManager networkManager = new CustomChannelNetworkManager(proxiedChannel, false);
-    
+
     class WrappedMulticastHandler extends ChannelOutboundHandlerAdapter implements IFzdsShenanigans {
+
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             PacketProxyingPlayer.this.addNettyMessage(msg);
-            //promise.setFailure(new UnsupportedOperationException("Sorry!")); // Nooooope, causes spam.
+            // promise.setFailure(new UnsupportedOperationException("Sorry!")); // Nooooope, causes spam.
         }
     }
 
     void preinitWrapping() {
         playerNetServerHandler = new NetHandlerPlayServer(mcServer, networkManager, this);
-        playerNetServerHandler.netManager.channel().attr(NetworkDispatcher.FML_DISPATCHER).set(new NetworkDispatcher(this.networkManager));
-        //Compare cpw.mods.fml.common.network.FMLOutboundHandler.OutboundTarget.PLAYER.{...}.selectNetworks(Object, ChannelHandlerContext, FMLProxyPacket)
+        playerNetServerHandler.netManager.channel()
+            .attr(NetworkDispatcher.FML_DISPATCHER)
+            .set(new NetworkDispatcher(this.networkManager));
+        // Compare cpw.mods.fml.common.network.FMLOutboundHandler.OutboundTarget.PLAYER.{...}.selectNetworks(Object,
+        // ChannelHandlerContext, FMLProxyPacket)
         playerNetServerHandler.netManager.setConnectionState(EnumConnectionState.PLAY);
-        /* (misc notes here)
+        /*
+         * (misc notes here)
          * We don't need to touch NetworkDispatcher; we need a NetworkManager.
-         *
          * NetworkManager.scheduleOutboundPacket is too early I think?
          * What we really want is its channel.
          */
@@ -77,8 +75,8 @@ public class PacketProxyingPlayer extends EntityPlayerMP implements
         updateListenerList();
     }
 
-
     ForgeChunkManager.Ticket ticket = null;
+
     void registerChunkLoading() {
         ticket = PPPChunkLoader.instance.register(getChunks());
     }
@@ -97,6 +95,7 @@ public class PacketProxyingPlayer extends EntityPlayerMP implements
         Coord min = dse.getCorner();
         Coord max = dse.getFarCorner();
         Coord.iterateChunks(min, max, new ICoordFunction() {
+
             @Override
             public void handle(Coord here) {
                 ret.add(here.getChunk());
@@ -108,13 +107,18 @@ public class PacketProxyingPlayer extends EntityPlayerMP implements
     private static final UUID proxyUuid = UUID.fromString("69f64f92-665f-457e-ad33-f6082d0b8a75");
 
     public PacketProxyingPlayer(final DimensionSliceEntity dimensionSlice, World shadowWorld) {
-        super(MinecraftServer.getServer(), (WorldServer) shadowWorld, new GameProfile(proxyUuid, "[FzdsPacket]"), new ItemInWorldManager(shadowWorld));
+        super(
+            MinecraftServer.getServer(),
+            (WorldServer) shadowWorld,
+            new GameProfile(proxyUuid, "[FzdsPacket]"),
+            new ItemInWorldManager(shadowWorld));
         invulnerable = true;
         isImmuneToFire = true;
         this.dimensionSlice = new WeakReference<DimensionSliceEntity>(dimensionSlice);
         Coord c = dimensionSlice.getCenter();
         c.y = -8; // lurk in the void; we should catch most mod's packets.
-        DeltaCoord size = dimensionSlice.getFarCorner().difference(dimensionSlice.getCorner());
+        DeltaCoord size = dimensionSlice.getFarCorner()
+            .difference(dimensionSlice.getCorner());
         size.y = 0;
         int width = Math.abs(size.x);
         int depth = Math.abs(size.z);
@@ -123,7 +127,8 @@ public class PacketProxyingPlayer extends EntityPlayerMP implements
         chunkRadius = Math.max(3, chunkRadius);
         c.setAsEntityLocation(this);
         preinitWrapping();
-        ServerConfigurationManager scm = MinecraftServer.getServer().getConfigurationManager();
+        ServerConfigurationManager scm = MinecraftServer.getServer()
+            .getConfigurationManager();
         if (useShortViewRadius) {
             int orig = savePlayerViewRadius();
             restorePlayerViewRadius(chunkRadius);
@@ -138,7 +143,7 @@ public class PacketProxyingPlayer extends EntityPlayerMP implements
         }
         initWrapping();
     }
-    
+
     int savePlayerViewRadius() {
         return getServerForPlayer().getPlayerManager().playerViewRadius;
     }
@@ -175,7 +180,8 @@ public class PacketProxyingPlayer extends EntityPlayerMP implements
             if (isPlayerInUpdateRange(player)) {
                 boolean new_player = listeningPlayers.add(player);
                 if (new_player && shouldShareChunks()) {
-                    // welcome to the club. This may net-lag a bit. (Well, it depends on the chunk's contents. Air compresses well tho.)
+                    // welcome to the club. This may net-lag a bit. (Well, it depends on the chunk's contents. Air
+                    // compresses well tho.)
                     sendChunkMapDataToPlayer(player);
                 }
             } else {
@@ -205,7 +211,8 @@ public class PacketProxyingPlayer extends EntityPlayerMP implements
     void sendChunkMapDataToPlayer(EntityPlayerMP target) {
         DimensionSliceEntity dse = dimensionSlice.get();
         if (dse == null) return;
-        // Inspired by EntityPlayerMP.onUpdate. Shame we can't just add chunks directly to target's chunkwatcher... but there'd be no wrapper for the packets.
+        // Inspired by EntityPlayerMP.onUpdate. Shame we can't just add chunks directly to target's chunkwatcher... but
+        // there'd be no wrapper for the packets.
         ArrayList<Chunk> chunks = new ArrayList();
         ArrayList<TileEntity> tileEntities = new ArrayList();
         World world = DeltaChunk.getServerShadowWorld();
@@ -250,19 +257,21 @@ public class PacketProxyingPlayer extends EntityPlayerMP implements
         setDead();
         // From playerNetServerHandler.mcServer.getConfigurationManager().playerLoggedOut(this);
         WorldServer world = getServerForPlayer();
-        //world.removeEntity(this); // setEntityDead
+        // world.removeEntity(this); // setEntityDead
         world.playerEntities.remove(this);
-        world.getPlayerManager().removePlayer(this); // No comod?
-        MinecraftServer.getServer().getConfigurationManager().playerEntityList.remove(playerNetServerHandler);
+        world.getPlayerManager()
+            .removePlayer(this); // No comod?
+        MinecraftServer.getServer()
+            .getConfigurationManager().playerEntityList.remove(playerNetServerHandler);
         dimensionSlice.clear();
     }
 
-    boolean shouldForceChunkLoad() { //TODO: Chunk loading!
+    boolean shouldForceChunkLoad() { // TODO: Chunk loading!
         return !listeningPlayers.isEmpty();
     }
 
     private static final NettyPacketConverter wrapped_packet_channel = new NettyPacketConverter(Side.SERVER);
-    
+
     public static Packet wrapMessage(Object msg) {
         if (msg instanceof Packet) {
             return new WrappedPacketFromServer((Packet) msg);
@@ -270,7 +279,7 @@ public class PacketProxyingPlayer extends EntityPlayerMP implements
         Packet pkt = wrapped_packet_channel.convert(msg);
         return new WrappedPacketFromServer(pkt);
     }
-    
+
     public void addNettyMessage(Object msg) {
         // Return a future?
         if (listeningPlayers.isEmpty()) {
@@ -292,7 +301,7 @@ public class PacketProxyingPlayer extends EntityPlayerMP implements
             }
         }
     }
-    
+
     void addNettyMessageForPlayer(EntityPlayerMP player, Object packet) {
         // See NetworkManager.dispatchPacket
         if (player instanceof PacketProxyingPlayer) {
@@ -333,10 +342,8 @@ public class PacketProxyingPlayer extends EntityPlayerMP implements
     }
 
     @Override
-    public void onEnter(IDeltaChunk dse) {
-    }
+    public void onEnter(IDeltaChunk dse) {}
 
     @Override
-    public void onExit(IDeltaChunk dse) {
-    }
+    public void onExit(IDeltaChunk dse) {}
 }

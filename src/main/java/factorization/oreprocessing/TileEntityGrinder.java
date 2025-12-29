@@ -2,12 +2,13 @@ package factorization.oreprocessing;
 
 import java.util.ArrayList;
 
-import factorization.shared.*;
-import factorization.util.ItemUtil;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
+
+import factorization.shared.*;
+import factorization.util.ItemUtil;
 
 public class TileEntityGrinder {
     // This is now just a recipe-holder class...
@@ -17,15 +18,16 @@ public class TileEntityGrinder {
     public static void addRecipe(Object input, ItemStack output, float probability) {
         GrinderRecipe toAdd = new GrinderRecipe(input, output, probability);
         for (GrinderRecipe gr : recipes) {
-            if (gr.getOreDictionaryInput().equals(input)) {
+            if (gr.getOreDictionaryInput()
+                .equals(input)) {
                 return;
             }
         }
         recipes.add(toAdd);
     }
 
-
     public static class GrinderRecipe {
+
         private String oreName = null;
         private ItemStack itemstack = null;
         private ArrayList<ItemStack> inputArray = new ArrayList();
@@ -51,7 +53,7 @@ public class TileEntityGrinder {
             }
             inputArray.add(itemstack);
         }
-        
+
         public ArrayList<ItemStack> getInput() {
             if (oreName != null) {
                 return OreDictionary.getOres(oreName);
@@ -59,13 +61,13 @@ public class TileEntityGrinder {
             ArrayList<ItemStack> ret = new ArrayList(1);
             return inputArray;
         }
-        
+
         public Object getOreDictionaryInput() {
             if (oreName != null) {
                 return oreName;
             }
             return itemstack;
         }
-        
+
     }
 }

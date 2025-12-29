@@ -1,7 +1,19 @@
 package factorization.beauty;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.relauncher.Side;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import net.minecraft.block.Block;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.IIcon;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.IRotationalEnergySource;
 import factorization.api.datahelpers.DataHelper;
@@ -14,21 +26,9 @@ import factorization.shared.Core;
 import factorization.shared.TileEntityCommon;
 import factorization.util.NumUtil;
 import factorization.util.SpaceUtil;
-import net.minecraft.block.Block;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.IOException;
-import java.util.ArrayList;
 
 public class TileEntityShaft extends TileEntityCommon implements IRotationalEnergySource {
+
     ForgeDirection axis = ForgeDirection.UP;
     IRotationalEnergySource _src = null;
     Coord srcPos = null;
@@ -45,16 +45,22 @@ public class TileEntityShaft extends TileEntityCommon implements IRotationalEner
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        axis = data.as(Share.VISIBLE, "axis").putEnum(axis);
+        axis = data.as(Share.VISIBLE, "axis")
+            .putEnum(axis);
         if (srcPos == null) srcPos = getCoord();
-        srcPos = data.as(Share.VISIBLE, "src").putIDS(srcPos);
-        srcConnection = data.as(Share.VISIBLE, "connectDir").putEnum(srcConnection);
+        srcPos = data.as(Share.VISIBLE, "src")
+            .putIDS(srcPos);
+        srcConnection = data.as(Share.VISIBLE, "connectDir")
+            .putEnum(srcConnection);
         if (data.isReader()) {
             _src = null;
         }
-        useCustomVelocity = data.as(Share.VISIBLE, "useCustom").putBoolean(useCustomVelocity);
-        customVelocity = data.as(Share.VISIBLE, "customVel").putDouble(customVelocity);
-        velocitySign = data.as(Share.VISIBLE, "velocitySign").putByte(velocitySign);
+        useCustomVelocity = data.as(Share.VISIBLE, "useCustom")
+            .putBoolean(useCustomVelocity);
+        customVelocity = data.as(Share.VISIBLE, "customVel")
+            .putDouble(customVelocity);
+        velocitySign = data.as(Share.VISIBLE, "velocitySign")
+            .putByte(velocitySign);
         if (velocitySign == 0) velocitySign = 1;
     }
 
@@ -243,6 +249,7 @@ public class TileEntityShaft extends TileEntityCommon implements IRotationalEner
     }
 
     private static ThreadLocal<Boolean> working = new ThreadLocal<Boolean>();
+
     private void invalidateConnections() {
         if (working.get() != null) return;
         working.set(true);
@@ -281,11 +288,16 @@ public class TileEntityShaft extends TileEntityCommon implements IRotationalEner
 
     private boolean isUnconnected() {
         ForgeDirection back = axis.getOpposite();
-        boolean a = IRotationalEnergySource.adapter.cast(getCoord().add(axis).getTE()) == null;
-        boolean b = IRotationalEnergySource.adapter.cast(getCoord().add(back).getTE()) == null;
+        boolean a = IRotationalEnergySource.adapter.cast(
+            getCoord().add(axis)
+                .getTE())
+            == null;
+        boolean b = IRotationalEnergySource.adapter.cast(
+            getCoord().add(back)
+                .getTE())
+            == null;
         return a && b;
     }
-
 
     @Override
     public void onPlacedBy(EntityPlayer player, ItemStack is, int side, float hitX, float hitY, float hitZ) {

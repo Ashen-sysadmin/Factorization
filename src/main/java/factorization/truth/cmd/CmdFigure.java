@@ -6,6 +6,7 @@ import factorization.truth.FigurePage;
 import factorization.truth.api.*;
 
 public class CmdFigure implements ITypesetCommand {
+
     @Override
     public void callClient(IClientTypesetter out, ITokenizer tokenizer) throws TruthError {
         DocWorld figure = null;

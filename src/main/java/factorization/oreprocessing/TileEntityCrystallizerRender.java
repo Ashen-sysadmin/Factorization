@@ -1,6 +1,7 @@
 package factorization.oreprocessing;
 
 import static org.lwjgl.opengl.GL11.*;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -24,7 +25,7 @@ public class TileEntityCrystallizerRender extends TileEntitySpecialRenderer {
         glPushMatrix();
         glTranslatef((float) x, (float) y, (float) z);
 
-        //render a bit of string
+        // render a bit of string
         glColor4f(1, 1, 1, 1);
         glDisable(GL_TEXTURE_2D);
         glLineWidth(8);
@@ -34,10 +35,9 @@ public class TileEntityCrystallizerRender extends TileEntitySpecialRenderer {
         glEnd();
         glLineWidth(1);
         glEnable(GL_TEXTURE_2D);
-        
-        
+
         glDisable(GL_LIGHTING);
-        //render the item, growing as it nears completion
+        // render the item, growing as it nears completion
         TextureManager re = Minecraft.getMinecraft().renderEngine;
         if (crys.growing_crystal != null && crys.progress > 0) {
             glPushMatrix();
@@ -52,7 +52,8 @@ public class TileEntityCrystallizerRender extends TileEntitySpecialRenderer {
             glTranslatef(-0.5F, 0, 1F / 32F);
             re.bindTexture(Core.blockAtlas);
 
-            int var18 = crys.growing_crystal.getItem().getColorFromItemStack(crys.growing_crystal, 0);
+            int var18 = crys.growing_crystal.getItem()
+                .getColorFromItemStack(crys.growing_crystal, 0);
             float r = (float) (var18 >> 16 & 255) / 255.0F;
             float g = (float) (var18 >> 8 & 255) / 255.0F;
             float b = (float) (var18 & 255) / 255.0F;
@@ -61,7 +62,7 @@ public class TileEntityCrystallizerRender extends TileEntitySpecialRenderer {
             glPopMatrix();
         }
 
-        //render the fluid
+        // render the fluid
         if (crys.solution != null) {
             glPushAttrib(GL_COLOR_BUFFER_BIT);
             glAlphaFunc(GL_GREATER, 0.1F);
@@ -94,7 +95,7 @@ public class TileEntityCrystallizerRender extends TileEntitySpecialRenderer {
             float u1 = tex.getMaxU();
             float v1 = tex.getMaxV();
             tess.startDrawingQuads();
-            tess.setTranslation(0, 9F/16F, 0);
+            tess.setTranslation(0, 9F / 16F, 0);
             tess.addVertexWithUV(0, 0, 0, u0, v0);
             tess.addVertexWithUV(0, 0, 1, u0, v1);
             tess.addVertexWithUV(1, 0, 1, u1, v1);

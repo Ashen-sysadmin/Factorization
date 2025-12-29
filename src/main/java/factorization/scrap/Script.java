@@ -1,16 +1,16 @@
 package factorization.scrap;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
 
-@Help({"Runs a script",
-        "Script extra # runs scraps/extra.scrap"})
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+
+@Help({ "Runs a script", "Script extra # runs scraps/extra.scrap" })
 public class Script implements IRevertible {
+
     static final Logger log = ScrapManager.log;
 
     final ArrayList<IRevertible> actions = new ArrayList<IRevertible>();
@@ -59,7 +59,7 @@ public class Script implements IRevertible {
     void tryCreate(boolean createIfMissing) {
         if (scriptFile.exists()) return;
         if (!createIfMissing) throw new CompileError("File does not exist: " + scriptFile);
-        //noinspection ResultOfMethodCallIgnored
+        // noinspection ResultOfMethodCallIgnored
         new File(scriptFile.getParent()).mkdirs();
         try {
             if (!scriptFile.createNewFile()) throw new IOException("Could not create " + filename + " file");

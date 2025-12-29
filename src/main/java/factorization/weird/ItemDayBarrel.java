@@ -2,16 +2,17 @@ package factorization.weird;
 
 import java.util.List;
 
-import factorization.util.LangUtil;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.common.FactoryType;
 import factorization.shared.Core;
 import factorization.shared.Core.TabType;
 import factorization.shared.ItemBlockProxy;
+import factorization.util.LangUtil;
 import factorization.weird.TileEntityDayBarrel.Type;
 
 public class ItemDayBarrel extends ItemBlockProxy {
@@ -21,18 +22,18 @@ public class ItemDayBarrel extends ItemBlockProxy {
         setMaxDamage(0);
         setNoRepair();
     }
-    
+
     @Override
     public boolean getShareTag() {
         return true;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public int getSpriteNumber() {
         return 0;
     }
-    
+
     @Override
     public String getItemStackDisplayName(ItemStack is) {
         Type upgrade = TileEntityDayBarrel.getUpgrade(is);
@@ -41,9 +42,13 @@ public class ItemDayBarrel extends ItemBlockProxy {
             lookup = "factorization.factoryBlock.DAYBARREL.format2";
         }
         String type = LangUtil.translate("factorization.factoryBlock.DAYBARREL." + upgrade);
-        return LangUtil.translateWithCorrectableFormat(lookup, type, TileEntityDayBarrel.getLog(is).getDisplayName());
+        return LangUtil.translateWithCorrectableFormat(
+            lookup,
+            type,
+            TileEntityDayBarrel.getLog(is)
+                .getDisplayName());
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT) // Invokes a client-only function getTooltip
     protected void addExtraInformation(ItemStack is, EntityPlayer player, List list, boolean verbose) {
@@ -58,8 +63,11 @@ public class ItemDayBarrel extends ItemBlockProxy {
                     list.add("?");
                     return;
                 }
-                List sub = db.item.getTooltip/* Client-only */(player, false /* Propagating verbose would be natural, but let's keep the tool-tip short */);
-                db.item.getItem().addInformation(db.item, player, sub, verbose);
+                List sub = db.item.getTooltip/* Client-only */(
+                    player,
+                    false /* Propagating verbose would be natural, but let's keep the tool-tip short */);
+                db.item.getItem()
+                    .addInformation(db.item, player, sub, verbose);
                 if (!sub.isEmpty()) {
                     Object first = sub.get(0);
                     sub.set(0, count + " " + first);
@@ -68,8 +76,8 @@ public class ItemDayBarrel extends ItemBlockProxy {
             }
         }
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
-    public void registerIcons(IIconRegister par1IIconRegister) { }
+    public void registerIcons(IIconRegister par1IIconRegister) {}
 }

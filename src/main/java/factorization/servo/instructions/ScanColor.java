@@ -10,6 +10,7 @@ import net.minecraft.init.Items;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.FzColor;
 import factorization.api.datahelpers.DataHelper;
@@ -22,18 +23,15 @@ import factorization.servo.ServoMotor;
 import factorization.shared.Core;
 
 public class ScanColor extends Decorator {
+
     @Override
     public IDataSerializable putData(String prefix, DataHelper data) throws IOException {
         return this;
     }
-    
-    static final FzColor[] colorArray = new FzColor[] {
-            FzColor.LIME, FzColor.LIME, FzColor.LIME,
-            FzColor.GREEN, FzColor.GREEN, FzColor.GREEN, FzColor.GREEN, 
-            FzColor.YELLOW, FzColor.YELLOW, FzColor.YELLOW, FzColor.YELLOW, 
-            FzColor.ORANGE, FzColor.ORANGE, FzColor.ORANGE, FzColor.ORANGE, 
-            FzColor.RED
-    };
+
+    static final FzColor[] colorArray = new FzColor[] { FzColor.LIME, FzColor.LIME, FzColor.LIME, FzColor.GREEN,
+        FzColor.GREEN, FzColor.GREEN, FzColor.GREEN, FzColor.YELLOW, FzColor.YELLOW, FzColor.YELLOW, FzColor.YELLOW,
+        FzColor.ORANGE, FzColor.ORANGE, FzColor.ORANGE, FzColor.ORANGE, FzColor.RED };
 
     @Override
     public void motorHit(ServoMotor motor) {
@@ -41,14 +39,16 @@ public class ScanColor extends Decorator {
         at = at.add(motor.getOrientation().top);
         FzColor col = FzColor.readColor(at);
         if (col != FzColor.NO_COLOR) {
-            motor.getArgStack().push(col);
+            motor.getArgStack()
+                .push(col);
             return;
         }
         Block block = at.getBlock();
         if (block instanceof BlockReed || block instanceof BlockCactus) return; // Colors don't change, so give nothing.
         if (block instanceof IPlantable) {
             int md = ((IPlantable) block).getPlantMetadata(at.w, at.x, at.y, at.z);
-            motor.getArgStack().push(colorArray[md]);
+            motor.getArgStack()
+                .push(colorArray[md]);
             return;
         }
     }
@@ -72,28 +72,32 @@ public class ScanColor extends Decorator {
     public String getName() {
         return "fz.decorator.scancolor";
     }
-    
+
     @Override
     protected void addRecipes() {
-        Core.registry.oreRecipe(toItem(),
-                "+Q+",
-                "Q#Q",
-                "+Q+",
-                '+', FactoryType.SERVORAIL.itemStack(),
-                'Q', Items.quartz,
-                '#', Core.registry.logicMatrixIdentifier);
+        Core.registry.oreRecipe(
+            toItem(),
+            "+Q+",
+            "Q#Q",
+            "+Q+",
+            '+',
+            FactoryType.SERVORAIL.itemStack(),
+            'Q',
+            Items.quartz,
+            '#',
+            Core.registry.logicMatrixIdentifier);
     }
-    
+
     @Override
     public float getSize() {
-        return super.getSize() - 1F/32F;
+        return super.getSize() - 1F / 32F;
     }
-    
+
     @Override
     public boolean collides() {
         return false;
     }
-    
+
     @Override
     public void onItemUse(Coord here, EntityPlayer player) {
         FzColor color = FzColor.readColor(here);

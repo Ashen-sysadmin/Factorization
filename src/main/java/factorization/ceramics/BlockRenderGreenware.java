@@ -3,43 +3,44 @@ package factorization.ceramics;
 import java.io.IOException;
 import java.util.Random;
 
-import factorization.api.datahelpers.DataInNBT;
-import factorization.common.ResourceType;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.opengl.GL11;
 
+import factorization.api.datahelpers.DataInNBT;
 import factorization.ceramics.TileEntityGreenware.ClayLump;
 import factorization.ceramics.TileEntityGreenware.ClayState;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
+import factorization.common.ResourceType;
 import factorization.shared.BlockRenderHelper;
 import factorization.shared.Core;
 import factorization.shared.FactorizationBlockRender;
 
 public class BlockRenderGreenware extends FactorizationBlockRender {
+
     static BlockRenderGreenware instance;
-    
+
     public BlockRenderGreenware() {
         instance = this;
         setup();
     }
-    
+
     private boolean texture_init = false;
+
     public void setup() {
         if (texture_init) {
             return;
         }
     }
-    
+
     private static TileEntityGreenware loader = new TileEntityGreenware();
-    
+
     @Override
     public boolean render(RenderBlocks rb) {
         if (!world_mode) {
@@ -49,7 +50,8 @@ public class BlockRenderGreenware extends FactorizationBlockRender {
             GL11.glPushMatrix();
             boolean stand = true;
             boolean rescale = false;
-            if (is.hasTagCompound() && is.getTagCompound().hasKey("parts")) {
+            if (is.hasTagCompound() && is.getTagCompound()
+                .hasKey("parts")) {
                 try {
                     loader.putData(new DataInNBT(is.getTagCompound()));
                 } catch (IOException e) {
@@ -73,7 +75,7 @@ public class BlockRenderGreenware extends FactorizationBlockRender {
                     }
                 }
                 if (rescale) {
-                    float scale = 1F/3F;
+                    float scale = 1F / 3F;
                     GL11.glScalef(scale, scale, scale);
                 }
                 GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
@@ -112,17 +114,19 @@ public class BlockRenderGreenware extends FactorizationBlockRender {
         gw.shouldRenderTesr = state == ClayState.WET;
         return true;
     }
-    
+
     private static Random rawMimicRandom = new Random();
-    
+
     int getColor(ClayLump rc) {
         if (rc.raw_color == -1) {
             if (rc.icon_id == Core.registry.resource_block && rc.icon_md == ResourceType.BISQUE.md) {
                 rc.raw_color = 0;
                 return rc.raw_color;
             }
-            //Get the raw color, possibly making something up
-            rawMimicRandom.setSeed(rc.icon_id.getUnlocalizedName().hashCode() << 4 + rc.icon_md);
+            // Get the raw color, possibly making something up
+            rawMimicRandom.setSeed(
+                rc.icon_id.getUnlocalizedName()
+                    .hashCode() << 4 + rc.icon_md);
             int c = 0;
             for (int i = 0; i < 3; i++) {
                 c <<= 8;
@@ -132,25 +136,35 @@ public class BlockRenderGreenware extends FactorizationBlockRender {
         }
         return rc.raw_color;
     }
-    
+
     private boolean spammed = false;
-    
+
     void renderToTessellator(TileEntityGreenware greenware) {
         BlockRenderHelper block = BlockRenderHelper.instance;
         ClayState state = greenware.getState();
         if (state != ClayState.HIGHFIRED) {
             switch (state) {
-            case WET: block.useTexture(Blocks.clay.getBlockTextureFromSide(0)); break;
-            case DRY: block.useTexture(BlockIcons.ceramics$dry); break;
-            case BISQUED: block.useTexture(BlockIcons.ceramics$bisque); break;
-            case UNFIRED_GLAZED: block.useTexture(BlockIcons.ceramics$rawglaze); break;
-            default: block.useTexture(BlockIcons.error); break;
+                case WET:
+                    block.useTexture(Blocks.clay.getBlockTextureFromSide(0));
+                    break;
+                case DRY:
+                    block.useTexture(BlockIcons.ceramics$dry);
+                    break;
+                case BISQUED:
+                    block.useTexture(BlockIcons.ceramics$bisque);
+                    break;
+                case UNFIRED_GLAZED:
+                    block.useTexture(BlockIcons.ceramics$rawglaze);
+                    break;
+                default:
+                    block.useTexture(BlockIcons.error);
+                    break;
             }
         }
         boolean colors_changed = false;
         int total = greenware.parts.size();
-        double d = 1.0/(4096.0*total);
-        int offset = -total/2;
+        double d = 1.0 / (4096.0 * total);
+        int offset = -total / 2;
         int rci = -1;
         for (ClayLump rc : greenware.parts) {
             rci++;
@@ -167,14 +181,21 @@ public class BlockRenderGreenware extends FactorizationBlockRender {
                             useIIcon = rc.icon_side;
                             block.useTexture(it.getIcon(useIIcon, rc.icon_md));
                         }
-                        int color = 0xFFFFFF; 
+                        int color = 0xFFFFFF;
                         if (greenware.getWorldObj() != null) {
                             try {
-                                color = it.colorMultiplier(greenware.getWorldObj(), greenware.xCoord, greenware.yCoord, greenware.zCoord);
+                                color = it.colorMultiplier(
+                                    greenware.getWorldObj(),
+                                    greenware.xCoord,
+                                    greenware.yCoord,
+                                    greenware.zCoord);
                             } catch (Throwable t) {
                                 if (!spammed) {
                                     spammed = true;
-                                    Core.logWarning("%s: could not get a Blocks.colorMultiplier from %s", greenware.getCoord(), it);
+                                    Core.logWarning(
+                                        "%s: could not get a Blocks.colorMultiplier from %s",
+                                        greenware.getCoord(),
+                                        it);
                                     t.printStackTrace();
                                 }
                             }
@@ -212,7 +233,7 @@ public class BlockRenderGreenware extends FactorizationBlockRender {
             if (greenware.front != ForgeDirection.UNKNOWN && greenware.rotation > 0) {
                 block.rotateCenter(greenware.rotation_quat);
             }
-            float o = (float) ((offset + rci)*d);
+            float o = (float) ((offset + rci) * d);
             block.translate(o, o, o);
             block.renderRotated(Tessellator.instance, x, y, z);
         }
@@ -220,28 +241,28 @@ public class BlockRenderGreenware extends FactorizationBlockRender {
             block.resetColors();
         }
     }
-    
+
     void renderDynamic(TileEntityGreenware greenware) {
         Tessellator.instance.startDrawingQuads();
         renderToTessellator(greenware);
         Tessellator.instance.draw();
     }
-    
+
     void renderStatic(TileEntityGreenware greenware) {
         renderToTessellator(greenware);
     }
-    
+
     BlockRenderHelper setupRenderStand() {
         BlockRenderHelper block = BlockRenderHelper.instance;
         block.useTexture(BlockIcons.ceramics$stand);
-        block.setBlockBounds(0, 0, 0, 1, 1F/8F, 1);
+        block.setBlockBounds(0, 0, 0, 1, 1F / 8F, 1);
         return block;
     }
-    
+
     BlockRenderHelper setupRenderGenericLump() {
         BlockRenderHelper block = BlockRenderHelper.instance;
         block.useTexture(Blocks.clay.getBlockTextureFromSide(0));
-        block.setBlockBounds(3F/16F, 1F/8F, 3F/16F, 13F/16F, 7F/8F, 13F/16F);
+        block.setBlockBounds(3F / 16F, 1F / 8F, 3F / 16F, 13F / 16F, 7F / 8F, 13F / 16F);
         return block;
     }
 

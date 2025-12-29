@@ -1,21 +1,22 @@
 package factorization.servo.instructions;
 
+import java.io.IOException;
+
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.IIcon;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.IDataSerializable;
 import factorization.servo.Instruction;
 import factorization.servo.ServoComponent;
 import factorization.servo.ServoMotor;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.IIcon;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.IOException;
 
 /**
  * Exists only for serialization purposes.
  */
 public class GenericPlaceholder extends Instruction {
+
     @Override
     protected ItemStack getRecipeItem() {
         return null;

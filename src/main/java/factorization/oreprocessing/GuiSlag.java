@@ -7,6 +7,7 @@ import factorization.shared.Core;
 import factorization.shared.FactorizationGui;
 
 public class GuiSlag extends FactorizationGui {
+
     TileEntitySlagFurnace furnace;
 
     public GuiSlag(ContainerFactorization cont) {
@@ -27,8 +28,7 @@ public class GuiSlag extends FactorizationGui {
         this.drawTexturedModalRect(var5, var6, 0, 0, this.xSize, this.ySize);
         int var7;
 
-        if (furnace.isBurning())
-        {
+        if (furnace.isBurning()) {
             var7 = this.furnace.getBurnTimeRemainingScaled(12);
             this.drawTexturedModalRect(var5 + 56, var6 + 36 + 12 - var7, 176, 12 - var7, 14, var7 + 2);
         }

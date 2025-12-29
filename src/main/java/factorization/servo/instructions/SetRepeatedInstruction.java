@@ -5,6 +5,7 @@ import java.io.IOException;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.IDataSerializable;
 import factorization.common.BlockIcons;
@@ -26,7 +27,8 @@ public class SetRepeatedInstruction extends Instruction {
 
     @Override
     public void motorHit(ServoMotor motor) {
-        Object obj = motor.getArgStack().pop();
+        Object obj = motor.getArgStack()
+            .pop();
         if (obj instanceof SetRepeatedInstruction) {
             obj = null;
         }

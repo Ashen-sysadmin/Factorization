@@ -8,6 +8,7 @@ import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.StatCollector;
 
 public class LangUtil {
+
     public static String getProperKey(ItemStack is) {
         String n = is.getUnlocalizedName();
         if (n == null || n.length() == 0) {
@@ -17,7 +18,7 @@ public class LangUtil {
     }
 
     public static String getTranslationKey(ItemStack is) {
-        //Get the key for translating is.
+        // Get the key for translating is.
         if (is == null) {
             return "<null itemstack; bug?>";
         }
@@ -75,7 +76,7 @@ public class LangUtil {
             return FzUtil.unitify(unit, val, maxParts);
         }
         String ret = StatCollector.translateToLocal(key);
-        //noinspection StringEquality: StatCollector will return the exact same object if translation fails
+        // noinspection StringEquality: StatCollector will return the exact same object if translation fails
         if (ret == key) {
             return null;
         }

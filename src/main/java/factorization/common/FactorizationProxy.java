@@ -1,6 +1,5 @@
 package factorization.common;
 
-import factorization.artifact.ContainerForge;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -10,8 +9,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.FakePlayer;
+
 import cpw.mods.fml.common.network.IGuiHandler;
 import factorization.api.Coord;
+import factorization.artifact.ContainerForge;
 import factorization.crafting.ContainerMixer;
 import factorization.oreprocessing.ContainerCrystallizer;
 import factorization.oreprocessing.ContainerSlagFurnace;
@@ -63,18 +64,15 @@ public class FactorizationProxy implements IGuiHandler {
     }
 
     /** Tell the pocket crafting table to update the result */
-    public void pokePocketCrafting() {
-    }
+    public void pokePocketCrafting() {}
 
-    public void playSoundFX(String src, float volume, float pitch) {
-    }
+    public void playSoundFX(String src, float volume, float pitch) {}
 
     public EntityPlayer getClientPlayer() {
         return null;
     }
 
-    public void registerRenderers() {
-    }
+    public void registerRenderers() {}
 
     public void updatePlayerInventory(EntityPlayer player) {
         // TODO: This belongs in a util class
@@ -86,21 +84,27 @@ public class FactorizationProxy implements IGuiHandler {
     }
 
     public boolean playerListensToCoord(EntityPlayer player, Coord c) {
-        //XXX TODO: Figure this out.
+        // XXX TODO: Figure this out.
         return true;
     }
-    
+
     public void texturepackChanged(IIconRegister reg) {}
-    
-    public boolean BlockRenderHelper_has_texture(BlockRenderHelper block, int f) { return true; }
-    
-    public void BlockRenderHelper_clear_texture(BlockRenderHelper block) { }
-    
-    public String getPocketCraftingTableKey() { return null; }
-    
-    public boolean isClientHoldingShift() { return false; }
-    
-    public void afterLoad() { }
-    
-    public void sendBlockClickPacket() { }
+
+    public boolean BlockRenderHelper_has_texture(BlockRenderHelper block, int f) {
+        return true;
+    }
+
+    public void BlockRenderHelper_clear_texture(BlockRenderHelper block) {}
+
+    public String getPocketCraftingTableKey() {
+        return null;
+    }
+
+    public boolean isClientHoldingShift() {
+        return false;
+    }
+
+    public void afterLoad() {}
+
+    public void sendBlockClickPacket() {}
 }

@@ -1,5 +1,18 @@
 package factorization.beauty;
 
+import java.io.IOException;
+
+import net.minecraft.block.*;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.IIcon;
+import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import factorization.api.*;
@@ -20,26 +33,17 @@ import factorization.util.NumUtil;
 import factorization.util.PlayerUtil;
 import factorization.util.SpaceUtil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.block.*;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
-import java.io.IOException;
+public class TileEntityWindMill extends TileEntityCommon
+    implements IRotationalEnergySource, IDCController, IWindmill, IMeterInfo {
 
-public class TileEntityWindMill extends TileEntityCommon implements IRotationalEnergySource, IDCController, IWindmill, IMeterInfo {
     ForgeDirection sailDirection = ForgeDirection.UP;
     boolean dirty = true;
     double power_per_tick, power_this_tick, target_velocity, velocity;
     double wind_strength = 0, efficiency = 0;
     double radius = 0;
-    final EntityReference<IDeltaChunk> idcRef = new EntityReference<IDeltaChunk>().whenFound(new IDCController.AutoControl(this));
+    final EntityReference<IDeltaChunk> idcRef = new EntityReference<IDeltaChunk>()
+        .whenFound(new IDCController.AutoControl(this));
 
     @Override
     public void setWorldObj(World w) {
@@ -123,32 +127,65 @@ public class TileEntityWindMill extends TileEntityCommon implements IRotationalE
         return false;
     }
 
-    @Override public boolean hitBlock(IDeltaChunk idc, EntityPlayer player, Coord at, byte sideHit) { return false; }
-    @Override public boolean useBlock(IDeltaChunk idc, EntityPlayer player, Coord at, byte sideHit) { return false; }
-    @Override public void idcDied(IDeltaChunk idc) { }
-    @Override public void beforeUpdate(IDeltaChunk idc) { }
-    @Override public void afterUpdate(IDeltaChunk idc) { }
-    @Override public boolean onAttacked(IDeltaChunk idc, DamageSource damageSource, float damage) { return false; }
-    @Override public CollisionAction collidedWithWorld(World realWorld, AxisAlignedBB realBox, World shadowWorld, AxisAlignedBB shadowBox) { return CollisionAction.STOP_BEFORE; }
+    @Override
+    public boolean hitBlock(IDeltaChunk idc, EntityPlayer player, Coord at, byte sideHit) {
+        return false;
+    }
+
+    @Override
+    public boolean useBlock(IDeltaChunk idc, EntityPlayer player, Coord at, byte sideHit) {
+        return false;
+    }
+
+    @Override
+    public void idcDied(IDeltaChunk idc) {}
+
+    @Override
+    public void beforeUpdate(IDeltaChunk idc) {}
+
+    @Override
+    public void afterUpdate(IDeltaChunk idc) {}
+
+    @Override
+    public boolean onAttacked(IDeltaChunk idc, DamageSource damageSource, float damage) {
+        return false;
+    }
+
+    @Override
+    public CollisionAction collidedWithWorld(World realWorld, AxisAlignedBB realBox, World shadowWorld,
+        AxisAlignedBB shadowBox) {
+        return CollisionAction.STOP_BEFORE;
+    }
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        sailDirection = data.as(Share.VISIBLE, "sailDirection").putEnum(sailDirection);
-        dirty = data.as(Share.PRIVATE, "dirty").putBoolean(dirty);
-        data.as(Share.VISIBLE, "idcRef").putIDS(idcRef);
-        power_per_tick = data.as(Share.VISIBLE, "powerPerTick").putDouble(power_per_tick);
-        power_this_tick = data.as(Share.VISIBLE, "powerThisTick").putDouble(power_this_tick);
-        target_velocity = data.as(Share.VISIBLE, "targetVelocity").putDouble(target_velocity);
-        velocity = data.as(Share.VISIBLE, "velocity").putDouble(velocity);
-        wind_strength = data.as(Share.PRIVATE, "wind_strength").putDouble(wind_strength);
-        efficiency = data.as(Share.PRIVATE, "efficiency").putDouble(efficiency);
-        radius = data.as(Share.PRIVATE, "radius").putDouble(radius);
+        sailDirection = data.as(Share.VISIBLE, "sailDirection")
+            .putEnum(sailDirection);
+        dirty = data.as(Share.PRIVATE, "dirty")
+            .putBoolean(dirty);
+        data.as(Share.VISIBLE, "idcRef")
+            .putIDS(idcRef);
+        power_per_tick = data.as(Share.VISIBLE, "powerPerTick")
+            .putDouble(power_per_tick);
+        power_this_tick = data.as(Share.VISIBLE, "powerThisTick")
+            .putDouble(power_this_tick);
+        target_velocity = data.as(Share.VISIBLE, "targetVelocity")
+            .putDouble(target_velocity);
+        velocity = data.as(Share.VISIBLE, "velocity")
+            .putDouble(velocity);
+        wind_strength = data.as(Share.PRIVATE, "wind_strength")
+            .putDouble(wind_strength);
+        efficiency = data.as(Share.PRIVATE, "efficiency")
+            .putDouble(efficiency);
+        radius = data.as(Share.PRIVATE, "radius")
+            .putDouble(radius);
     }
 
     @Override
     public void representYoSelf() {
         super.representYoSelf();
-        channel_id = DeltaChunk.getHammerRegistry().makeChannelFor(Core.modId, "fluidMill", channel_id, -1, "waterwheels & windmills");
+        channel_id = DeltaChunk.getHammerRegistry()
+            .makeChannelFor(Core.modId, "fluidMill", channel_id, -1, "waterwheels & windmills");
     }
 
     static int channel_id = 100;
@@ -178,7 +215,8 @@ public class TileEntityWindMill extends TileEntityCommon implements IRotationalE
     }
 
     @Override
-    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input) throws IOException {
+    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input)
+        throws IOException {
         if (super.handleMessageFromServer(messageType, input)) {
             return true;
         }
@@ -199,17 +237,21 @@ public class TileEntityWindMill extends TileEntityCommon implements IRotationalE
         DeltaCoord idcSize = new DeltaCoord(MAX_RADIUS * 2, MAX_OUT + MAX_IN, MAX_RADIUS * 2);
         DeltaCoord offset = new DeltaCoord(MAX_RADIUS, MAX_OUT, MAX_RADIUS);
         IDeltaChunk idc = DeltaChunk.allocateSlice(worldObj, channel_id, idcSize);
-        idc.permit(DeltaCapability.BLOCK_PLACE,
-                DeltaCapability.BLOCK_MINE,
-                DeltaCapability.INTERACT,
-                DeltaCapability.ROTATE,
-                DeltaCapability.DIE_WHEN_EMPTY,
-                DeltaCapability.REMOVE_ALL_ENTITIES);
-        idc.forbid(DeltaCapability.COLLIDE_WITH_WORLD,
-                DeltaCapability.COLLIDE,
-                DeltaCapability.VIOLENT_COLLISIONS,
-                DeltaCapability.DRAG);
-        idc.setRotationalCenterOffset(offset.toVector().addVector(0.5, 0.5, 0.5));
+        idc.permit(
+            DeltaCapability.BLOCK_PLACE,
+            DeltaCapability.BLOCK_MINE,
+            DeltaCapability.INTERACT,
+            DeltaCapability.ROTATE,
+            DeltaCapability.DIE_WHEN_EMPTY,
+            DeltaCapability.REMOVE_ALL_ENTITIES);
+        idc.forbid(
+            DeltaCapability.COLLIDE_WITH_WORLD,
+            DeltaCapability.COLLIDE,
+            DeltaCapability.VIOLENT_COLLISIONS,
+            DeltaCapability.DRAG);
+        idc.setRotationalCenterOffset(
+            offset.toVector()
+                .addVector(0.5, 0.5, 0.5));
         final ForgeDirection normal = sailDirection.getOpposite();
         Coord at = new Coord(this).add(sailDirection);
         at.setAsEntityLocation(idc);
@@ -252,7 +294,8 @@ public class TileEntityWindMill extends TileEntityCommon implements IRotationalE
 
     @Override
     public boolean canUpdate() {
-        return FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER;
+        return FMLCommonHandler.instance()
+            .getEffectiveSide() == Side.SERVER;
     }
 
     @Override
@@ -388,9 +431,7 @@ public class TileEntityWindMill extends TileEntityCommon implements IRotationalE
                 speed = FzUtil.toRpm(velocity);
             }
         }
-        return "Efficiency: " + (int) (efficiency * 100) + "%" +
-                "\nWind: " + wind_strength +
-                "\nSpeed: " + speed;
+        return "Efficiency: " + (int) (efficiency * 100) + "%" + "\nWind: " + wind_strength + "\nSpeed: " + speed;
     }
 
     @Override

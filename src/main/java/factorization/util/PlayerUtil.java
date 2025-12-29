@@ -1,18 +1,12 @@
 package factorization.util;
 
-import com.mojang.authlib.GameProfile;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import factorization.api.Coord;
-import factorization.shared.Core;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.embedded.EmbeddedChannel;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.WeakHashMap;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -32,15 +26,21 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.world.WorldEvent;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.WeakHashMap;
+import com.mojang.authlib.GameProfile;
+
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import factorization.api.Coord;
+import factorization.shared.Core;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.embedded.EmbeddedChannel;
 
 public final class PlayerUtil {
+
     private static final UUID FZ_UUID = UUID.fromString("f979c78a-f80d-46b1-9c49-0121ea8850e6");
     private static HashMap<String, WeakHashMap<World, FzFakePlayer>> usedPlayerCache = new HashMap();
 
@@ -70,7 +70,7 @@ public final class PlayerUtil {
     }
 
     public static void recycleFakePlayer(EntityPlayer player) {
-        //player.worldObj = null; causes NPE with Thaumcraft vampire bats. Stored behind a weakref anyways.
+        // player.worldObj = null; causes NPE with Thaumcraft vampire bats. Stored behind a weakref anyways.
         player.isDead = true; // Avoid mob retribution
         player.setHealth(0);
         if (player instanceof FzFakePlayer) {
@@ -80,6 +80,7 @@ public final class PlayerUtil {
     }
 
     public static class PlayerRecycler {
+
         @SubscribeEvent
         public void clearOldPlayers(WorldEvent.Unload event) {
             for (WeakHashMap<World, FzFakePlayer> map : usedPlayerCache.values()) {
@@ -112,7 +113,8 @@ public final class PlayerUtil {
         if (player == null) return false;
         MinecraftServer server = MinecraftServer.getServer();
         if (server == null) return false;
-        return server.getConfigurationManager().func_152596_g(player.getGameProfile());
+        return server.getConfigurationManager()
+            .func_152596_g(player.getGameProfile());
     }
 
     public static boolean isCommandSenderOpped(ICommandSender player) {
@@ -135,7 +137,7 @@ public final class PlayerUtil {
 
     public static int getPuntStrengthOrWeakness(EntityPlayer player) {
         if (player == null) return 1;
-        //strength * knocback
+        // strength * knocback
         int strength = 0;
         PotionEffect p_str = player.getActivePotionEffect(Potion.damageBoost);
         PotionEffect p_wea = player.getActivePotionEffect(Potion.weakness);
@@ -162,29 +164,43 @@ public final class PlayerUtil {
     }
 
     private static class FakeNetManager extends NetworkManager {
+
         public FakeNetManager() {
             super(false);
             this.channel = new EmbeddedChannel(new ChannelHandler() {
-                @Override public void handlerAdded(ChannelHandlerContext ctx) throws Exception { }
-                @Override public void handlerRemoved(ChannelHandlerContext ctx) throws Exception { }
-                @Override @Deprecated public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception { }
+
+                @Override
+                public void handlerAdded(ChannelHandlerContext ctx) throws Exception {}
+
+                @Override
+                public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {}
+
+                @Override
+                @Deprecated
+                public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {}
             });
-            this.channel.pipeline().addFirst("fz:null", new ChannelOutboundHandlerAdapter() {
-                @Override public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception { }
-            });
+            this.channel.pipeline()
+                .addFirst("fz:null", new ChannelOutboundHandlerAdapter() {
+
+                    @Override
+                    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {}
+                });
         }
 
     }
 
     private static class FakeNetHandler extends NetHandlerPlayServer {
+
         public FakeNetHandler(EntityPlayerMP player) {
             super(MinecraftServer.getServer(), new FakeNetManager(), player);
         }
 
-        @Override public void sendPacket(Packet ignored) { }
+        @Override
+        public void sendPacket(Packet ignored) {}
     }
 
     private static class FzFakePlayer extends FakePlayer {
+
         Coord where;
 
         private FzFakePlayer(WorldServer world, String name, Coord where) {
@@ -205,7 +221,10 @@ public final class PlayerUtil {
     }
 
     public static MovingObjectPosition rayTrace(EntityPlayer player, double dist, float partial) {
-        Vec3 pos = Vec3.createVectorHelper(player.posX, player.posY + (player.getEyeHeight() - player.getDefaultEyeHeight()), player.posZ);
+        Vec3 pos = Vec3.createVectorHelper(
+            player.posX,
+            player.posY + (player.getEyeHeight() - player.getDefaultEyeHeight()),
+            player.posZ);
         Vec3 look = player.getLook(partial);
         Vec3 ray = pos.addVector(look.xCoord * dist, look.yCoord * dist, look.zCoord * dist);
         return player.worldObj.func_147447_a(pos, ray, false, false, true);

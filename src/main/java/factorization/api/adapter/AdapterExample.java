@@ -12,13 +12,16 @@ import net.minecraft.world.World;
 
 @SuppressWarnings("unused")
 class AdapterExample {
+
     interface ISparkly {
+
         InterfaceAdapter<Block, ISparkly> adapter = InterfaceAdapter.get(ISparkly.class);
 
         int getSparklePower(World w, int x, int y, int z);
     }
 
     class BlockVampire extends Block implements ISparkly {
+
         public BlockVampire(Material shiny) {
             super(shiny);
         }
@@ -31,6 +34,7 @@ class AdapterExample {
 
     void init() {
         ISparkly.adapter.register(Block.class, new ISparkly() {
+
             @Override
             public int getSparklePower(World w, int x, int y, int z) {
                 Block b = w.getBlock(x, y, z);
@@ -40,6 +44,7 @@ class AdapterExample {
             }
         });
         final ISparkly sparkly_inventory = new ISparkly() {
+
             @Override
             public int getSparklePower(World w, int x, int y, int z) {
                 TileEntity te = w.getTileEntity(x, y, z);
@@ -53,6 +58,7 @@ class AdapterExample {
             }
         };
         ISparkly.adapter.register(new Adapter<Block, ISparkly>() {
+
             @Override
             public ISparkly adapt(final Block val) {
                 return sparkly_inventory;

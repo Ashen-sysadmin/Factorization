@@ -1,16 +1,18 @@
 package factorization.scrap;
 
-import com.google.common.base.Joiner;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.ChatComponentText;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.ChatComponentText;
+
+import com.google.common.base.Joiner;
+
 public class ScrapCommand extends CommandBase {
+
     @Override
     public String getCommandName() {
         return "scrap";
@@ -57,7 +59,11 @@ public class ScrapCommand extends CommandBase {
                 }
             }
         } else {
-            sender.addChatMessage(new ChatComponentText(ScrapManager.call(Joiner.on(" ").join(args))));
+            sender.addChatMessage(
+                new ChatComponentText(
+                    ScrapManager.call(
+                        Joiner.on(" ")
+                            .join(args))));
         }
     }
 

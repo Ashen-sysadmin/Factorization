@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import factorization.util.NumUtil;
-import factorization.util.RenderUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
@@ -45,42 +43,69 @@ import factorization.common.FzConfig;
 import factorization.fzds.interfaces.DeltaCapability;
 import factorization.fzds.interfaces.IFzdsShenanigans;
 import factorization.shared.Core;
-
+import factorization.util.NumUtil;
+import factorization.util.RenderUtil;
 
 public class RenderDimensionSliceEntity extends Render implements IFzdsShenanigans {
+
     public static int update_frequency = 16;
     public static RenderDimensionSliceEntity instance;
-    
+
     private Set<DSRenderInfo> renderInfoTracker = new HashSet<DSRenderInfo>();
     private static long megatickCount = 0;
-    
+
     public RenderDimensionSliceEntity() {
         instance = this;
         Core.loadBus(this);
     }
-    
+
     @Override
-    protected ResourceLocation getEntityTexture(Entity entity) { return null; }
+    protected ResourceLocation getEntityTexture(Entity entity) {
+        return null;
+    }
 
     Vec3 shadowEyeVec = Vec3.createVectorHelper(0, 0, 0);
     EntityLivingBase shadowEye = new EntityLivingBase(null) {
-        @Override protected void entityInit() { }
-        @Override public void readEntityFromNBT(NBTTagCompound var1) { }
-        @Override public void writeEntityToNBT(NBTTagCompound var1) { }
-        @Override public ItemStack getHeldItem() { return null; }
-        @Override public ItemStack getEquipmentInSlot(int var1) { return null; }
-        @Override public void setCurrentItemOrArmor(int var1, ItemStack var2) { }
-        @Override public ItemStack[] getLastActiveItems() { return null; }
-        @Override public void setHealth(float par1) { }
+
+        @Override
+        protected void entityInit() {}
+
+        @Override
+        public void readEntityFromNBT(NBTTagCompound var1) {}
+
+        @Override
+        public void writeEntityToNBT(NBTTagCompound var1) {}
+
+        @Override
+        public ItemStack getHeldItem() {
+            return null;
+        }
+
+        @Override
+        public ItemStack getEquipmentInSlot(int var1) {
+            return null;
+        }
+
+        @Override
+        public void setCurrentItemOrArmor(int var1, ItemStack var2) {}
+
+        @Override
+        public ItemStack[] getLastActiveItems() {
+            return null;
+        }
+
+        @Override
+        public void setHealth(float par1) {}
     };
-    
+
     class DSRenderInfo {
-        //final int width = Hammer.cellWidth;
-        //final int height = 4;
-        //final int cubicChunkCount = width*width*height;
-        private final int wr_display_list_size = 3; //how many display lists a WorldRenderer uses
+
+        // final int width = Hammer.cellWidth;
+        // final int height = 4;
+        // final int cubicChunkCount = width*width*height;
+        private final int wr_display_list_size = 3; // how many display lists a WorldRenderer uses
         final int entity_buffer = 8;
-        
+
         int renderCounts = 0;
         long lastRenderInMegaticks = megatickCount;
         boolean anyRenderersDirty = true;
@@ -88,31 +113,31 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
         private WorldRenderer renderers[] = null;
         Coord corner, far;
         DimensionSliceEntity dse;
-        
+
         int xSize, ySize, zSize;
         int xSizeChunk, ySizeChunk, zSizeChunk;
         int cubicChunkCount;
-        
+
         RenderBlocks rb = new RenderBlocks(DeltaChunk.getClientShadowWorld());
-        
+
         public DSRenderInfo(DimensionSliceEntity dse) {
             this.dse = dse;
             this.corner = dse.getCorner();
             this.far = dse.getFarCorner();
-            
+
             xSize = (far.x - corner.x);
             ySize = (far.y - corner.y);
             zSize = (far.z - corner.z);
-            
+
             int DSC = 16;
-            xSizeChunk = (xSize + DSC)/16;
-            ySizeChunk = (ySize + DSC)/16;
-            zSizeChunk = (zSize + DSC)/16;
-            
+            xSizeChunk = (xSize + DSC) / 16;
+            ySizeChunk = (ySize + DSC) / 16;
+            zSizeChunk = (zSize + DSC) / 16;
+
             if (xSizeChunk <= 0 || ySizeChunk <= 0 || zSizeChunk <= 0) throw new AssertionError();
-            
+
             cubicChunkCount = xSizeChunk * ySizeChunk * zSizeChunk;
-            
+
             renderers = new WorldRenderer[cubicChunkCount];
             int i = 0;
             RenderUtil.checkGLError("FZDS before render");
@@ -120,10 +145,16 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             for (int y = corner.y; y <= far.y; y += DC) {
                 for (int x = corner.x; x <= far.x; x += DC) {
                     for (int z = corner.z; z <= far.z; z += DC) {
-                        //We could allocate lists per WR instead?
-                        //NORELEASE: w.loadedTileEntityList might be wrong? Might be inefficient?
-                        //It creates a list... maybe we should use that instead?
-                        renderers[i] = new WorldRenderer(corner.w, corner.w.loadedTileEntityList, x, y, z, getRenderList() + i*wr_display_list_size);
+                        // We could allocate lists per WR instead?
+                        // NORELEASE: w.loadedTileEntityList might be wrong? Might be inefficient?
+                        // It creates a list... maybe we should use that instead?
+                        renderers[i] = new WorldRenderer(
+                            corner.w,
+                            corner.w.loadedTileEntityList,
+                            x,
+                            y,
+                            z,
+                            getRenderList() + i * wr_display_list_size);
                         renderers[i].posXClip = x - corner.x;
                         renderers[i].posYClip = y - corner.y;
                         renderers[i].posZClip = z - corner.z;
@@ -135,10 +166,10 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             }
             if (i != cubicChunkCount) throw new AssertionError();
         }
-        
+
         int last_update_index = 0;
         int render_skips = 0;
-        
+
         void updateRelativeEyePosition() {
             final Entity player = Minecraft.getMinecraft().renderViewEntity;
             shadowEyeVec.xCoord = player.posX;
@@ -149,9 +180,10 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             shadowEye.posY = eyepos.yCoord;
             shadowEye.posZ = eyepos.zCoord;
         }
-        
+
         void update() {
-            if (far.getChunk().isEmpty()) {
+            if (far.getChunk()
+                .isEmpty()) {
                 return;
             }
             if (!anyRenderersDirty) {
@@ -161,7 +193,7 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             boolean start_from_begining = last_update_index == 0;
             Core.profileStart("updateFzdsTerrain");
             RenderUtil.checkGLError("FZDS before WorldRender update");
-            final int update_limit = 20; //NORELEASE?
+            final int update_limit = 20; // NORELEASE?
             int updates = 0;
             while (last_update_index < renderers.length) {
                 WorldRenderer wr = renderers[last_update_index++];
@@ -183,7 +215,7 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             }
             Core.profileEnd();
         }
-        
+
         void renderTerrain() {
             GL11.glPushAttrib(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_LIGHTING_BIT);
             RenderHelper.disableStandardItemLighting();
@@ -193,15 +225,15 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             }
             for (int pass = 0; pass < 2; pass++) {
                 if (pass == 1) {
-                    //setup transparency
-                    //NORELEASE: Oh god, this is going to be a pain to get working properly...
+                    // setup transparency
+                    // NORELEASE: Oh god, this is going to be a pain to get working properly...
                     // Can we just cheat? No transparency?
                     GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
                     GL11.glEnable(GL11.GL_BLEND);
                 }
                 for (int i = 0; i < renderers.length; i++) {
                     WorldRenderer wr = renderers[i];
-                    wr.isInFrustum = true; //XXX might not be necessary
+                    wr.isInFrustum = true; // XXX might not be necessary
                     int displayList = wr.getGLCallListForPass(pass);
                     if (displayList >= 0) {
                         bindTexture(Core.blockAtlas);
@@ -211,14 +243,14 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             }
             GL11.glPopAttrib();
         }
-        
+
         void renderEntities(float partialTicks) {
             RenderHelper.enableStandardItemLighting();
-            //Maybe we should use RenderGlobal.renderEntities ???
+            // Maybe we should use RenderGlobal.renderEntities ???
             double sx = TileEntityRendererDispatcher.staticPlayerX;
             double sy = TileEntityRendererDispatcher.staticPlayerY;
             double sz = TileEntityRendererDispatcher.staticPlayerZ;
-            
+
             double px = TileEntityRendererDispatcher.instance.field_147560_j;
             double py = TileEntityRendererDispatcher.instance.field_147561_k;
             double pz = TileEntityRendererDispatcher.instance.field_147558_l;
@@ -226,18 +258,18 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             TileEntityRendererDispatcher.instance.field_147560_j = shadowEye.posX;
             TileEntityRendererDispatcher.instance.field_147561_k = shadowEye.posY;
             TileEntityRendererDispatcher.instance.field_147558_l = shadowEye.posZ;
-            
+
             try {
                 int xwidth = far.x - corner.x;
                 int height = far.y - corner.y;
                 int zwidth = far.z - corner.z;
-                
+
                 for (int cdx = 0; cdx < xwidth; cdx++) {
                     for (int cdz = 0; cdz < zwidth; cdz++) {
-                        Chunk here = corner.w.getChunkFromBlockCoords(corner.x + cdx*16, corner.z + cdz*16);
+                        Chunk here = corner.w.getChunkFromBlockCoords(corner.x + cdx * 16, corner.z + cdz * 16);
                         Core.profileStart("entity");
                         for (int i1 = 0; i1 < here.entityLists.length; i1++) {
-                            List<Entity> ents = (List<Entity>)here.entityLists[i1];
+                            List<Entity> ents = (List<Entity>) here.entityLists[i1];
                             for (int i2 = 0; i2 < ents.size(); i2++) {
                                 Entity e = ents.get(i2);
                                 if (e.posY < corner.y - entity_buffer) {
@@ -249,21 +281,25 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
                                 if (nest == 3 && e instanceof DimensionSliceEntity) {
                                     continue;
                                 }
-                                //if e is a proxying player, don't render it?
+                                // if e is a proxying player, don't render it?
                                 RenderManager.instance.renderEntitySimple(e, partialTicks);
                             }
                         }
                         Core.profileEnd();
                         Core.profileStart("tesr");
-                        for (TileEntity te : ((Map<ChunkPosition, TileEntity>)here.chunkTileEntityMap).values()) {
-                            //I warned you about comods, bro! I told you, dawg! (Shouldn't actually be a problem if we're rendering properly)
-                            
-                            //Since we don't know the actual distance from the player to the TE, we need to cheat.
-                            //(We *could* calculate it, I suppose... Or maybe just not render entities when the player's far away)
-                            /*TileEntityRendererDispatcher.staticPlayerX = te.xCoord;
-                            TileEntityRendererDispatcher.staticPlayerY = te.yCoord;
-                            TileEntityRendererDispatcher.staticPlayerZ = te.zCoord;*/
-                            
+                        for (TileEntity te : ((Map<ChunkPosition, TileEntity>) here.chunkTileEntityMap).values()) {
+                            // I warned you about comods, bro! I told you, dawg! (Shouldn't actually be a problem if
+                            // we're rendering properly)
+
+                            // Since we don't know the actual distance from the player to the TE, we need to cheat.
+                            // (We *could* calculate it, I suppose... Or maybe just not render entities when the
+                            // player's far away)
+                            /*
+                             * TileEntityRendererDispatcher.staticPlayerX = te.xCoord;
+                             * TileEntityRendererDispatcher.staticPlayerY = te.yCoord;
+                             * TileEntityRendererDispatcher.staticPlayerZ = te.zCoord;
+                             */
+
                             TileEntityRendererDispatcher.instance.renderTileEntity(te, partialTicks);
                             // NORELEASE (probably): cull if outside camera!
                             // NORELEASE: That's the wrong list? It's every TE, not the TESR'd TEs.
@@ -275,53 +311,63 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
                 TileEntityRendererDispatcher.staticPlayerX = sx;
                 TileEntityRendererDispatcher.staticPlayerY = sy;
                 TileEntityRendererDispatcher.staticPlayerZ = sz;
-                
+
                 TileEntityRendererDispatcher.instance.field_147560_j = px;
                 TileEntityRendererDispatcher.instance.field_147561_k = py;
                 TileEntityRendererDispatcher.instance.field_147558_l = pz;
             }
         }
-        
+
         void renderBreakingBlocks(EntityPlayer player, float partial) {
             HashMap<Integer, DestroyBlockProgress> damagedBlocks = HammerClientProxy.shadowRenderGlobal.damagedBlocks;
             if (damagedBlocks.isEmpty()) return;
             Coord a = dse.getCorner();
             Coord b = dse.getFarCorner();
-            
+
             Tessellator tess = Tessellator.instance;
             startDamageDrawing(tess, player, partial);
             Minecraft mc = Minecraft.getMinecraft();
 
             RenderGlobal realRg = HammerClientProxy.getRealRenderGlobal();
-            
-            for (Iterator<DestroyBlockProgress> iterator = damagedBlocks.values().iterator(); iterator.hasNext();) {
+
+            for (Iterator<DestroyBlockProgress> iterator = damagedBlocks.values()
+                .iterator(); iterator.hasNext();) {
                 DestroyBlockProgress damage = iterator.next();
                 if (a.x <= damage.getPartialBlockX() && damage.getPartialBlockX() <= b.x
-                        && a.y <= damage.getPartialBlockY() && damage.getPartialBlockY() <= b.y
-                        && a.z <= damage.getPartialBlockZ() && damage.getPartialBlockZ() <= b.z) {
+                    && a.y <= damage.getPartialBlockY()
+                    && damage.getPartialBlockY() <= b.y
+                    && a.z <= damage.getPartialBlockZ()
+                    && damage.getPartialBlockZ() <= b.z) {
                     renderDamage(a.w, damage, realRg.destroyBlockIcons);
                 }
             }
-            
+
             endDamageDrawing(tess);
         }
-        
+
         void renderDamage(World world, DestroyBlockProgress damage, IIcon destructionIcons[]) {
-            Block block = world.getBlock(damage.getPartialBlockX(), damage.getPartialBlockY(), damage.getPartialBlockZ());
+            Block block = world
+                .getBlock(damage.getPartialBlockX(), damage.getPartialBlockY(), damage.getPartialBlockZ());
 
             if (block.getMaterial() != Material.air) {
-                rb.renderBlockUsingTexture(block, damage.getPartialBlockX(), damage.getPartialBlockY(), damage.getPartialBlockZ(), destructionIcons[damage.getPartialBlockDamage()]);
+                rb.renderBlockUsingTexture(
+                    block,
+                    damage.getPartialBlockX(),
+                    damage.getPartialBlockY(),
+                    damage.getPartialBlockZ(),
+                    destructionIcons[damage.getPartialBlockDamage()]);
             }
         }
-        
+
         void startDamageDrawing(Tessellator tess, EntityPlayer player, float partial) {
             GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
             /*
              * Push all the things!
-             * There's a bunch of crazy state stuff here; who knows if the commented stuff below that came with it actually restores the state?
+             * There's a bunch of crazy state stuff here; who knows if the commented stuff below that came with it
+             * actually restores the state?
              * In any case, it could still mess up the state in other places.
              */
-            
+
             GL11.glShadeModel(GL11.GL_FLAT);
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
             GL11.glEnable(GL11.GL_BLEND);
@@ -340,22 +386,24 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             tess.setTranslation(-dx, -dy, -dz);
             tess.disableColor();
         }
-        
+
         void endDamageDrawing(Tessellator tess) {
             tess.draw();
             tess.setTranslation(0.0D, 0.0D, 0.0D);
-            /*GL11.glDisable(GL11.GL_ALPHA_TEST);
-            GL11.glPolygonOffset(0.0F, 0.0F);
-            GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
-            GL11.glEnable(GL11.GL_ALPHA_TEST);
-            GL11.glDepthMask(true);
-            GL11.glDisable(GL11.GL_BLEND);*/ // See comment above re. these attributes
+            /*
+             * GL11.glDisable(GL11.GL_ALPHA_TEST);
+             * GL11.glPolygonOffset(0.0F, 0.0F);
+             * GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
+             * GL11.glEnable(GL11.GL_ALPHA_TEST);
+             * GL11.glDepthMask(true);
+             * GL11.glDisable(GL11.GL_BLEND);
+             */ // See comment above re. these attributes
             GL11.glPopAttrib();
         }
-        
+
         int getRenderList() {
             if (renderList == -1) {
-                renderList = GLAllocation.generateDisplayLists(wr_display_list_size*cubicChunkCount);
+                renderList = GLAllocation.generateDisplayLists(wr_display_list_size * cubicChunkCount);
                 renderInfoTracker.add(this);
                 if (renderList == -1) {
                     Core.logWarning("GL display list allocation failed!");
@@ -363,7 +411,7 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             }
             return renderList;
         }
-        
+
         void discardRenderList() {
             if (renderList != -1) {
                 GLAllocation.deleteDisplayLists(renderList);
@@ -372,7 +420,7 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             dse.renderInfo = null;
         }
     }
-    
+
     static void markBlocksForUpdate(DimensionSliceEntity dse, int lx, int ly, int lz, int hx, int hy, int hz) {
         if (dse.renderInfo == null) {
             dse.renderInfo = instance.new DSRenderInfo(dse);
@@ -381,25 +429,25 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
         renderInfo.anyRenderersDirty = true;
         for (int i = 0; i < renderInfo.renderers.length; i++) {
             WorldRenderer wr = renderInfo.renderers[i];
-            if (NumUtil.intersect(lx, hx, wr.posX, wr.posX + 16) &&
-                    NumUtil.intersect(ly, hy, wr.posY, wr.posY + 16) &&
-                    NumUtil.intersect(lz, hz, wr.posZ, wr.posZ + 16)) {
+            if (NumUtil.intersect(lx, hx, wr.posX, wr.posX + 16) && NumUtil.intersect(ly, hy, wr.posY, wr.posY + 16)
+                && NumUtil.intersect(lz, hz, wr.posZ, wr.posZ + 16)) {
                 wr.markDirty();
             }
         }
     }
-    
+
     DSRenderInfo getRenderInfo(DimensionSliceEntity dse) {
         if (dse.renderInfo == null) {
             dse.renderInfo = new DSRenderInfo(dse);
         }
         return (DSRenderInfo) dse.renderInfo;
     }
-    
-    public static int nest = 0; //is 0 usually. Gets incremented right before we start actually rendering.
+
+    public static int nest = 0; // is 0 usually. Gets incremented right before we start actually rendering.
+
     @Override
     public void doRender(Entity ent, double x, double y, double z, float yaw, float partialTicks) {
-        //need to do: Don't render if we're far away! (This should maybe be done in some other function?)
+        // need to do: Don't render if we're far away! (This should maybe be done in some other function?)
         if (ent.isDead) {
             return;
         }
@@ -415,10 +463,10 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
         } else if (nest == 1) {
             Core.profileStart("recursion");
         } else if (nest > 3) {
-            return; //This will never happen, except with outside help.
+            return; // This will never happen, except with outside help.
         }
         EntityPlayer real_player = Minecraft.getMinecraft().thePlayer;
-        
+
         nest++;
         try {
             final boolean oracle = dse.can(DeltaCapability.ORACLE);
@@ -449,10 +497,7 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
                     rot.glRotate();
                 }
                 Vec3 centerOffset = dse.getRotationalCenterOffset();
-                GL11.glTranslated(
-                        -centerOffset.xCoord,
-                        -centerOffset.yCoord,
-                        -centerOffset.zCoord);
+                GL11.glTranslated(-centerOffset.xCoord, -centerOffset.yCoord, -centerOffset.zCoord);
                 if (dse.scale != 1) {
                     GL11.glScalef(dse.scale, dse.scale, dse.scale);
                 }
@@ -494,8 +539,7 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
         } catch (Exception e) {
             Core.logSevere("FZDS failed to render");
             e.printStackTrace(System.err);
-        }
-        finally {
+        } finally {
             nest--;
             if (nest == 0) {
                 RenderUtil.checkGLError("FZDS after render");
@@ -505,10 +549,10 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             }
         }
     }
-    
+
     void discardOldRenderLists() {
-        //discard unused renderlists
-        //The display list will be deallocated if it hasn't been used recently.
+        // discard unused renderlists
+        // The display list will be deallocated if it hasn't been used recently.
         Iterator<DSRenderInfo> it = renderInfoTracker.iterator();
         while (it.hasNext()) {
             DSRenderInfo renderInfo = it.next();
@@ -518,16 +562,16 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             }
         }
     }
-    
+
     @SubscribeEvent
     public void worldChanged(WorldEvent.Unload unloadEvent) {
-        //This only happens when a local server is unloaded.
-        //This probably happens on a different thread, so let the usual tick handler clean it up.
+        // This only happens when a local server is unloaded.
+        // This probably happens on a different thread, so let the usual tick handler clean it up.
         megatickCount += 100;
     }
 
     private int tickDelay = 0;
-    
+
     @SubscribeEvent
     public void tick(RenderTickEvent event) {
         if (tickDelay++ <= 20) return;
@@ -539,7 +583,7 @@ public class RenderDimensionSliceEntity extends Render implements IFzdsShenaniga
             tickEnd();
         }
     }
-    
+
     public void tickStart() {
         megatickCount++;
         if (nest != 0) {

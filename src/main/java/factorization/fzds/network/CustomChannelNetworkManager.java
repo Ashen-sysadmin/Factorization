@@ -1,12 +1,14 @@
 package factorization.fzds.network;
 
-import factorization.fzds.interfaces.IFzdsShenanigans;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
 
+import factorization.fzds.interfaces.IFzdsShenanigans;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+
 class CustomChannelNetworkManager extends NetworkManager implements IFzdsShenanigans {
+
     public CustomChannelNetworkManager(Channel myChannel, boolean isRemote) {
         super(isRemote);
         this.channel = myChannel;

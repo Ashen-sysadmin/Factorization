@@ -26,8 +26,10 @@ import factorization.shared.BlockRenderHelper;
 import factorization.shared.Core;
 
 public class TileEntityCompressionCrafterRenderer extends TileEntitySpecialRenderer {
+
     float textureOffset;
     ExtendedIIcon interp_side = new ExtendedIIcon(BlockIcons.compactSideSlide) {
+
         @Override
         @SideOnly(Side.CLIENT)
         public float getInterpolatedU(double d0) {
@@ -37,17 +39,17 @@ public class TileEntityCompressionCrafterRenderer extends TileEntitySpecialRende
         @Override
         @SideOnly(Side.CLIENT)
         public float getInterpolatedV(double d0) {
-            return under.getInterpolatedV(d0 + 12*textureOffset);
+            return under.getInterpolatedV(d0 + 12 * textureOffset);
         }
-        
+
     };
-    
+
     static double myRound(double x) {
         return x > 0.5 ? 1 : 0;
     }
-    
+
     Random rand = new Random();
-    
+
     @Override
     public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partial) {
         TileEntityCompressionCrafter cc = (TileEntityCompressionCrafter) te;
@@ -56,72 +58,73 @@ public class TileEntityCompressionCrafterRenderer extends TileEntitySpecialRende
         }
         interp_side.under = BlockIcons.compactSideSlide;
         bindTexture(Core.blockAtlas);
-        final float squishy = 3F/16F;
-        final float extraAxialSquish = 10F/16F;
+        final float squishy = 3F / 16F;
+        final float extraAxialSquish = 10F / 16F;
         float perc = cc.getProgressPerc();
-        float p = perc*squishy;
-        
+        float p = perc * squishy;
+
         BlockRenderHelper block = Core.registry.blockRender;
         textureOffset = p;
-        
-        block.useTextures(
-                null, null,
-                interp_side, interp_side,
-                interp_side, interp_side
-                );
-        float d = -1F/256F;
+
+        block.useTextures(null, null, interp_side, interp_side, interp_side, interp_side);
+        float d = -1F / 256F;
         d = 0;
-        block.setBlockBounds(0 - d, 0.5F - 1F/256F, 0 - d, 1 + d, 1F, 1 + d);
+        block.setBlockBounds(0 - d, 0.5F - 1F / 256F, 0 - d, 1 + d, 1F, 1 + d);
         ForgeDirection facing = cc.getFacing();
         FzOrientation fo = FzOrientation.fromDirection(facing);
         Quaternion q = Quaternion.fromOrientation(fo);
         GL11.glPushMatrix();
         GL11.glTranslatef((float) x, (float) y, (float) z);
-        
+
         block.beginWithMirroredUVs();
-        
+
         block.rotateCenter(q);
-        
+
         Tessellator.instance.startDrawingQuads();
-        Tessellator.instance.setBrightness(block.getMixedBrightnessForBlock(cc.getWorldObj(), cc.xCoord, cc.yCoord, cc.zCoord));
+        Tessellator.instance
+            .setBrightness(block.getMixedBrightnessForBlock(cc.getWorldObj(), cc.xCoord, cc.yCoord, cc.zCoord));
         GL11.glDisable(GL11.GL_LIGHTING);
         block.renderForTileEntity();
         Tessellator.instance.draw();
-        
-        if (cc.isPrimaryCrafter() && cc.upperCorner != null && cc.lowerCorner != null
-                && Minecraft.getMinecraft().gameSettings.fancyGraphics) {
+
+        if (cc.isPrimaryCrafter() && cc.upperCorner != null
+            && cc.lowerCorner != null
+            && Minecraft.getMinecraft().gameSettings.fancyGraphics) {
             GL11.glPushMatrix();
             GL11.glTranslatef(-cc.xCoord, -cc.yCoord, -cc.zCoord);
             if (perc > 0.75F) {
                 float jiggle = perc - 0.75F;
-                jiggle /= 32; //this gets us 1 pixel of jiggle room
-                rand.setSeed((long)(((long) Integer.MAX_VALUE)*perc));
-                GL11.glTranslatef((float) rand.nextGaussian()*jiggle, (float) rand.nextGaussian()*jiggle, (float) rand.nextGaussian()*jiggle);
+                jiggle /= 32; // this gets us 1 pixel of jiggle room
+                rand.setSeed((long) (((long) Integer.MAX_VALUE) * perc));
+                GL11.glTranslatef(
+                    (float) rand.nextGaussian() * jiggle,
+                    (float) rand.nextGaussian() * jiggle,
+                    (float) rand.nextGaussian() * jiggle);
             }
             Coord up = cc.upperCorner;
             Coord lo = cc.lowerCorner;
-            float cx = (up.x + lo.x + 1)/2F;
-            float cy = (up.y + lo.y + 1)/2F;
-            float cz = (up.z + lo.z + 1)/2F;
+            float cx = (up.x + lo.x + 1) / 2F;
+            float cy = (up.y + lo.y + 1) / 2F;
+            float cz = (up.z + lo.z + 1) / 2F;
             float sx, sy, sz;
             ForgeDirection fd = cc.craftingAxis;
             sx = sy = sz = 1 - p;
-            if (fd.offsetX != 0) sx = 1 + perc*extraAxialSquish;
-            if (fd.offsetY != 0) sy = 1 + perc*extraAxialSquish;
-            if (fd.offsetZ != 0) sz = 1 + perc*extraAxialSquish;
-            
-            //Unfortunately, the transformed origin is equal to the world's origin.
-            //So it scales towards the origin instead of the center of the compression area.
-            //We need to translate some amount to make up for it.
-            //Actual position: cx*sx; desired is cx. So translate cx - cx*sx
-            GL11.glTranslatef(cx - cx*sx, cy - cy*sy, cz - cz*sz);
-            
+            if (fd.offsetX != 0) sx = 1 + perc * extraAxialSquish;
+            if (fd.offsetY != 0) sy = 1 + perc * extraAxialSquish;
+            if (fd.offsetZ != 0) sz = 1 + perc * extraAxialSquish;
+
+            // Unfortunately, the transformed origin is equal to the world's origin.
+            // So it scales towards the origin instead of the center of the compression area.
+            // We need to translate some amount to make up for it.
+            // Actual position: cx*sx; desired is cx. So translate cx - cx*sx
+            GL11.glTranslatef(cx - cx * sx, cy - cy * sy, cz - cz * sz);
+
             GL11.glScalef(sx, sy, sz);
             drawSquishingBlocks(up, lo, partial);
             GL11.glPopMatrix();
-            
+
             sx = sy = sz = 1;
-            float s = 17F/16F;
+            float s = 17F / 16F;
             if (fd.offsetX != 0) sx = s;
             if (fd.offsetY != 0) sy = s;
             if (fd.offsetZ != 0) sz = s;
@@ -134,15 +137,15 @@ public class TileEntityCompressionCrafterRenderer extends TileEntitySpecialRende
             sy /= -2;
             sz /= -2;
             GL11.glTranslatef(sx, sy, sz);
-            //GL11.glTranslatef(-(up.x - lo.x), -(up.y - lo.y), -(up.z - lo.z + 1));
+            // GL11.glTranslatef(-(up.x - lo.x), -(up.y - lo.y), -(up.z - lo.z + 1));
             drawObscurringBox();
         }
         GL11.glPopMatrix();
         GL11.glEnable(GL11.GL_LIGHTING);
     }
-    
+
     private void drawObscurringBox() {
-        //contentSize is determined by _drawSquishingBlocks
+        // contentSize is determined by _drawSquishingBlocks
         if (contentSize == null) {
             return;
         }
@@ -161,13 +164,13 @@ public class TileEntityCompressionCrafterRenderer extends TileEntitySpecialRende
         block.renderForTileEntity();
         Tessellator.instance.draw();
     }
-    
+
     private static Tessellator tess = new Tessellator();
-    
+
     private void drawSquishingBlocks(Coord upperCorner, Coord lowerCorner, float partial) {
         Tessellator real = Tessellator.instance;
         if (real == tess) {
-            return; //Oh boy!
+            return; // Oh boy!
         }
         double spx, spy, spz;
         spx = TileEntityRendererDispatcher.staticPlayerX;
@@ -184,9 +187,10 @@ public class TileEntityCompressionCrafterRenderer extends TileEntitySpecialRende
             TileEntityRendererDispatcher.staticPlayerZ = spz;
         }
     }
-    
+
     private static Tessellator tesrator = new Tessellator();
     AxisAlignedBB contentSize;
+
     private void _drawSquishingBlocks(Coord upperCorner, Coord lowerCorner, float partial) {
         contentSize = null;
         bindTexture(Core.blockAtlas);

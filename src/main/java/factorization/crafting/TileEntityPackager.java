@@ -3,16 +3,17 @@ package factorization.crafting;
 import java.util.Arrays;
 import java.util.List;
 
-import factorization.common.BlockIcons;
-import factorization.common.FactoryType;
-import factorization.util.CraftUtil;
-
-import factorization.util.ItemUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import factorization.common.BlockIcons;
+import factorization.common.FactoryType;
+import factorization.util.CraftUtil;
+import factorization.util.ItemUtil;
+
 public class TileEntityPackager extends TileEntityStamper {
+
     @Override
     public String getInventoryName() {
         return "Packager";
@@ -22,12 +23,12 @@ public class TileEntityPackager extends TileEntityStamper {
     public FactoryType getFactoryType() {
         return FactoryType.PACKAGER;
     }
-    
+
     @Override
     public IIcon getIcon(ForgeDirection dir) {
         return BlockIcons.packager.get(this, dir);
     }
-    
+
     @Override
     protected List<ItemStack> tryCrafting() {
         ItemStack[] matrix = new ItemStack[9];
@@ -53,11 +54,11 @@ public class TileEntityPackager extends TileEntityStamper {
             to_remove = 4;
             testOutput = CraftUtil.craft3x3(this, true, true, matrix);
         }
-        
+
         if (!CraftUtil.craft_succeeded) {
             return null;
         }
-        
+
         if (testOutput == null || testOutput.isEmpty()) {
             return null;
         }

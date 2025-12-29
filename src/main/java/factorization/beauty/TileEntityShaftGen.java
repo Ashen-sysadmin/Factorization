@@ -1,5 +1,12 @@
 package factorization.beauty;
 
+import java.io.IOException;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.IIcon;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Charge;
 import factorization.api.Coord;
 import factorization.api.IChargeConductor;
@@ -12,14 +19,9 @@ import factorization.shared.BlockClass;
 import factorization.shared.NetworkFactorization;
 import factorization.shared.TileEntityCommon;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.IOException;
 
 public class TileEntityShaftGen extends TileEntityCommon implements IChargeConductor {
+
     final Charge charge = new Charge(this);
     double rotor_angle;
     ForgeDirection shaft_direction = ForgeDirection.DOWN;
@@ -55,7 +57,9 @@ public class TileEntityShaftGen extends TileEntityCommon implements IChargeCondu
         Coord at = getCoord();
         ForgeDirection use = ForgeDirection.UNKNOWN;
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            IRotationalEnergySource res = IRotationalEnergySource.adapter.cast(at.add(dir).getTE());
+            IRotationalEnergySource res = IRotationalEnergySource.adapter.cast(
+                at.add(dir)
+                    .getTE());
             if (res == null) continue;
             if (res.canConnect(dir.getOpposite())) {
                 if (use != ForgeDirection.UNKNOWN) return;
@@ -76,9 +80,12 @@ public class TileEntityShaftGen extends TileEntityCommon implements IChargeCondu
     @Override
     public void putData(DataHelper data) throws IOException {
         charge.serialize("", data);
-        rotor_angle = data.as(Share.VISIBLE, "rotorAngle").putDouble(rotor_angle);
-        shaft_direction = data.as(Share.VISIBLE, "shaft_direction").putEnum(shaft_direction);
-        on = data.as(Share.VISIBLE, "on").putBoolean(on);
+        rotor_angle = data.as(Share.VISIBLE, "rotorAngle")
+            .putDouble(rotor_angle);
+        shaft_direction = data.as(Share.VISIBLE, "shaft_direction")
+            .putEnum(shaft_direction);
+        on = data.as(Share.VISIBLE, "on")
+            .putBoolean(on);
     }
 
     @Override
@@ -86,8 +93,8 @@ public class TileEntityShaftGen extends TileEntityCommon implements IChargeCondu
         return FactoryType.SHAFT_GEN;
     }
 
-
     boolean working = false;
+
     @Override
     public void onNeighborTileChanged(int tilex, int tiley, int tilez) {
         super.onNeighborTileChanged(tilex, tiley, tilez);
@@ -95,7 +102,9 @@ public class TileEntityShaftGen extends TileEntityCommon implements IChargeCondu
         working = true;
         try {
             if (shaft == null || shaft.isTileEntityInvalid()) {
-                shaft = IRotationalEnergySource.adapter.cast(getCoord().adjust(shaft_direction).getTE());
+                shaft = IRotationalEnergySource.adapter.cast(
+                    getCoord().adjust(shaft_direction)
+                        .getTE());
             }
         } finally {
             working = false;
@@ -117,7 +126,9 @@ public class TileEntityShaftGen extends TileEntityCommon implements IChargeCondu
         charge.update();
         if (shaftIsBroken()) {
             if (worldObj.getTotalWorldTime() % 5 == 0) {
-                shaft = IRotationalEnergySource.adapter.cast(getCoord().add(shaft_direction).getTE());
+                shaft = IRotationalEnergySource.adapter.cast(
+                    getCoord().add(shaft_direction)
+                        .getTE());
             }
             return;
         }
@@ -136,7 +147,8 @@ public class TileEntityShaftGen extends TileEntityCommon implements IChargeCondu
     }
 
     @Override
-    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input) throws IOException {
+    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input)
+        throws IOException {
         if (messageType == NetworkFactorization.MessageType.ShaftGenState) {
             on = input.readBoolean();
             getCoord().redraw();

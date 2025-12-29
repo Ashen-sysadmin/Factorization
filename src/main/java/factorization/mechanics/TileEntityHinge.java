@@ -1,5 +1,25 @@
 package factorization.mechanics;
 
+import static factorization.util.SpaceUtil.*;
+import static org.lwjgl.opengl.GL11.*;
+
+import java.io.IOException;
+import java.util.List;
+
+import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.*;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
@@ -19,26 +39,9 @@ import factorization.shared.*;
 import factorization.util.NumUtil;
 import factorization.util.PlayerUtil;
 import factorization.util.SpaceUtil;
-import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.*;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
-
-import java.io.IOException;
-import java.util.List;
-
-import static factorization.util.SpaceUtil.*;
-import static org.lwjgl.opengl.GL11.*;
 
 public class TileEntityHinge extends TileEntityCommon implements IDCController {
+
     FzOrientation facing = FzOrientation.FACE_EAST_POINT_DOWN;
     final EntityReference<IDeltaChunk> idcRef = MechanicsController.autoJoin(this);
     Vec3 dseOffset = SpaceUtil.newVec();
@@ -102,12 +105,14 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
         DeltaCoord size = new DeltaCoord(8, 8, 8);
         Coord min = getCoord().add(size.reverse());
         Coord max = getCoord().add(size);
-        IDeltaChunk idc = DeltaChunk.makeSlice(MechanismsFeature.deltachunk_channel, min, max, new DeltaChunk.AreaMap() {
-            @Override
-            public void fillDse(DeltaChunk.DseDestination destination) {
-                destination.include(target);
-            }
-        }, true);
+        IDeltaChunk idc = DeltaChunk
+            .makeSlice(MechanismsFeature.deltachunk_channel, min, max, new DeltaChunk.AreaMap() {
+
+                @Override
+                public void fillDse(DeltaChunk.DseDestination destination) {
+                    destination.include(target);
+                }
+            }, true);
 
         idc.loadUsualCapabilities();
         idc.permit(DeltaCapability.COLLIDE_WITH_WORLD);
@@ -153,9 +158,12 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        facing = data.as(Share.VISIBLE, "facing").putEnum(facing);
-        data.as(Share.VISIBLE, "ref").putIDS(idcRef);
-        dseOffset = data.as(Share.PRIVATE, "dseOffset").putVec3(dseOffset);
+        facing = data.as(Share.VISIBLE, "facing")
+            .putEnum(facing);
+        data.as(Share.VISIBLE, "ref")
+            .putIDS(idcRef);
+        dseOffset = data.as(Share.PRIVATE, "dseOffset")
+            .putVec3(dseOffset);
     }
 
     void setSlabBounds(Block b) {
@@ -184,7 +192,8 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
     }
 
     @Override
-    public boolean placeBlock(IDeltaChunk idc, EntityPlayer player, Coord at) {;
+    public boolean placeBlock(IDeltaChunk idc, EntityPlayer player, Coord at) {
+        ;
         dirtyInertia();
         return false;
     }
@@ -233,7 +242,8 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
             forceMultiplier /= 3;
         }
         forceMultiplier *= PlayerUtil.getPuntStrengthMultiplier(player);
-        Vec3 force = player.getLookVec().normalize();
+        Vec3 force = player.getLookVec()
+            .normalize();
         incrScale(force, forceMultiplier);
 
         applyForce(idc, at, force);
@@ -246,12 +256,13 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
         Vec3 rotationAxis = getRotationAxis();
         double I = getInertia(idc, rotationAxis);
 
-
-        idc.getRotation().applyReverseRotation(force);
+        idc.getRotation()
+            .applyReverseRotation(force);
 
         Vec3 hitBlock = at.createVector();
 
-        Vec3 idcCorner = idc.getCorner().createVector();
+        Vec3 idcCorner = idc.getCorner()
+            .createVector();
         Vec3 idcRot = add(idcCorner, idc.getRotationalCenterOffset());
 
         Vec3 leverArm = subtract(hitBlock, idcRot);
@@ -259,7 +270,8 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
         incrScale(force, 2.0 / I);
 
         Vec3 torque = leverArm.crossProduct(force);
-        idc.getRotation().applyRotation(torque);
+        idc.getRotation()
+            .applyRotation(torque);
 
         if (SpaceUtil.sum(rotationAxis) < 0) {
             incrScale(rotationAxis, -1);
@@ -271,7 +283,8 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
         Quaternion qy = Quaternion.getRotationQuaternionRadians(torque.yCoord, ForgeDirection.UP);
         Quaternion qz = Quaternion.getRotationQuaternionRadians(torque.zCoord, ForgeDirection.SOUTH);
 
-        Quaternion dOmega = qx.multiply(qy).multiply(qz);
+        Quaternion dOmega = qx.multiply(qy)
+            .multiply(qz);
 
         if (dOmega.getAngleRadians() < min_push_force) {
             dOmega = Quaternion.getRotationQuaternionRadians(min_push_force, SpaceUtil.normalize(dOmega.toVector()));
@@ -299,10 +312,13 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
     }
 
     @Override
-    public boolean onAttacked(IDeltaChunk idc, DamageSource damageSource, float damage) { return false; }
+    public boolean onAttacked(IDeltaChunk idc, DamageSource damageSource, float damage) {
+        return false;
+    }
 
     @Override
-    public CollisionAction collidedWithWorld(World realWorld, AxisAlignedBB realBox, World shadowWorld, AxisAlignedBB shadowBox) {
+    public CollisionAction collidedWithWorld(World realWorld, AxisAlignedBB realBox, World shadowWorld,
+        AxisAlignedBB shadowBox) {
         return CollisionAction.STOP_BEFORE;
     }
 
@@ -315,7 +331,8 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
     static final double min_push_force = NumUtil.interp(min_velocity, max_velocity, 0.01);
 
     boolean isBasicallyZero(Quaternion rotVel) {
-        return rotVel.isZero() || rotVel.getAngleRadians() /* Opportunity to algebra our way out of a call to acos here */ < min_velocity;
+        return rotVel.isZero()
+            || rotVel.getAngleRadians() /* Opportunity to algebra our way out of a call to acos here */ < min_velocity;
     }
 
     @Override
@@ -333,7 +350,8 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
         } else {
             double angle = rotVel.getAngleRadians();
             if (angle > max_velocity) {
-                Vec3 axis = rotVel.toVector().normalize();
+                Vec3 axis = rotVel.toVector()
+                    .normalize();
                 dampened = Quaternion.getRotationQuaternionRadians(max_velocity, axis);
             } else {
                 dampened = rotVel.slerp(new Quaternion(), 0.05);
@@ -351,7 +369,8 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
     private void limitBend(IDeltaChunk idc) {
         final Quaternion rotationalVelocity = idc.getRotationalVelocity();
         if (!idc.hasOrderedRotation() && rotationalVelocity.isZero()) return;
-        final Quaternion nextRotation = idc.getRotation().multiply(rotationalVelocity);
+        final Quaternion nextRotation = idc.getRotation()
+            .multiply(rotationalVelocity);
         final Vec3 middle = SpaceUtil.fromDirection(facing.top);
         final Vec3 arm = SpaceUtil.fromDirection(facing.facing);
         nextRotation.applyRotation(arm);
@@ -385,7 +404,8 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
     @Override
     public void afterUpdate(IDeltaChunk idc) {
         idc_ticking = false;
-        if (!idc.getRotationalVelocity().isZero() || idc.hasOrderedRotation()) {
+        if (!idc.getRotationalVelocity()
+            .isZero() || idc.hasOrderedRotation()) {
             updateComparators();
         }
         if (executing_order && !idc.hasOrderedRotation()) {
@@ -516,7 +536,8 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
                 float dz = face.offsetZ * faced + top.offsetZ * topd;
 
                 GL11.glTranslatef(dx, dy, dz);
-                idc.getRotation().glRotate();
+                idc.getRotation()
+                    .glRotate();
                 GL11.glTranslatef(-dx, -dy, -dz);
             }
             setupHingeRotation2();
@@ -546,14 +567,19 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
         float dx = 0, dy = 0, dz = 0;
         if (tsign == +1) {
             ForgeDirection v = top;
-            dx += v.offsetX; dy += v.offsetY; dz += v.offsetZ;
+            dx += v.offsetX;
+            dy += v.offsetY;
+            dz += v.offsetZ;
         }
         if (fsign == +1) {
             ForgeDirection v = facing.rotateOnFace(1).top;
-            dx += v.offsetX; dy += v.offsetY; dz += v.offsetZ;
+            dx += v.offsetX;
+            dy += v.offsetY;
+            dz += v.offsetZ;
         }
         GL11.glTranslatef(dx, dy, dz);
-        Quaternion.fromOrientation(facing).glRotate();
+        Quaternion.fromOrientation(facing)
+            .glRotate();
         boolean left = false;
         if (face.offsetX != 0) left = top == ForgeDirection.NORTH || top == ForgeDirection.UP;
         if (face.offsetY != 0) left = top == ForgeDirection.WEST || top == ForgeDirection.SOUTH;
@@ -593,7 +619,9 @@ public class TileEntityHinge extends TileEntityCommon implements IDCController {
         }
         IDeltaChunk idc = idcRef.getEntity();
         if (idc == null) return comparator_cache;
-        double angle = Math.toDegrees(idc.getRotation().getAngleBetween(new Quaternion()));
+        double angle = Math.toDegrees(
+            idc.getRotation()
+                .getAngleBetween(new Quaternion()));
         angle /= 90;
         angle = 1 - angle;
         return (byte) (0xF * angle);

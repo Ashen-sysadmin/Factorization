@@ -4,10 +4,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.IProjectile;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityThrowable;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+
 public class ProperProjectilePhysics {
+
     @SubscribeEvent
     public void projectileSpawn(EntityJoinWorldEvent event) {
         if (event.entity instanceof IProjectile) { // Most entities that get spawned aren't projectiles, of course.

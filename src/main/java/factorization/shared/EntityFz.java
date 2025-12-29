@@ -1,23 +1,22 @@
 package factorization.shared;
 
-import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
-import factorization.api.IEntityMessage;
-import io.netty.buffer.ByteBuf;
-
 import java.io.IOException;
 
-import io.netty.buffer.Unpooled;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.world.World;
+
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
 import cpw.mods.fml.relauncher.Side;
+import factorization.api.IEntityMessage;
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.DataInByteBuf;
 import factorization.api.datahelpers.DataInNBT;
 import factorization.api.datahelpers.DataOutByteBuf;
 import factorization.api.datahelpers.DataOutNBT;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 public abstract class EntityFz extends Entity implements IEntityAdditionalSpawnData, IEntityMessage {
 
@@ -27,7 +26,7 @@ public abstract class EntityFz extends Entity implements IEntityAdditionalSpawnD
 
     @Override
     protected final void readEntityFromNBT(NBTTagCompound tag) {
-        //super.readEntityFromNBT(tag);
+        // super.readEntityFromNBT(tag);
         DataHelper data = new DataInNBT(tag);
         try {
             putData(data);
@@ -38,7 +37,7 @@ public abstract class EntityFz extends Entity implements IEntityAdditionalSpawnD
 
     @Override
     protected final void writeEntityToNBT(NBTTagCompound tag) {
-        //super.writeEntityToNBT(tag);
+        // super.writeEntityToNBT(tag);
         DataHelper data = new DataOutNBT(tag);
         try {
             putData(data);
@@ -83,12 +82,14 @@ public abstract class EntityFz extends Entity implements IEntityAdditionalSpawnD
     protected abstract void putData(DataHelper data) throws IOException;
 
     @Override
-    public boolean handleMessageFromClient(NetworkFactorization.MessageType messageType, ByteBuf input) throws IOException {
+    public boolean handleMessageFromClient(NetworkFactorization.MessageType messageType, ByteBuf input)
+        throws IOException {
         return false;
     }
 
     @Override
-    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input) throws IOException {
+    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input)
+        throws IOException {
         if (messageType == NetworkFactorization.MessageType.entity_sync) {
             putData(new DataInByteBuf(input, Side.CLIENT));
             return true;

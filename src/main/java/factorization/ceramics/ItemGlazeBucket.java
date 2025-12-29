@@ -3,11 +3,6 @@ package factorization.ceramics;
 import java.util.ArrayList;
 import java.util.List;
 
-import factorization.common.ItemIcons;
-import factorization.shared.*;
-import factorization.util.DataUtil;
-import factorization.util.ItemUtil;
-import factorization.util.LangUtil;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,18 +13,25 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
 import factorization.ceramics.TileEntityGreenware.ClayLump;
 import factorization.ceramics.TileEntityGreenware.ClayState;
 import factorization.common.BlockIcons;
+import factorization.common.ItemIcons;
 import factorization.notify.Notice;
+import factorization.shared.*;
 import factorization.shared.Core.TabType;
+import factorization.util.DataUtil;
+import factorization.util.ItemUtil;
+import factorization.util.LangUtil;
 
 public class ItemGlazeBucket extends ItemFactorization {
+
     public static final int MAX_CHARGES = 64;
-    
+
     public ItemGlazeBucket() {
         super("ceramics/glaze_bucket", TabType.ART);
         setMaxStackSize(1);
@@ -48,14 +50,15 @@ public class ItemGlazeBucket extends ItemFactorization {
             if (ItemUtil.couldMerge(is, Core.registry.glaze_base_mimicry)) return ItemIcons.ceramics$glaze_bucket_mimic;
             if (ItemUtil.couldMerge(is, Core.registry.empty_glaze_bucket)) return ItemIcons.ceramics$glaze_bucket_empty;
             if (!is.hasTagCompound()) return ItemIcons.ceramics$glaze_bucket_empty;
-            if (is.getTagCompound().hasNoTags()) return ItemIcons.ceramics$glaze_bucket_empty;
+            if (is.getTagCompound()
+                .hasNoTags()) return ItemIcons.ceramics$glaze_bucket_empty;
             return super.getIconIndex(is);
         }
         Block block = getBlockId(is);
         if (block == null) {
             return BlockIcons.uv_test;
-            //Or could return the error icon.
-            //But I think this'll look less terribly awful if a block goes away.
+            // Or could return the error icon.
+            // But I think this'll look less terribly awful if a block goes away.
         }
         try {
             int side = getBlockSide(is);
@@ -83,7 +86,7 @@ public class ItemGlazeBucket extends ItemFactorization {
     }
 
     private boolean spammed = false;
-    
+
     @Override
     public String getUnlocalizedName(ItemStack is) {
         String base = super.getUnlocalizedName(is);
@@ -94,7 +97,7 @@ public class ItemGlazeBucket extends ItemFactorization {
         }
         return base;
     }
-    
+
     @Override
     public String getItemStackDisplayName(ItemStack is) {
         String base = super.getItemStackDisplayName(is);
@@ -106,7 +109,7 @@ public class ItemGlazeBucket extends ItemFactorization {
         }
         return base;
     }
-    
+
     public float getFullness(ItemStack is) {
         int c = getCharges(is);
         if (c >= 32) {
@@ -115,14 +118,14 @@ public class ItemGlazeBucket extends ItemFactorization {
         if (c <= 0) {
             return 0F;
         }
-        return c/(float)MAX_CHARGES;
+        return c / (float) MAX_CHARGES;
     }
-    
+
     public int getCharges(ItemStack is) {
         NBTTagCompound tag = ItemUtil.getTag(is);
         return tag.getInteger("remaining");
     }
-    
+
     public boolean useCharge(ItemStack is) {
         NBTTagCompound tag = ItemUtil.getTag(is);
         int remaining = tag.getInteger("remaining");
@@ -133,40 +136,45 @@ public class ItemGlazeBucket extends ItemFactorization {
         tag.setInteger("remaining", remaining);
         return remaining > 0;
     }
-    
+
     private Block getBlockId(ItemStack is) {
-        return DataUtil.getBlock(ItemUtil.getTag(is).getShort("bid"));
+        return DataUtil.getBlock(
+            ItemUtil.getTag(is)
+                .getShort("bid"));
     }
-    
+
     private byte getBlockMd(ItemStack is) {
-        return ItemUtil.getTag(is).getByte("bmd");
+        return ItemUtil.getTag(is)
+            .getByte("bmd");
     }
-    
+
     private byte getBlockSide(ItemStack is) {
-        return ItemUtil.getTag(is).getByte("bsd");
+        return ItemUtil.getTag(is)
+            .getByte("bsd");
     }
-    
+
     private boolean isMimic(ItemStack is) {
-        return ItemUtil.getTag(is).getBoolean("mimic");
+        return ItemUtil.getTag(is)
+            .getBoolean("mimic");
     }
-    
+
     private ArrayList<ItemStack> subItems = new ArrayList<ItemStack>();
     private boolean done;
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public void getSubItems(Item itemId, CreativeTabs tab, List list) {
         list.addAll(subItems);
     }
-    
+
     public void doneMakingStandardGlazes() {
         done = true;
     }
-    
+
     public void notDoneMakingStandardGlazes() {
         done = false;
     }
-    
+
     public void addGlaze(ItemStack is) {
         if (subItems.isEmpty()) {
             subItems.add(Core.registry.empty_glaze_bucket.copy());
@@ -175,13 +183,14 @@ public class ItemGlazeBucket extends ItemFactorization {
             subItems.add(is);
         }
     }
-    
+
     void setGid(ItemStack is, String unique_id) {
-        ItemUtil.getTag(is).setString("gid", unique_id);
+        ItemUtil.getTag(is)
+            .setString("gid", unique_id);
     }
-    
+
     int md_for_nei = 0;
-    
+
     public ItemStack makeCraftingGlaze(String unique_id) {
         ItemStack is = new ItemStack(this);
         NBTTagCompound tag = ItemUtil.getTag(is);
@@ -191,39 +200,40 @@ public class ItemGlazeBucket extends ItemFactorization {
         addGlaze(is);
         return is;
     }
-    
+
     private ItemStack makeGlazeWith(Block id, int md, int side) {
         ItemStack is = new ItemStack(this);
         NBTTagCompound tag = ItemUtil.getTag(is);
         tag.setShort("bid", (short) DataUtil.getId(id));
-        tag.setByte("bmd", (byte)md);
-        tag.setByte("bsd", (byte)side);
+        tag.setByte("bmd", (byte) md);
+        tag.setByte("bsd", (byte) side);
         tag.setInteger("remaining", MAX_CHARGES);
         addGlaze(is);
         return is;
     }
-    
+
     public ItemStack makeMimicingGlaze(Block id, int md, int side) {
         ItemStack is = makeGlazeWith(id, md, side);
         setMimicry(is);
         return is;
     }
-    
+
     public void setMimicry(ItemStack is) {
         NBTTagCompound tag = ItemUtil.getTag(is);
         tag.setBoolean("mimic", true);
     }
-    
+
     public boolean isUsable(ItemStack is) {
-        if (ItemUtil.getTag(is).getBoolean("fake")) {
+        if (ItemUtil.getTag(is)
+            .getBoolean("fake")) {
             return false;
         }
         return getBlockId(is) != null;
     }
-    
+
     ItemStack getSource(ItemStack is) {
         Block b = getBlockId(is);
-        if (b ==  null) {
+        if (b == null) {
             return null;
         }
         return new ItemStack(b, 1, getBlockMd(is));
@@ -262,23 +272,26 @@ public class ItemGlazeBucket extends ItemFactorization {
         }
         ClayState state = clay.getState();
         ClayLump part = clay.parts.get(mop.subHit);
-        boolean repairMissingBlock = part.icon_id == null || part.icon_id == Blocks.air || (part.icon_id == Core.registry.resource_block && part.icon_md > 0xF);
+        boolean repairMissingBlock = part.icon_id == null || part.icon_id == Blocks.air
+            || (part.icon_id == Core.registry.resource_block && part.icon_md > 0xF);
         if (player.capabilities.isCreativeMode) {
             if (state != ClayState.HIGHFIRED) {
                 clay.totalHeat = TileEntityGreenware.highfireHeat + 1;
             }
         } else {
             switch (state) {
-            case WET:
-            case DRY:
-                new Notice(clay, "Use a {ITEM_NAME} to bisque").withItem(Core.registry.heater_item).send(player);
-                return is;
-            case HIGHFIRED:
-                if (!repairMissingBlock) {
-                    new Notice(clay, "Already high-fired").send(player);
+                case WET:
+                case DRY:
+                    new Notice(clay, "Use a {ITEM_NAME} to bisque").withItem(Core.registry.heater_item)
+                        .send(player);
                     return is;
-                }
-            default: break;
+                case HIGHFIRED:
+                    if (!repairMissingBlock) {
+                        new Notice(clay, "Already high-fired").send(player);
+                        return is;
+                    }
+                default:
+                    break;
             }
         }
         Block id = getBlockId(is);

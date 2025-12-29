@@ -3,6 +3,7 @@ package factorization.rendersorting;
 import java.util.ArrayList;
 
 public class CleaningList<E> extends ArrayList<E> {
+
     private int lastMod = -1;
 
     public boolean setClean() {

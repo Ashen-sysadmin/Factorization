@@ -7,38 +7,45 @@ import factorization.api.DeltaCoord;
 import factorization.util.NumUtil;
 
 public class Brush {
+
     public static enum BrushMask {
-        ONLY_AIR, ONLY_NON_AIR, ALL;
-        
+
+        ONLY_AIR,
+        ONLY_NON_AIR,
+        ALL;
+
         boolean applies(Coord at) {
             switch (this) {
-            case ONLY_AIR: return at.isAir();
-            case ONLY_NON_AIR: return !at.isAir();
-            default:
-            case ALL: return true;
+                case ONLY_AIR:
+                    return at.isAir();
+                case ONLY_NON_AIR:
+                    return !at.isAir();
+                default:
+                case ALL:
+                    return true;
             }
         }
     }
-    
+
     BlockState fill;
     BrushMask mask;
     DeltaCoord[] points;
     Random rand;
-    
+
     public Brush(BlockState fill, BrushMask mask, Random rand) {
         this.fill = fill;
         this.mask = mask;
         this.rand = rand;
-        points = new DeltaCoord[] {new DeltaCoord(0, 0, 0)};
+        points = new DeltaCoord[] { new DeltaCoord(0, 0, 0) };
     }
-    
+
     public Brush(BlockState fill, BrushMask mask, Random rand, DeltaCoord... points) {
         this.fill = fill;
         this.mask = mask;
         this.rand = rand;
         this.points = points;
     }
-    
+
     void paint(Coord target) {
         Coord at = target.copy();
         for (DeltaCoord dc : points) {
@@ -49,7 +56,7 @@ public class Brush {
             }
         }
     }
-    
+
     void drag(Coord start, Coord end) {
         double length = Math.sqrt(start.distanceSq(end));
         Coord mid = start.copy();

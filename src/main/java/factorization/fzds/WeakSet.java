@@ -6,8 +6,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-
 public class WeakSet<T> implements Set<T> {
+
     WeakHashMap<T, Object> under = new WeakHashMap<T, Object>();
     private static final Object EMPTY = new Object();
 
@@ -53,7 +53,10 @@ public class WeakSet<T> implements Set<T> {
     @Override
     public Iterator<T> iterator() {
         return new Iterator<T>() {
-            Iterator<Entry<T, Object>> it = under.entrySet().iterator();
+
+            Iterator<Entry<T, Object>> it = under.entrySet()
+                .iterator();
+
             @Override
             public boolean hasNext() {
                 return it.hasNext();
@@ -61,14 +64,15 @@ public class WeakSet<T> implements Set<T> {
 
             @Override
             public T next() {
-                return it.next().getKey();
+                return it.next()
+                    .getKey();
             }
 
             @Override
             public void remove() {
                 it.remove();
             }
-            
+
         };
     }
 
@@ -89,7 +93,8 @@ public class WeakSet<T> implements Set<T> {
     @Override
     public boolean retainAll(Collection<?> c) {
         boolean any = false;
-        Iterator<Entry<T, Object>> it = under.entrySet().iterator();
+        Iterator<Entry<T, Object>> it = under.entrySet()
+            .iterator();
         while (it.hasNext()) {
             if (!c.contains(it.next())) {
                 it.remove();
@@ -106,13 +111,14 @@ public class WeakSet<T> implements Set<T> {
 
     @Override
     public Object[] toArray() {
-        return under.keySet().toArray();
+        return under.keySet()
+            .toArray();
     }
 
     @Override
     public <R> R[] toArray(R[] a) {
-        return under.keySet().toArray(a);
+        return under.keySet()
+            .toArray(a);
     }
-    
-    
+
 }

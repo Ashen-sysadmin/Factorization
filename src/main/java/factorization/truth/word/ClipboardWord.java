@@ -4,6 +4,7 @@ import factorization.shared.Sound;
 import factorization.util.FzUtil;
 
 public class ClipboardWord extends TextWord {
+
     final String clipboard;
 
     public ClipboardWord(String toCopy) {

@@ -1,7 +1,6 @@
 package factorization.charge;
 
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
@@ -18,11 +17,12 @@ import factorization.shared.FactorizationBlockRender;
 public class BlockRenderSteamTurbine extends FactorizationBlockRender {
 
     TileEntityWire fake_wire = new TileEntityWire();
+
     @Override
     public boolean render(RenderBlocks rb) {
         float m = 0.0001F;
         renderNormalBlock(rb, getFactoryType().md);
-        
+
         renderMotor(rb, 0);
         if (world_mode) {
             Coord me = getCoord();
@@ -37,33 +37,33 @@ public class BlockRenderSteamTurbine extends FactorizationBlockRender {
                 renderCube(rc);
             }
         }
-        
+
         if (world_mode) {
-            //render interior bits
+            // render interior bits
             Block b = Core.registry.factory_rendering_block;
-            float f = 1F - (3F/16F);
-            
+            float f = 1F - (3F / 16F);
+
             IIcon side = BlockIcons.turbine_side;
-            //FIXME: This sucks.
+            // FIXME: This sucks.
             Tessellator.instance.addTranslation(0, 0, f);
             rb.renderFaceZNeg(b, x, y, z, side);
-            Tessellator.instance.addTranslation(0, 0, -2*f);
+            Tessellator.instance.addTranslation(0, 0, -2 * f);
             rb.renderFaceZPos(b, x, y, z, side);
             Tessellator.instance.addTranslation(0, 0, f);
-            
+
             Tessellator.instance.addTranslation(f, 0, 0);
             rb.renderFaceXNeg(b, x, y, z, side);
-            Tessellator.instance.addTranslation(-2*f, 0, 0);
+            Tessellator.instance.addTranslation(-2 * f, 0, 0);
             rb.renderFaceXPos(b, x, y, z, side);
             Tessellator.instance.addTranslation(f, 0, 0);
-            
+
             Tessellator.instance.addTranslation(0, f, 0);
             rb.renderFaceYNeg(b, x, y, z, BlockIcons.turbine_bottom);
-            Tessellator.instance.addTranslation(0, -2*f, 0);
+            Tessellator.instance.addTranslation(0, -2 * f, 0);
             rb.renderFaceYPos(b, x, y, z, BlockIcons.turbine_bottom);
             Tessellator.instance.addTranslation(0, f, 0);
         } else {
-            //render fan
+            // render fan
             GL11.glPushMatrix();
             float s = 0.60F;
             GL11.glScalef(s, s, s);

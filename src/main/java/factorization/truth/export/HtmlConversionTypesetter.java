@@ -1,27 +1,27 @@
 package factorization.truth.export;
 
-import factorization.truth.AbstractTypesetter;
-import factorization.truth.api.*;
-import factorization.truth.word.ItemWord;
-import factorization.truth.word.TextWord;
-import factorization.truth.word.Word;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.Collection;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
+import factorization.truth.AbstractTypesetter;
+import factorization.truth.api.*;
+import factorization.truth.word.Word;
 
 public class HtmlConversionTypesetter extends AbstractTypesetter implements IHtmlTypesetter {
+
     PrintStream out;
     final String root;
+
     public HtmlConversionTypesetter(String domain, OutputStream out, String root) {
         super(domain);
         this.out = new PrintStream(out);
         this.root = root;
     }
-    
+
     static String found_icon = null;
 
     @Override
@@ -30,7 +30,8 @@ public class HtmlConversionTypesetter extends AbstractTypesetter implements IHtm
     }
 
     public static String esc(String s) {
-        return s.replace("&", "&amp;").replace(">", "&gt;");
+        return s.replace("&", "&amp;")
+            .replace(">", "&gt;");
     }
 
     @Override

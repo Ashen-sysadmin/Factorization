@@ -1,24 +1,27 @@
 package factorization.truth.word;
 
-import factorization.truth.WordPage;
-import factorization.truth.api.IHtmlTypesetter;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.EnumChatFormatting;
 
+import factorization.truth.WordPage;
+import factorization.truth.api.IHtmlTypesetter;
+
 public class TextWord extends Word {
+
     public final String text;
     private short width_cache = -1;
 
     public TextWord(String text) {
         this.text = text;
     }
-    
+
     @Override
     public String toString() {
         return text + " ==> " + getLink();
     }
 
     private static final String LINK_STYLE = "" + EnumChatFormatting.UNDERLINE;
+
     @Override
     public void setLink(String link) {
         super.setLink(link);
@@ -58,7 +61,7 @@ public class TextWord extends Word {
     public int getPaddingAbove() {
         return 2;
     }
-    
+
     @Override
     public int getWordHeight() {
         return WordPage.TEXT_HEIGHT;

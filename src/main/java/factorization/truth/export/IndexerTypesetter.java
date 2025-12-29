@@ -1,12 +1,12 @@
 package factorization.truth.export;
 
-
 import factorization.truth.ClientTypesetter;
 import factorization.truth.api.IWord;
 
 public class IndexerTypesetter extends ClientTypesetter {
+
     String filename;
-    
+
     public IndexerTypesetter(String domain, String filename) {
         super(domain, null, 0, 0);
         this.filename = filename;

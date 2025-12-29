@@ -1,16 +1,18 @@
 package factorization.truth.gen.recipe;
 
-import factorization.truth.api.IObjectWriter;
-import factorization.truth.word.TextWord;
-import net.minecraft.item.crafting.IRecipe;
-
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
+import net.minecraft.item.crafting.IRecipe;
+
+import factorization.truth.api.IObjectWriter;
+import factorization.truth.word.TextWord;
+
 public class ReflectionWriter implements IObjectWriter<Object> {
+
     int recursion = 0;
 
     @Override
@@ -32,7 +34,8 @@ public class ReflectionWriter implements IObjectWriter<Object> {
         return false;
     }
 
-    void addRecipeWithReflection(List out, Object val, IObjectWriter<Object> generic) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    void addRecipeWithReflection(List out, Object val, IObjectWriter<Object> generic)
+        throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         if (recursion > 4) {
             out.add(new TextWord("…"));
             return;
@@ -45,7 +48,8 @@ public class ReflectionWriter implements IObjectWriter<Object> {
         }
     }
 
-    void do_addRecipeWithReflection(List out, Object val, IObjectWriter<Object> generic) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    void do_addRecipeWithReflection(List out, Object val, IObjectWriter<Object> generic)
+        throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         if (writeDirect(out, val, generic)) {
             return; // ItemStack/String/Number/isArray/Collection/NBTBase/Entry
         }
@@ -66,7 +70,9 @@ public class ReflectionWriter implements IObjectWriter<Object> {
             String name = method.getName();
             if ("toString".equals(name) || "hashCode".equals(name) || "clone".equals(name)) continue;
             if (name.startsWith("get")) {
-                properties.add(name = name.replaceFirst("get", "").toLowerCase(Locale.ROOT));
+                properties.add(
+                    name = name.replaceFirst("get", "")
+                        .toLowerCase(Locale.ROOT));
             }
             Type[] canThrow = method.getGenericExceptionTypes();
             if (canThrow != null && canThrow.length != 0) continue;
@@ -78,7 +84,8 @@ public class ReflectionWriter implements IObjectWriter<Object> {
         }
         Field[] fields = valClass.getDeclaredFields();
         for (Field f : fields) {
-            if (f.getName().contains("$")) continue;
+            if (f.getName()
+                .contains("$")) continue;
             if (properties.contains(f.getName())) continue;
             if ((f.getModifiers() & Modifier.STATIC) != 0) continue;
             if (!f.isAccessible()) {
@@ -92,8 +99,9 @@ public class ReflectionWriter implements IObjectWriter<Object> {
         }
     }
 
-    private void put(List out, IObjectWriter<Object> generic, String name, Object v) throws IllegalAccessException, InvocationTargetException {
-        //if (name.toLowerCase(Locale.ROOT).equals("output")) return;
+    private void put(List out, IObjectWriter<Object> generic, String name, Object v)
+        throws IllegalAccessException, InvocationTargetException {
+        // if (name.toLowerCase(Locale.ROOT).equals("output")) return;
         ArrayList tmp = new ArrayList();
         if (writeDirect(tmp, v, generic)) {
             out.add(name + ": ");

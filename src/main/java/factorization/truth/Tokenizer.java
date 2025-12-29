@@ -1,9 +1,9 @@
 package factorization.truth;
 
+import static factorization.truth.Tokenizer.TokenType.*;
+
 import factorization.truth.api.ITokenizer;
 import factorization.truth.api.TruthError;
-
-import static factorization.truth.Tokenizer.TokenType.*;
 
 public class Tokenizer implements ITokenizer {
 
@@ -29,26 +29,28 @@ public class Tokenizer implements ITokenizer {
     }
 
     public enum TokenType {
-        WORD, COMMAND, PARAMETER
+        WORD,
+        COMMAND,
+        PARAMETER
     }
-    
+
     public TokenType type;
     public String token;
-    
+
     private final String src;
     private int scan = 0;
     private int prevScan = -1;
-    
+
     public Tokenizer(String src) {
         this.src = src;
     }
-    
+
     private static final String NL = "\\p";
     private static final String WS = "\\ ";
-    
+
     private int contigLines = 0;
     private int contigSpaces = 0;
-    
+
     public boolean nextToken() {
         prevScan = scan;
         mainloop: while (true) {
@@ -103,7 +105,7 @@ public class Tokenizer implements ITokenizer {
         scan = prevScan;
         prevScan = -1;
     }
-    
+
     private void emit(TokenType type, int start, int end) {
         this.type = type;
         token = src.substring(start, end);
@@ -148,8 +150,6 @@ public class Tokenizer implements ITokenizer {
         }
         emit(PARAMETER, start + 1, scan - 1);
     }
-
-
 
     private void readCommand() {
         readWord();

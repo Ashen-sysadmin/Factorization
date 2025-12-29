@@ -1,5 +1,17 @@
 package factorization.mechanics;
 
+import java.util.Arrays;
+import java.util.List;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.IIcon;
+import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.common.ItemIcons;
 import factorization.fzds.DeltaChunk;
@@ -11,26 +23,17 @@ import factorization.shared.ItemFactorization;
 import factorization.util.FzUtil;
 import factorization.util.ItemUtil;
 import factorization.util.SpaceUtil;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.World;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class ItemDarkIronChain extends ItemFactorization {
+
     public ItemDarkIronChain(String name, Core.TabType tabType) {
         super(name, tabType);
         setMaxStackSize(1); // Would've preferred 16, but it'd behave wonkily with the NBT
     }
 
     @Override
-    public boolean onItemUseFirst(ItemStack is, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+    public boolean onItemUseFirst(ItemStack is, EntityPlayer player, World world, int x, int y, int z, int side,
+        float hitX, float hitY, float hitZ) {
         if (world.isRemote) return false;
         Coord at = new Coord(world, x, y, z);
         if (player.isSneaking()) {
@@ -76,14 +79,9 @@ public class ItemDarkIronChain extends ItemFactorization {
 
     boolean acceptableIDC(IDeltaChunk idc) {
         if (!MechanicsController.usable(idc)) return false;
-        for (DeltaCapability req : new DeltaCapability[] {
-                DeltaCapability.INTERACT,
-                DeltaCapability.BLOCK_MINE,
-                DeltaCapability.BLOCK_PLACE,
-                DeltaCapability.MOVE,
-                DeltaCapability.COLLIDE,
-                DeltaCapability.COLLIDE_WITH_WORLD
-        }) {
+        for (DeltaCapability req : new DeltaCapability[] { DeltaCapability.INTERACT, DeltaCapability.BLOCK_MINE,
+            DeltaCapability.BLOCK_PLACE, DeltaCapability.MOVE, DeltaCapability.COLLIDE,
+            DeltaCapability.COLLIDE_WITH_WORLD }) {
             if (!idc.can(req)) return false;
         }
         return true;
@@ -164,13 +162,15 @@ public class ItemDarkIronChain extends ItemFactorization {
             return;
         }
         double d = 0.5;
-        final Vec3 anchorPoint = shadow.createVector().addVector(d, d, d);
+        final Vec3 anchorPoint = shadow.createVector()
+            .addVector(d, d, d);
         ForgeDirection dir = loadSide(is, "shadow");
         Vec3 dv = SpaceUtil.scale(SpaceUtil.fromDirection(dir), 0.5);
         SpaceUtil.incrAdd(anchorPoint, dv);
 
         crank.setChain(toHook, anchorPoint, shadow);
-        Notice.onscreen(player, "item.factorization:darkIronChain.finish"); // Not really necessary, since you should be able to see the chain
+        Notice.onscreen(player, "item.factorization:darkIronChain.finish"); // Not really necessary, since you should be
+                                                                            // able to see the chain
         if (player.capabilities.isCreativeMode) {
             is.setTagCompound(new NBTTagCompound());
         } else {

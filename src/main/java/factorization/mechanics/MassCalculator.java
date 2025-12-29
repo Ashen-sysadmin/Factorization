@@ -1,15 +1,17 @@
 package factorization.mechanics;
 
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.Vec3;
+
 import factorization.api.Coord;
 import factorization.api.ICoordFunction;
 import factorization.fzds.interfaces.IDeltaChunk;
 import factorization.util.NumUtil;
 import factorization.util.SpaceUtil;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.Vec3;
 
 class MassCalculator implements ICoordFunction {
+
     private static final boolean ROUND_RESULTS = true;
 
     static double calculateMass(IDeltaChunk idc) {
@@ -83,6 +85,7 @@ class MassCalculator implements ICoordFunction {
     }
 
     private Vec3 boxMid = SpaceUtil.newVec();
+
     protected void handle(Coord here, double mass) {
         final AxisAlignedBB box = here.getCollisionBoundingBoxFromPool();
         if (box != null) {

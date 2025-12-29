@@ -12,13 +12,17 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+
 import factorization.api.Coord;
 import factorization.common.BlockIcons;
 import factorization.common.FzConfig;
 
 public class BlockLightAir extends Block {
+
     static public final int air_md = 0;
-    static MaterialTransparent actuallyTransparentMaterial = new MaterialTransparent(Material.air.getMaterialMapColor()) {
+    static MaterialTransparent actuallyTransparentMaterial = new MaterialTransparent(
+        Material.air.getMaterialMapColor()) {
+
         @Override
         public boolean isOpaque() {
             return true;
@@ -43,7 +47,7 @@ public class BlockLightAir extends Block {
 
     @Override
     public void breakBlock(World w, int x, int y, int z, Block id, int md) {
-        //Don't need super calls because we don't carry TEs
+        // Don't need super calls because we don't carry TEs
         if (w.isRemote) {
             return;
         }
@@ -56,10 +60,10 @@ public class BlockLightAir extends Block {
             w.scheduleBlockUpdate(x, y - 1, z, this, 1);
         }
     }
-    
+
     @Override
-    public void registerBlockIcons(IIconRegister reg) { }
-    
+    public void registerBlockIcons(IIconRegister reg) {}
+
     @Override
     public IIcon getIcon(int side, int md) {
         if (FzConfig.debug_light_air) {
@@ -135,6 +139,6 @@ public class BlockLightAir extends Block {
 
     @Override
     public int getMobilityFlag() {
-        return 1; //can't push, but can overwrite
+        return 1; // can't push, but can overwrite
     }
 }

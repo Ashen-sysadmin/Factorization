@@ -1,18 +1,21 @@
 package factorization.colossi;
 
-import factorization.api.Coord;
-import factorization.util.SpaceUtil;
 import net.minecraft.block.Block;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import factorization.api.Coord;
 import factorization.api.Quaternion;
 import factorization.colossi.ColossusController.BodySide;
 import factorization.colossi.ColossusController.LimbType;
 import factorization.fzds.interfaces.IDeltaChunk;
 import factorization.fzds.interfaces.Interpolation;
+import factorization.util.SpaceUtil;
 
 public enum WalkState implements IStateMachine<WalkState> {
+
     IDLE {
+
         final Technique[] idle_interrupters = new Technique[] {};
 
         @Override
@@ -26,9 +29,8 @@ public enum WalkState implements IStateMachine<WalkState> {
         }
     },
     TURN {
-        final Technique[] turn_interrupters = new Technique[] {
-                Technique.DEATH_FALL
-        };
+
+        final Technique[] turn_interrupters = new Technique[] { Technique.DEATH_FALL };
 
         @Override
         protected Technique[] getInterrupters() {
@@ -54,18 +56,18 @@ public enum WalkState implements IStateMachine<WalkState> {
                 }
             }
         }
-        
+
         @Override
         public WalkState tick(ColossusController controller, int age) {
             if (interruptWalk(controller)) return IDLE;
             if (controller.atTarget() || controller.targetChanged()) return IDLE;
             playStepSounds(controller, age);
             if (!controller.body.hasOrderedRotation()) return checkRotation(controller);
-            
+
             // System no longer supports joint displacement, but if it did:
             // double lift_height = 1.5F/16F;
             double base_twist = Math.PI * 2 * 0.03;
-            double phase_length = 36; //18;
+            double phase_length = 36; // 18;
             for (LimbInfo limb : controller.limbs) {
                 // Twist the legs while the body turns
                 IDeltaChunk idc = limb.idc.getEntity();
@@ -74,12 +76,12 @@ public enum WalkState implements IStateMachine<WalkState> {
                 if (limb.type != LimbType.LEG) continue;
                 double nextRotation = base_twist;
                 double nextRotationTime = phase_length;
-                
+
                 // This is how it *ought* to work, but there's some weird corner case that I can't figure out. -_-
                 // So the turning direction is tracked by a variable instead, which is less robust.
                 // double dr = body.getRotation().dotProduct(down) - currentRotation.dotProduct(down);
                 // nextRotation *= -Math.signum(dr);1
-                
+
                 limb.lastTurnDirection *= -1;
                 Interpolation interp = Interpolation.SMOOTH;
                 if (limb.lastTurnDirection == 0) {
@@ -89,7 +91,7 @@ public enum WalkState implements IStateMachine<WalkState> {
                     interp = Interpolation.CUBIC;
                 }
                 nextRotation *= limb.lastTurnDirection;
-                
+
                 Quaternion nr = Quaternion.getRotationQuaternionRadians(nextRotation, ForgeDirection.DOWN);
                 if (limb.lastTurnDirection == controller.turningDirection) {
                     // Lift a leg up a tiny bit
@@ -98,14 +100,15 @@ public enum WalkState implements IStateMachine<WalkState> {
                 limb.setTargetRotation(nr, (int) (nextRotationTime * controller.getSpeedScale()), interp);
                 limb.creak();
             }
-            
+
             return this;
         }
-        
+
         WalkState checkRotation(ColossusController controller) {
             if (controller.atTarget()) return IDLE;
             IDeltaChunk body = controller.body;
-            Vec3 target = controller.getTarget().createVector();
+            Vec3 target = controller.getTarget()
+                .createVector();
             target.yCoord = controller.posY;
             Vec3 me = SpaceUtil.fromEntPos(body);
             Vec3 delta = me.subtract(target);
@@ -113,11 +116,15 @@ public enum WalkState implements IStateMachine<WalkState> {
             Quaternion target_rotation = Quaternion.getRotationQuaternionRadians(angle, ForgeDirection.UP);
             Quaternion current_rotation = body.getRotation();
             int size = controller.leg_size + 1;
-            double rotation_distance = (((Math.toDegrees(target_rotation.getAngleBetween(current_rotation)) % 360) + 360) % 360) / 360;
+            double rotation_distance = (((Math.toDegrees(target_rotation.getAngleBetween(current_rotation)) % 360)
+                + 360) % 360) / 360;
             double rotation_speed = 80;
             double rotation_time = rotation_distance * rotation_speed;
             if (rotation_time >= 10) {
-                controller.bodyLimbInfo.setTargetRotation(target_rotation, (int) (rotation_time * controller.getSpeedScale()), Interpolation.SMOOTH);
+                controller.bodyLimbInfo.setTargetRotation(
+                    target_rotation,
+                    (int) (rotation_time * controller.getSpeedScale()),
+                    Interpolation.SMOOTH);
                 // Now bodyLimbInfo.isTurning() is set.
                 controller.turningDirection = angle > 0 ? 1 : -1;
                 for (LimbInfo li : controller.limbs) {
@@ -131,7 +138,7 @@ public enum WalkState implements IStateMachine<WalkState> {
             }
             return TURN;
         }
-        
+
         @Override
         public void onExitState(ColossusController controller, WalkState nextState) {
             controller.turningDirection = 0;
@@ -140,10 +147,8 @@ public enum WalkState implements IStateMachine<WalkState> {
         }
     },
     FORWARD {
-        final Technique[] forward_interrupters = new Technique[] {
-                Technique.DEATH_FALL,
-                Technique.HIT_WITH_LIMB,
-        };
+
+        final Technique[] forward_interrupters = new Technique[] { Technique.DEATH_FALL, Technique.HIT_WITH_LIMB, };
 
         @Override
         protected Technique[] getInterrupters() {
@@ -154,7 +159,8 @@ public enum WalkState implements IStateMachine<WalkState> {
         public void onEnterState(ColossusController controller, WalkState prevState) {
             if (controller.atTarget()) return;
             IDeltaChunk body = controller.body;
-            Vec3 target = controller.getTarget().createVector();
+            Vec3 target = controller.getTarget()
+                .createVector();
             target.yCoord = controller.posY;
             Vec3 me = SpaceUtil.fromEntPos(body);
             Vec3 delta = me.subtract(target);
@@ -165,25 +171,23 @@ public enum WalkState implements IStateMachine<WalkState> {
             controller.walked += walk_speed;
             controller.resetLimbs(20, Interpolation.SMOOTH);
         }
-        
+
         private final double max_leg_swing_degrees = 22.5;
         private final double max_leg_swing_radians = Math.toRadians(max_leg_swing_degrees);
-        private final Quaternion arm_hang = Quaternion.getRotationQuaternionRadians(Math.toRadians(5), ForgeDirection.EAST);
+        private final Quaternion arm_hang = Quaternion
+            .getRotationQuaternionRadians(Math.toRadians(5), ForgeDirection.EAST);
         private final int SPEED = 2;
         private final double MAX_WALK_SPEED = SPEED / 20.0;
-        
-        
+
         @Override
         public WalkState tick(ColossusController controller, int age) {
             if (interruptWalk(controller)) return IDLE;
             if (controller.atTarget() || controller.targetChanged()) return IDLE;
             playStepSounds(controller, age);
-            
-            
+
             final double legCircumference = 2 * Math.PI * controller.leg_size;
             final double swingTime = legCircumference * 360 / (2 * max_leg_swing_degrees * SPEED);
-            
-            
+
             for (LimbInfo limb : controller.limbs) {
                 if (limb.type != LimbType.LEG && limb.type != LimbType.ARM) continue;
                 if (limb.isTurning() && !(limb.type == LimbType.LEG && age == 0)) continue;
@@ -203,7 +207,8 @@ public enum WalkState implements IStateMachine<WalkState> {
                 if (controller.walked == 0) {
                     p = 0;
                 }
-                Quaternion nextRotation = Quaternion.getRotationQuaternionRadians(max_leg_swing_radians * p, ForgeDirection.NORTH);
+                Quaternion nextRotation = Quaternion
+                    .getRotationQuaternionRadians(max_leg_swing_radians * p, ForgeDirection.NORTH);
                 if (limb.type == LimbType.ARM) {
                     if (limb.side == BodySide.LEFT) {
                         nextRotation.incrMultiply(arm_hang);
@@ -211,10 +216,13 @@ public enum WalkState implements IStateMachine<WalkState> {
                         nextRotation.incrMultiply(arm_hang.conjugate());
                     }
                 }
-                limb.setTargetRotation(nextRotation, (int) (nextRotationTime * controller.getSpeedScale()), Interpolation.SMOOTH);
+                limb.setTargetRotation(
+                    nextRotation,
+                    (int) (nextRotationTime * controller.getSpeedScale()),
+                    Interpolation.SMOOTH);
                 limb.creak();
             }
-            
+
             return this;
         }
 
@@ -225,24 +233,24 @@ public enum WalkState implements IStateMachine<WalkState> {
             body.motionX = body.motionZ = 0; // We've reached our destination
             body.motionY = 0; // Might not be quite where this belongs. Stop moving after block climbing.
         }
-    }
-    ;
+    };
 
     @Override
     public abstract WalkState tick(ColossusController controller, int age);
 
     @Override
-    public void onEnterState(ColossusController controller, WalkState prevState) { }
+    public void onEnterState(ColossusController controller, WalkState prevState) {}
 
     @Override
-    public void onExitState(ColossusController controller, WalkState nextState) { }
+    public void onExitState(ColossusController controller, WalkState nextState) {}
 
     protected abstract Technique[] getInterrupters();
 
     boolean interruptWalk(ColossusController controller) {
         for (Technique tech : getInterrupters()) {
             if (!tech.usable(controller)) continue;
-            if (controller.ai_controller.getState() == tech) break; // unlikely? Probably wouldn't be a huge problem anyways.
+            if (controller.ai_controller.getState() == tech) break; // unlikely? Probably wouldn't be a huge problem
+                                                                    // anyways.
             controller.ai_controller.forceState(tech);
             controller.setTarget(null);
             return true;
@@ -269,7 +277,13 @@ public enum WalkState implements IStateMachine<WalkState> {
             if (stomped.isAir()) continue;
             Block.SoundType sound = stomped.getBlock().stepSound;
             if (sound == null) continue;
-            idc.worldObj.playSoundEffect(realFoot.xCoord, realFoot.yCoord, realFoot.zCoord, sound.getStepResourcePath(), sound.getPitch() * 0.9F, sound.getVolume() * 1.1F);
+            idc.worldObj.playSoundEffect(
+                realFoot.xCoord,
+                realFoot.yCoord,
+                realFoot.zCoord,
+                sound.getStepResourcePath(),
+                sound.getPitch() * 0.9F,
+                sound.getVolume() * 1.1F);
         }
     }
 }

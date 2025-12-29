@@ -6,6 +6,7 @@ import net.minecraft.client.gui.FontRenderer;
  * (This class interface is here more for technical than to be helpful at this point in time.)
  */
 public interface IWord {
+
     /**
      * @return the link for this word. May return null.
      */
@@ -39,16 +40,18 @@ public interface IWord {
 
     /**
      * Draws the word
-     * @param x X-position
-     * @param y Y-position
+     * 
+     * @param x     X-position
+     * @param y     Y-position
      * @param hover true if the mouse is positioned over the word.
-     * @param font The FontRenderer object.
+     * @param font  The FontRenderer object.
      * @return The horizontal width drawn over; eg getWidth().
      */
     int draw(int x, int y, boolean hover, FontRenderer font);
 
     /**
      * Callback for drawing when the mouse is hovering.
+     * 
      * @param mouseX X-position of the mouse.
      * @param mouseY Y-position of the mouse.
      */
@@ -56,12 +59,14 @@ public interface IWord {
 
     /**
      * Callback for when the mouse clicks on the word.
+     * 
      * @return true if something happened
      */
     boolean onClick();
 
     /**
      * Convert the word to HTML.
+     * 
      * @param out The output
      */
     void writeHtml(IHtmlTypesetter out);

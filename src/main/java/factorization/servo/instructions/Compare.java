@@ -7,6 +7,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.IDataSerializable;
@@ -18,40 +19,61 @@ import factorization.servo.ServoStack;
 import factorization.util.FzUtil;
 
 public class Compare extends Instruction {
+
     static enum CmpType {
-        LT, LE, EQ, NE, GE, GT;
+
+        LT,
+        LE,
+        EQ,
+        NE,
+        GE,
+        GT;
+
         IIcon getIcon() {
             switch (this) {
-            default:
-            case EQ: return BlockIcons.servo$cmp_eq;
-            case NE: return BlockIcons.servo$cmp_ne;
-            case GE: return BlockIcons.servo$cmp_ge;
-            case GT: return BlockIcons.servo$cmp_gt;
-            case LE: return BlockIcons.servo$cmp_le;
-            case LT: return BlockIcons.servo$cmp_lt;
+                default:
+                case EQ:
+                    return BlockIcons.servo$cmp_eq;
+                case NE:
+                    return BlockIcons.servo$cmp_ne;
+                case GE:
+                    return BlockIcons.servo$cmp_ge;
+                case GT:
+                    return BlockIcons.servo$cmp_gt;
+                case LE:
+                    return BlockIcons.servo$cmp_le;
+                case LT:
+                    return BlockIcons.servo$cmp_lt;
             }
         }
-        
+
         boolean apply(Comparable a, Comparable b) {
             @SuppressWarnings("unchecked")
             int cmp = (int) Math.signum(a.compareTo(b));
             switch (this) {
-            default:
-            case EQ: return cmp == 0;
-            case NE: return cmp != 0;
-            case GE: return cmp >= 0;
-            case GT: return cmp > 0;
-            case LE: return cmp <= 0;
-            case LT: return cmp < 0;
+                default:
+                case EQ:
+                    return cmp == 0;
+                case NE:
+                    return cmp != 0;
+                case GE:
+                    return cmp >= 0;
+                case GT:
+                    return cmp > 0;
+                case LE:
+                    return cmp <= 0;
+                case LT:
+                    return cmp < 0;
             }
         }
     }
-    
+
     CmpType cmp = CmpType.EQ;
-    
+
     @Override
     public IDataSerializable putData(String prefix, DataHelper data) throws IOException {
-        cmp = data.as(Share.VISIBLE, "cmp").putEnum(cmp);
+        cmp = data.as(Share.VISIBLE, "cmp")
+            .putEnum(cmp);
         return this;
     }
 
@@ -77,7 +99,7 @@ public class Compare extends Instruction {
             motor.putError("CMP: Not Comparable: " + a.getClass());
             return;
         }
-        ss.push(cmp.apply((Comparable)a, (Comparable)b));
+        ss.push(cmp.apply((Comparable) a, (Comparable) b));
     }
 
     @Override
@@ -93,9 +115,9 @@ public class Compare extends Instruction {
     @Override
     public String getInfo() {
         return null;
-        //return "" + cmp.toString();
+        // return "" + cmp.toString();
     }
-    
+
     @Override
     public boolean onClick(EntityPlayer player, Coord block, ForgeDirection side) {
         if (!playerHasProgrammer(player)) {

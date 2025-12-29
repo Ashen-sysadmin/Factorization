@@ -1,15 +1,16 @@
 package factorization.truth;
 
-import factorization.truth.api.*;
-import factorization.truth.word.ItemWord;
-import factorization.truth.word.TextWord;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import factorization.truth.api.*;
+import factorization.truth.word.ItemWord;
+import factorization.truth.word.TextWord;
 
 public class ClientTypesetter extends AbstractTypesetter implements IClientTypesetter {
 
@@ -138,7 +139,6 @@ public class ClientTypesetter extends AbstractTypesetter implements IClientTypes
             // Oh dear.
         }
     }
-
 
     @Override
     protected void runWord(String word) {

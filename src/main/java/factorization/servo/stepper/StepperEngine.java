@@ -1,5 +1,11 @@
 package factorization.servo.stepper;
 
+import java.io.IOException;
+import java.util.Collection;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
+
 import factorization.api.Coord;
 import factorization.api.datahelpers.DataHelper;
 import factorization.api.datahelpers.Share;
@@ -14,13 +20,9 @@ import factorization.shared.EntityReference;
 import factorization.shared.NetworkFactorization;
 import factorization.util.SpaceUtil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.Entity;
-import net.minecraft.world.World;
-
-import java.io.IOException;
-import java.util.Collection;
 
 public class StepperEngine extends AbstractServoMachine {
+
     public StepperEngine(World w) {
         super(w);
         setSize(1, 1);
@@ -39,17 +41,21 @@ public class StepperEngine extends AbstractServoMachine {
     @Override
     public void putData(DataHelper data) throws IOException {
         super.putData(data);
-        data.as(Share.VISIBLE, "grabber").putIDS(grabber);
-        number_of_grabbed_blocks = data.as(Share.VISIBLE, "numberOfGrabbedBlocks").putInt(number_of_grabbed_blocks);
+        data.as(Share.VISIBLE, "grabber")
+            .putIDS(grabber);
+        number_of_grabbed_blocks = data.as(Share.VISIBLE, "numberOfGrabbedBlocks")
+            .putInt(number_of_grabbed_blocks);
     }
 
     @Override
-    public boolean handleMessageFromClient(NetworkFactorization.MessageType messageType, ByteBuf input) throws IOException {
+    public boolean handleMessageFromClient(NetworkFactorization.MessageType messageType, ByteBuf input)
+        throws IOException {
         return super.handleMessageFromClient(messageType, input);
     }
 
     @Override
-    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input) throws IOException {
+    public boolean handleMessageFromServer(NetworkFactorization.MessageType messageType, ByteBuf input)
+        throws IOException {
         return super.handleMessageFromServer(messageType, input);
     }
 
@@ -116,6 +122,7 @@ public class StepperEngine extends AbstractServoMachine {
         }
         if (min == null) return;
         IDeltaChunk idc = DeltaChunk.makeSlice(ItemStepperEngine.channel, min, max, new DeltaChunk.AreaMap() {
+
             @Override
             public void fillDse(DeltaChunk.DseDestination destination) {
                 for (Coord c : mesh) {
@@ -124,17 +131,17 @@ public class StepperEngine extends AbstractServoMachine {
             }
         }, true);
         idc.permit(
-                DeltaCapability.COLLIDE,
-                DeltaCapability.MOVE,
-                DeltaCapability.ROTATE,
-                DeltaCapability.DRAG,
-                DeltaCapability.DIE_WHEN_EMPTY,
-                DeltaCapability.INTERACT,
-                DeltaCapability.BLOCK_PLACE,
-                DeltaCapability.BLOCK_MINE,
-                DeltaCapability.REMOVE_ITEM_ENTITIES
-                /* NORELEASE: DeltaCapability.COLLIDE_WITH_WORLD */
-                );
+            DeltaCapability.COLLIDE,
+            DeltaCapability.MOVE,
+            DeltaCapability.ROTATE,
+            DeltaCapability.DRAG,
+            DeltaCapability.DIE_WHEN_EMPTY,
+            DeltaCapability.INTERACT,
+            DeltaCapability.BLOCK_PLACE,
+            DeltaCapability.BLOCK_MINE,
+            DeltaCapability.REMOVE_ITEM_ENTITIES
+        /* NORELEASE: DeltaCapability.COLLIDE_WITH_WORLD */
+        );
         idc.setPosition(posX, posY, posZ);
         worldObj.spawnEntityInWorld(idc);
         grabIdc(idc);
@@ -158,7 +165,7 @@ public class StepperEngine extends AbstractServoMachine {
     }
 
     private void grabIdc(IDeltaChunk idc) {
-        //NORELEASE.fixme("translate the origin so that the origin's located at ourselves");
+        // NORELEASE.fixme("translate the origin so that the origin's located at ourselves");
         EntityGrabController egc = new EntityGrabController(this, idc, DropMode.EVENTUALLY);
         worldObj.spawnEntityInWorld(egc);
         egc.mountEntity(this);
@@ -171,7 +178,10 @@ public class StepperEngine extends AbstractServoMachine {
         if (!grabbed()) return;
         EntityGrabController egc = grabber.getEntity();
         if (egc == null) {
-            Core.logWarning("Stepper Engine can't drop! DSE grabber entity is not loaded! Sorry! " + this + " " + grabber.getUUID()); // Ack!
+            Core.logWarning(
+                "Stepper Engine can't drop! DSE grabber entity is not loaded! Sorry! " + this
+                    + " "
+                    + grabber.getUUID()); // Ack!
             // Ah, but this probably won't happen since the thing'll be riding us!
             return;
         }

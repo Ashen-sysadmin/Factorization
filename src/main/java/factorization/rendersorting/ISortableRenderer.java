@@ -17,6 +17,7 @@ package factorization.rendersorting;
  * @param <E> The Entity or TileEntity's type.
  */
 public interface ISortableRenderer<E> {
+
     /**
      * @param other The other Entity or TileEntity being compared
      * @return a value that sorts to merge GL state changes.

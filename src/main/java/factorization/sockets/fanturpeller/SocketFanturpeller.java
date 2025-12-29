@@ -2,9 +2,6 @@ package factorization.sockets.fanturpeller;
 
 import java.io.IOException;
 
-import factorization.shared.*;
-import factorization.util.NumUtil;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
@@ -18,7 +15,6 @@ import net.minecraftforge.fluids.IFluidHandler;
 
 import org.lwjgl.opengl.GL11;
 
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Charge;
@@ -33,11 +29,15 @@ import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.servo.RenderServoMotor;
 import factorization.servo.ServoMotor;
+import factorization.shared.*;
 import factorization.shared.NetworkFactorization.MessageType;
 import factorization.sockets.ISocketHolder;
 import factorization.sockets.TileEntitySocketBase;
+import factorization.util.NumUtil;
+import io.netty.buffer.ByteBuf;
 
 public abstract class SocketFanturpeller extends TileEntitySocketBase implements IChargeConductor {
+
     Charge charge = new Charge(this);
     boolean isSucking = true;
     byte target_speed = 1;
@@ -48,25 +48,29 @@ public abstract class SocketFanturpeller extends TileEntitySocketBase implements
 
     @Override
     public IDataSerializable serialize(String prefix, DataHelper data) throws IOException {
-        charge = data.as(Share.PRIVATE, "charge").putIDS(charge);
-        isSucking = data.as(Share.MUTABLE, "suck").putBoolean(isSucking);
-        target_speed = data.as(Share.MUTABLE, "target_speed").putByte(target_speed);
+        charge = data.as(Share.PRIVATE, "charge")
+            .putIDS(charge);
+        isSucking = data.as(Share.MUTABLE, "suck")
+            .putBoolean(isSucking);
+        target_speed = data.as(Share.MUTABLE, "target_speed")
+            .putByte(target_speed);
         if (target_speed < 0) target_speed = 0;
         if (target_speed > 3) target_speed = 3;
-        fanω = data.as(Share.VISIBLE, "fanw").putFloat(fanω);
+        fanω = data.as(Share.VISIBLE, "fanw")
+            .putFloat(fanω);
         return this;
     }
-    
+
     @Override
     public ItemStack getCreatingItem() {
         return new ItemStack(Core.registry.fan);
     }
-    
+
     @Override
     public FactoryType getParentFactoryType() {
         return FactoryType.SOCKET_BARE_MOTOR;
     }
-    
+
     @Override
     public boolean canUpdate() {
         return true;
@@ -87,10 +91,12 @@ public abstract class SocketFanturpeller extends TileEntitySocketBase implements
         charge.update();
         super.updateEntity();
     }
-    
+
     boolean isLiquid(Coord at) {
         final Block block = at.getBlock();
-        if (block == Blocks.water || block == Blocks.flowing_water || block == Blocks.lava || block == Blocks.flowing_lava) {
+        if (block == Blocks.water || block == Blocks.flowing_water
+            || block == Blocks.lava
+            || block == Blocks.flowing_lava) {
             return at.getMd() == 0;
         }
         if (block instanceof IFluidBlock) {
@@ -111,11 +117,11 @@ public abstract class SocketFanturpeller extends TileEntitySocketBase implements
     boolean isClear(Coord at) {
         return at.isReplacable() && !isLiquid(at);
     }
-    
+
     boolean noCollision(Coord at) {
         return at.getCollisionBoundingBoxFromPool() == null;
     }
-    
+
     @Override
     protected void replaceWith(TileEntitySocketBase baseReplacement, ISocketHolder socket) {
         if (baseReplacement instanceof SocketFanturpeller) {
@@ -139,12 +145,12 @@ public abstract class SocketFanturpeller extends TileEntitySocketBase implements
         }
         super.replaceWith(baseReplacement, socket);
     }
-    
+
     float getTargetSpeed() {
         if (!shouldFeedJuice()) return 0;
-        return target_speed*10;
+        return target_speed * 10;
     }
-    
+
     boolean shouldDoWork() {
         if (target_speed == 0) return false;
         int direction = (isSucking ? -1 : 1);
@@ -153,14 +159,16 @@ public abstract class SocketFanturpeller extends TileEntitySocketBase implements
         float ω = Math.abs(fanω);
         if (ω >= ts) return true;
         return false;
-        /*if (ts > ω + 10) return false;
-        return (ts - ω)/10.0F > rand.nextFloat(); */
+        /*
+         * if (ts > ω + 10) return false;
+         * return (ts - ω)/10.0F > rand.nextFloat();
+         */
     }
-    
+
     int getRequiredCharge() {
         return 0;
     }
-    
+
     @Override
     public final void genericUpdate(ISocketHolder socket, Coord coord, boolean powered) {
         prevFanRotation = fanRotation;
@@ -175,7 +183,7 @@ public abstract class SocketFanturpeller extends TileEntitySocketBase implements
                 if (!socket.extractCharge(need)) {
                     fanω *= 0.9;
                 } else if (Math.abs(fanω) > Math.abs(ts)) { // we've been switched to a slower speed
-                    fanω = (fanω*9 + ts)/10;
+                    fanω = (fanω * 9 + ts) / 10;
                     if (Math.abs(fanω) < Math.abs(ts)) {
                         fanω = ts;
                     }
@@ -193,19 +201,19 @@ public abstract class SocketFanturpeller extends TileEntitySocketBase implements
         }
         fanRotation += fanω;
     }
-    
+
     protected boolean shouldFeedJuice() {
         return false;
     }
-    
+
     protected void fanturpellerUpdate(ISocketHolder socket, Coord coord, boolean powered) {
         fanω *= 0.95F;
     }
-    
+
     protected boolean isSafeToDiscard() {
         return true;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public void renderStatic(ServoMotor motor, Tessellator tess) {
@@ -219,54 +227,58 @@ public abstract class SocketFanturpeller extends TileEntitySocketBase implements
             IIcon metal = BlockIcons.motor_texture;
             float d = 4.0F / 16.0F;
             float yd = -d + 0.003F;
-    
-            block.useTextures(metal, null,
-                    metal, metal,
-                    metal, metal);
-            float yoffset = 5F/16F;
-            float sd = motor == null ? 0 : 2F/16F;
-            block.setBlockBounds(d, d + yd + yoffset + 2F/16F + sd, d, 1 - d, 1 - (d + 0F/16F) + yd + yoffset, 1 - d);
+
+            block.useTextures(metal, null, metal, metal, metal, metal);
+            float yoffset = 5F / 16F;
+            float sd = motor == null ? 0 : 2F / 16F;
+            block.setBlockBounds(
+                d,
+                d + yd + yoffset + 2F / 16F + sd,
+                d,
+                1 - d,
+                1 - (d + 0F / 16F) + yd + yoffset,
+                1 - d);
             block.beginWithMirroredUVs();
             block.rotateCenter(rotation);
             block.renderRotated(tess, xCoord, yCoord, zCoord);
         }
     }
-    
+
     protected float scaleRotation(float rotation) {
         return rotation;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public void renderTesr(ServoMotor motor, float partial) {
         float d = 0.5F;
         GL11.glTranslatef(d, d, d);
-        Quaternion.fromOrientation(FzOrientation.fromDirection(facing.getOpposite())).glRotate();
+        Quaternion.fromOrientation(FzOrientation.fromDirection(facing.getOpposite()))
+            .glRotate();
         float turn = scaleRotation(NumUtil.interp(prevFanRotation, fanRotation, partial));
         float dr = Math.abs(scaleRotation(fanRotation) - scaleRotation(prevFanRotation));
         GL11.glRotatef(turn, 0, 1, 0);
-        float sd = motor == null ? -2F/16F : 3F/16F;
+        float sd = motor == null ? -2F / 16F : 3F / 16F;
         GL11.glTranslatef(0, sd, 0);
-        
-        
-        float s = 12F/16F;
+
+        float s = 12F / 16F;
         if (motor != null) {
-            s = 10F/16F;
-            GL11.glTranslatef(0, -3F/16F, 0);
+            s = 10F / 16F;
+            GL11.glTranslatef(0, -3F / 16F, 0);
         }
         GL11.glScalef(s, 1, s);
-        float count = dr/60;
+        float count = dr / 60;
         if (count > 2) {
             count = 2;
         }
         if (count < 1) {
             count = 1;
         }
-        //TileEntityGrinderRender.renderGrindHead();
+        // TileEntityGrinderRender.renderGrindHead();
         for (float i = 0; i < count; i++) {
             if (i > 0) {
                 GL11.glRotatef(45F, 0, 1, 0);
-                GL11.glTranslatef(0, -1F/64F, 0);
+                GL11.glTranslatef(0, -1F / 64F, 0);
             }
             GL11.glPushMatrix();
             GL11.glRotatef(90, 1, 0, 0);
@@ -275,7 +287,7 @@ public abstract class SocketFanturpeller extends TileEntitySocketBase implements
             GL11.glPopMatrix();
         }
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public boolean handleMessageFromServer(MessageType messageType, ByteBuf input) throws IOException {
@@ -290,15 +302,15 @@ public abstract class SocketFanturpeller extends TileEntitySocketBase implements
         }
         return false;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public void renderItemOnServo(RenderServoMotor render, ServoMotor motor, ItemStack is, float partial) {
         GL11.glPushMatrix();
-        
-        GL11.glTranslatef(8F/16F, 1F/16F, 0);
+
+        GL11.glTranslatef(8F / 16F, 1F / 16F, 0);
         GL11.glRotatef(90, 0, 1, 0);
-        
+
         render.renderItem(is);
         GL11.glPopMatrix();
     }

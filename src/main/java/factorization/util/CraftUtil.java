@@ -1,9 +1,7 @@
 package factorization.util;
 
-import factorization.api.Coord;
-import factorization.shared.Core;
-import factorization.util.ItemUtil;
-import factorization.util.PlayerUtil;
+import java.util.*;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.*;
@@ -16,36 +14,35 @@ import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
-import java.util.*;
+import factorization.api.Coord;
+import factorization.shared.Core;
 
 public final class CraftUtil {
+
     private static final ItemStack[] slots3x3 = new ItemStack[9];
     public static boolean craft_succeeded = false;
     public static ArrayList<ItemStack> emptyArrayList = new ArrayList(0);
     static ArrayList<IRecipe> recipeCache = new ArrayList();
     private static int cache_fear = 10;
     private static IRecipe stupid_hacky_vanilla_item_repair_recipe = new IRecipe() {
+
         ItemStack firstItem, secondItem, result;
 
         void update(IInventory par1InventoryCrafting) {
-            //This is copied from CraftingManager.findMatchingRecipe; with a few tweaks
+            // This is copied from CraftingManager.findMatchingRecipe; with a few tweaks
             firstItem = secondItem = result = null;
             int i = 0;
             int j;
 
-            for (j = 0; j < par1InventoryCrafting.getSizeInventory(); ++j)
-            {
+            for (j = 0; j < par1InventoryCrafting.getSizeInventory(); ++j) {
                 ItemStack itemstack2 = par1InventoryCrafting.getStackInSlot(j);
 
-                if (itemstack2 != null)
-                {
-                    if (i == 0)
-                    {
+                if (itemstack2 != null) {
+                    if (i == 0) {
                         firstItem = itemstack2;
                     }
 
-                    if (i == 1)
-                    {
+                    if (i == 1) {
                         secondItem = itemstack2;
                     }
 
@@ -53,16 +50,18 @@ public final class CraftUtil {
                 }
             }
 
-            if (i == 2 && firstItem.getItem() == secondItem.getItem() && firstItem.stackSize == 1 && secondItem.stackSize == 1 && firstItem.getItem().isRepairable())
-            {
+            if (i == 2 && firstItem.getItem() == secondItem.getItem()
+                && firstItem.stackSize == 1
+                && secondItem.stackSize == 1
+                && firstItem.getItem()
+                    .isRepairable()) {
                 Item item = firstItem.getItem();
                 int j1 = item.getMaxDamage() - firstItem.getItemDamageForDisplay();
                 int k = item.getMaxDamage() - secondItem.getItemDamageForDisplay();
                 int l = j1 + k + item.getMaxDamage() * 5 / 100;
                 int i1 = item.getMaxDamage() - l;
 
-                if (i1 < 0)
-                {
+                if (i1 < 0) {
                     i1 = 0;
                 }
 
@@ -96,14 +95,14 @@ public final class CraftUtil {
 
     public static InventoryCrafting makeCraftingGrid() {
         return new InventoryCrafting(new Container() {
+
             @Override
             public boolean canInteractWith(EntityPlayer entityplayer) {
                 return false;
             }
 
             @Override
-            public void onCraftMatrixChanged(IInventory iinventory) {
-            }
+            public void onCraftMatrixChanged(IInventory iinventory) {}
         }, 3, 3);
     }
 
@@ -116,7 +115,7 @@ public final class CraftUtil {
         }
     }
 
-    static InventoryCrafting getCrafter(ItemStack...slots) {
+    static InventoryCrafting getCrafter(ItemStack... slots) {
         InventoryCrafting craft = makeCraftingGrid();
         for (int i = 0; i < 9; i++) {
             craft.setInventorySlotContents(i, slots[i]);
@@ -124,7 +123,7 @@ public final class CraftUtil {
         return craft;
     }
 
-    static boolean wantSize(int size, TileEntity where, ItemStack...slots) {
+    static boolean wantSize(int size, TileEntity where, ItemStack... slots) {
         if (slots.length != size) {
             System.out.println("Tried to craft with items.length != " + size);
             if (where != null) {
@@ -144,7 +143,7 @@ public final class CraftUtil {
         return craft3x3(where, fake, false, slots3x3);
     }
 
-    public static List<ItemStack> craft2x2(TileEntity where, boolean fake, ItemStack...slots) {
+    public static List<ItemStack> craft2x2(TileEntity where, boolean fake, ItemStack... slots) {
         if (wantSize(4, where, slots)) {
             return Arrays.asList(slots);
         }
@@ -210,7 +209,8 @@ public final class CraftUtil {
 
     public static IRecipe findMatchingRecipe(InventoryCrafting inv, World world) {
         if (Core.serverStarted) {
-            List<IRecipe> craftingManagerRecipes = CraftingManager.getInstance().getRecipeList();
+            List<IRecipe> craftingManagerRecipes = CraftingManager.getInstance()
+                .getRecipeList();
             cache_fear--;
             if (cache_fear > 0) {
                 return lookupRecipeUncached(inv, world);
@@ -230,7 +230,7 @@ public final class CraftUtil {
                 if (recipe == null) continue;
                 if (recipe.matches(inv, world)) {
                     if (i > 50) {
-                        int j = i/3;
+                        int j = i / 3;
                         IRecipe swapeh = recipeCache.get(j);
                         recipeCache.set(j, recipe);
                         recipeCache.set(i, swapeh);
@@ -247,7 +247,8 @@ public final class CraftUtil {
 
     public static IRecipe lookupRecipeUncached(InventoryCrafting inv, World world) {
         while (true) {
-            List<IRecipe> craftingManagerRecipes = CraftingManager.getInstance().getRecipeList();
+            List<IRecipe> craftingManagerRecipes = CraftingManager.getInstance()
+                .getRecipeList();
             Iterator<IRecipe> iterator = craftingManagerRecipes.iterator();
             IRecipe recipe = null;
             try {
@@ -269,7 +270,7 @@ public final class CraftUtil {
         }
     }
 
-    //Recipe creation
+    // Recipe creation
     public static IRecipe createShapedRecipe(ItemStack result, Object... args) {
         String var3 = "";
         int var4 = 0;
@@ -330,22 +331,15 @@ public final class CraftUtil {
         ArrayList var3 = new ArrayList();
         int var5 = args.length;
 
-        for (int var6 = 0; var6 < var5; ++var6)
-        {
+        for (int var6 = 0; var6 < var5; ++var6) {
             Object var7 = args[var6];
 
-            if (var7 instanceof ItemStack)
-            {
+            if (var7 instanceof ItemStack) {
                 var3.add(((ItemStack) var7).copy());
-            }
-            else if (var7 instanceof Item)
-            {
+            } else if (var7 instanceof Item) {
                 var3.add(new ItemStack((Item) var7));
-            }
-            else
-            {
-                if (!(var7 instanceof Block))
-                {
+            } else {
+                if (!(var7 instanceof Block)) {
                     throw new RuntimeException("Invalid shapeless recipy!");
                 }
 

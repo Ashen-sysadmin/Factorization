@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public final class CraftingManagerGeneric<MachineType> implements Iterable {
+
     private static final HashMap<Class, CraftingManagerGeneric> systems = new HashMap<Class, CraftingManagerGeneric>();
 
     public static <M> CraftingManagerGeneric<M> get(Class<M> klass) {

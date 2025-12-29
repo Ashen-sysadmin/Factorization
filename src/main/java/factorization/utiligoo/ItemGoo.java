@@ -7,11 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import factorization.shared.*;
-import factorization.util.InvUtil;
-import factorization.util.ItemUtil;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.block.BlockStairs;
@@ -36,6 +31,7 @@ import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import org.apache.commons.lang3.ArrayUtils;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -44,24 +40,30 @@ import factorization.common.Command;
 import factorization.common.ItemIcons;
 import factorization.coremodhooks.HandleAttackKeyEvent;
 import factorization.coremodhooks.HandleUseKeyEvent;
+import factorization.shared.*;
 import factorization.shared.Core.TabType;
-import factorization.util.InvUtil.FzInv;
 import factorization.shared.NetworkFactorization.MessageType;
+import factorization.util.InvUtil;
+import factorization.util.InvUtil.FzInv;
+import factorization.util.ItemUtil;
+import io.netty.buffer.ByteBuf;
 
 public class ItemGoo extends ItemFactorization {
+
     public ItemGoo(String name, TabType tabType) {
         super(name, tabType);
         setMaxStackSize(32);
         setHasSubtypes(true);
         Core.loadBus(this);
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
-    public void registerIcons(IIconRegister reg) { }
-    
+    public void registerIcons(IIconRegister reg) {}
+
     @Override
-    public boolean onItemUseFirst(ItemStack is, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+    public boolean onItemUseFirst(ItemStack is, EntityPlayer player, World world, int x, int y, int z, int side,
+        float hitX, float hitY, float hitZ) {
         if (world.isRemote) {
             return false;
         }
@@ -115,7 +117,7 @@ public class ItemGoo extends ItemFactorization {
         is.stackSize--;
         return true;
     }
-    
+
     public void executeCommand(Command command, EntityPlayerMP player) {
         ItemStack held = player.getHeldItem();
         if (command == Command.gooSelectNone) {
@@ -124,7 +126,7 @@ public class ItemGoo extends ItemFactorization {
         }
         MovingObjectPosition mop = getMovingObjectPositionFromPlayer(player.worldObj, player, false);
         if (mop == null || mop.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) return;
-        
+
         for (int slot = 0; slot < 9; slot++) {
             ItemStack is = player.inventory.getStackInSlot(slot);
             if (is == null || is.getItem() != this) continue;
@@ -138,6 +140,7 @@ public class ItemGoo extends ItemFactorization {
                 if (ix == mop.blockX && iy == mop.blockY && iz == mop.blockZ) {
                     final FzInv playerInv = InvUtil.openInventory(player, true);
                     DropCaptureHandler.startCapture(new ICaptureDrops() {
+
                         @Override
                         public boolean captureDrops(ArrayList<ItemStack> stacks) {
                             boolean any = false;
@@ -163,20 +166,24 @@ public class ItemGoo extends ItemFactorization {
             }
         }
     }
-    
-    private void leftClick(EntityPlayerMP player, GooData data, ItemStack gooItem, ItemStack held, MovingObjectPosition mop) {
+
+    private void leftClick(EntityPlayerMP player, GooData data, ItemStack gooItem, ItemStack held,
+        MovingObjectPosition mop) {
         // Punch with tool: remove all blocks that can be harvested by the tool
         // Normal punch: degoo 3x3x3 goo area
         // shift-punch: degoo punched block
-        if (held != null && (held.getItem() instanceof ItemTool || !held.getItem().getToolClasses(held).isEmpty())) {
+        if (held != null && (held.getItem() instanceof ItemTool || !held.getItem()
+            .getToolClasses(held)
+            .isEmpty())) {
             // mineSelection(gooItem, data, player.worldObj, mop, player, held);
         } else {
             int radius = player.isSneaking() ? 0 : 2;
             degooArea(player, data, gooItem, mop, radius);
         }
     }
-    
-    private void rightClick(EntityPlayer player, GooData data, ItemStack gooItem, ItemStack held, MovingObjectPosition mop) {
+
+    private void rightClick(EntityPlayer player, GooData data, ItemStack gooItem, ItemStack held,
+        MovingObjectPosition mop) {
         // goo click: expand the selection.
         // ItemBlock click: replace everything with held item
         if (held == null) {
@@ -206,7 +213,15 @@ public class ItemGoo extends ItemFactorization {
         } else if (held.getItem() == this) {
             int n = player.isSneaking() ? 1 : 2;
             for (int i = 0; i < n; i++) {
-                expandSelection(gooItem, data, player, player.worldObj, mop.blockX, mop.blockY, mop.blockZ, ForgeDirection.getOrientation(mop.sideHit));
+                expandSelection(
+                    gooItem,
+                    data,
+                    player,
+                    player.worldObj,
+                    mop.blockX,
+                    mop.blockY,
+                    mop.blockZ,
+                    ForgeDirection.getOrientation(mop.sideHit));
             }
         } else if (held.getItem() instanceof ItemBlock) {
             replaceBlocks(gooItem, data, player.worldObj, player, mop, held);
@@ -218,19 +233,20 @@ public class ItemGoo extends ItemFactorization {
             }
         }
     }
-    
+
     private boolean check(int offset, int i, int x) {
         return offset == 0 || i == x;
     }
-    
+
     boolean similarBlocks(Coord a, Coord b) {
         if (a.getBlock() == b.getBlock()) return true;
         ItemStack ais = a.getBrokenBlock();
         if (ais == null) return false;
         return ItemUtil.identical(ais, b.getBrokenBlock());
     }
-    
-    private void expandSelection(ItemStack is, GooData data, EntityPlayer player, World world, int x, int y, int z, ForgeDirection dir) {
+
+    private void expandSelection(ItemStack is, GooData data, EntityPlayer player, World world, int x, int y, int z,
+        ForgeDirection dir) {
         Coord src = new Coord(world, x, y, z);
         HashSet<Coord> found = new HashSet();
         for (int i = 0; i < data.coords.length; i += 3) {
@@ -291,8 +307,9 @@ public class ItemGoo extends ItemFactorization {
         data.coords = ArrayUtils.addAll(data.coords, use);
         data.markDirty();
     }
-    
-    private boolean degooArea(EntityPlayer player, GooData data, ItemStack gooItem, MovingObjectPosition mop, int radius) {
+
+    private boolean degooArea(EntityPlayer player, GooData data, ItemStack gooItem, MovingObjectPosition mop,
+        int radius) {
         if (player.worldObj.isRemote) return false;
         if (data == null) return false;
         if (mop == null || mop.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) return false;
@@ -301,7 +318,14 @@ public class ItemGoo extends ItemFactorization {
         for (int dx = -d; dx <= d; dx++) {
             for (int dy = -d; dy <= d; dy++) {
                 for (int dz = -d; dz <= d; dz++) {
-                    any |= deselectCoord(gooItem, data, player.worldObj, mop.blockX + dx, mop.blockY + dy, mop.blockZ + dz, false);
+                    any |= deselectCoord(
+                        gooItem,
+                        data,
+                        player.worldObj,
+                        mop.blockX + dx,
+                        mop.blockY + dy,
+                        mop.blockZ + dz,
+                        false);
                 }
             }
         }
@@ -310,8 +334,9 @@ public class ItemGoo extends ItemFactorization {
         }
         return false;
     }
-    
-    private void replaceBlocks(ItemStack is, GooData data, World world, EntityPlayer player, MovingObjectPosition mop, ItemStack source) {
+
+    private void replaceBlocks(ItemStack is, GooData data, World world, EntityPlayer player, MovingObjectPosition mop,
+        ItemStack source) {
         if (ItemUtil.normalize(source) == null) return;
         int removed = 0;
         Coord at = new Coord(world, 0, 0, 0);
@@ -349,10 +374,20 @@ public class ItemGoo extends ItemFactorization {
             to_remove.add(i + 0);
             to_remove.add(i + 1);
             to_remove.add(i + 2);
-            
+
             ItemBlock ib = (ItemBlock) source.getItem();
             int origSize = source.stackSize;
-            ib.onItemUse(source, player, player.worldObj, at.x, at.y, at.z, mop.sideHit, (float) mop.hitVec.xCoord, (float) mop.hitVec.yCoord, (float) mop.hitVec.zCoord);
+            ib.onItemUse(
+                source,
+                player,
+                player.worldObj,
+                at.x,
+                at.y,
+                at.z,
+                mop.sideHit,
+                (float) mop.hitVec.xCoord,
+                (float) mop.hitVec.yCoord,
+                (float) mop.hitVec.zCoord);
             if (creative) {
                 source.stackSize = origSize; // Great work, guys.
             }
@@ -367,7 +402,7 @@ public class ItemGoo extends ItemFactorization {
             is.stackSize = Math.min(is.stackSize, maxStackSize);
         }
     }
-    
+
     private boolean deselectCoord(ItemStack is, GooData data, World world, int x, int y, int z, boolean bulkAction) {
         for (int i = 0; i < data.coords.length; i += 3) {
             int ix = data.coords[i + 0];
@@ -386,13 +421,15 @@ public class ItemGoo extends ItemFactorization {
         }
         return false;
     }
-    
-    private void mineSelection(ItemStack is, GooData data, World world, MovingObjectPosition mop, EntityPlayerMP player, ItemStack tool) {
+
+    private void mineSelection(ItemStack is, GooData data, World world, MovingObjectPosition mop, EntityPlayerMP player,
+        ItemStack tool) {
         boolean creative = player.capabilities.isCreativeMode;
         Item toolItem = creative ? null : tool.getItem();
         ArrayList<Integer> toRemove = new ArrayList();
         int removed = 0;
-        float origHardness = Float.POSITIVE_INFINITY; // creative ? Float.POSITIVE_INFINITY : new Coord(world, mop).getHardness();
+        float origHardness = Float.POSITIVE_INFINITY; // creative ? Float.POSITIVE_INFINITY : new Coord(world,
+                                                      // mop).getHardness();
         for (int i = 0; i < data.coords.length; i += 3) {
             int ix = data.coords[i + 0];
             int iy = data.coords[i + 1];
@@ -406,7 +443,7 @@ public class ItemGoo extends ItemFactorization {
             if (toolItem != null) {
                 canBreak |= toolItem.canHarvestBlock(b, tool) || toolItem.func_150893_a(tool, b) > 1;
             }
-            if (canBreak)  {
+            if (canBreak) {
                 if (player.theItemInWorldManager.tryHarvestBlock(ix, iy, iz)) {
                     removed++;
                     toRemove.add(i);
@@ -425,14 +462,14 @@ public class ItemGoo extends ItemFactorization {
             is.stackSize = Math.min(is.stackSize, maxStackSize);
         }
     }
-    
+
     private void misplaceSomeGoo(ItemStack is, Random rand, int removed) {
         if (rand.nextInt(100) < 20) {
             removed--;
         }
         is.stackSize += removed;
     }
-    
+
     @Override
     public void onUpdate(ItemStack is, World world, Entity player, int inventoryIndex, boolean isHeld) {
         if (world.isRemote) return;
@@ -445,16 +482,17 @@ public class ItemGoo extends ItemFactorization {
         FMLProxyPacket toSend = Core.network.entityPacket(player, MessageType.UtilityGooState, dataTag);
         Core.network.broadcastPacket((EntityPlayer) player, new Coord(player), toSend);
     }
-    
+
     @SideOnly(Side.CLIENT)
     public static void handlePacket(ByteBuf input) throws IOException {
         NBTTagCompound dataTag = ByteBufUtils.readTag(input);
         World world = Minecraft.getMinecraft().theWorld;
-        GooData data = new GooData(dataTag.getString("mapname")); // NOTE: this resets data.last_traced_index to -1. We might have to reset it manually if networking gets more complicated.
+        GooData data = new GooData(dataTag.getString("mapname")); // NOTE: this resets data.last_traced_index to -1. We
+                                                                  // might have to reset it manually if networking gets
+                                                                  // more complicated.
         data.readFromNBT(dataTag);
         world.setItemData(data.mapName, data);
     }
-    
 
     @Override
     public IIcon getIconIndex(ItemStack is) {
@@ -465,12 +503,12 @@ public class ItemGoo extends ItemFactorization {
         if (fullness <= 2) return ItemIcons.utiligoo$medium;
         return ItemIcons.utiligoo$high;
     }
-    
+
     @Override
     public IIcon getIcon(ItemStack is, int pass) {
         return getIconIndex(is);
     }
-    
+
     @Override
     protected void addExtraInformation(ItemStack is, EntityPlayer player, List list, boolean verbose) {
         super.addExtraInformation(is, player, list, verbose);
@@ -508,7 +546,7 @@ public class ItemGoo extends ItemFactorization {
             }
         }
     }
-    
+
     boolean gooHilighted(EntityPlayer player, MovingObjectPosition mop) {
         if (mop == null || mop.typeOfHit != MovingObjectType.BLOCK) return false;
         for (int slot = 0; slot < 9; slot++) {
@@ -527,7 +565,7 @@ public class ItemGoo extends ItemFactorization {
         }
         return false;
     }
-    
+
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void interceptGooClick(HandleUseKeyEvent event) {
@@ -541,7 +579,7 @@ public class ItemGoo extends ItemFactorization {
             mc.rightClickDelayTimer = 4;
         }
     }
-    
+
     private boolean trySelectNone(EntityPlayer player, ItemStack is) {
         if (is == null || !(is.getItem() instanceof ItemGoo)) return false;
         GooData data = GooData.getNullGooData(is, player.worldObj);
@@ -555,10 +593,10 @@ public class ItemGoo extends ItemFactorization {
         is.stackSize = Math.min(is.stackSize, maxStackSize);
         return true;
     }
-    
+
     long break_prevention = 0;
     int goo_recently_clicked_index = -1;
-    
+
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void interceptGooBreak(HandleAttackKeyEvent event) {
@@ -578,7 +616,9 @@ public class ItemGoo extends ItemFactorization {
             break_prevention = 0;
         }
         ItemStack held = player.getHeldItem();
-        if (held != null && (held.getItem() instanceof ItemTool || !held.getItem().getToolClasses(held).isEmpty())) return;
+        if (held != null && (held.getItem() instanceof ItemTool || !held.getItem()
+            .getToolClasses(held)
+            .isEmpty())) return;
         if (gooHilighted(player, mop)) {
             Command.gooLeftClick.call(player);
             event.setCanceled(true);
@@ -586,24 +626,24 @@ public class ItemGoo extends ItemFactorization {
             goo_recently_clicked_index = idOfHeld(player);
         }
     }
-    
+
     private int idOfHeld(EntityPlayer player) {
         if (player == null) return -1;
         GooData gd = GooData.getNullGooData(player.getHeldItem(), player.worldObj);
         if (gd == null) return -1;
-        return player.getHeldItem().getItemDamage();
+        return player.getHeldItem()
+            .getItemDamage();
     }
-    
+
     private void delayBreak() {
         int delay = 450;
         Minecraft mc = Minecraft.getMinecraft();
         break_prevention = System.currentTimeMillis() + delay;
         mc.leftClickCounter = delay;
     }
-    
-    
+
     ThreadLocal<Boolean> processing = new ThreadLocal<Boolean>();
-    
+
     @SubscribeEvent
     public void mineGooeyBlocks(BreakEvent event) {
         if (processing.get() != null) return;

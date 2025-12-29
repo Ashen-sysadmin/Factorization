@@ -1,13 +1,15 @@
 package factorization.beauty;
 
-import factorization.api.Coord;
-import factorization.api.DeltaCoord;
-import factorization.util.SpaceUtil;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import factorization.api.Coord;
+import factorization.api.DeltaCoord;
+import factorization.util.SpaceUtil;
+
 public class Symmetry {
+
     final Coord center;
     final int max_radius;
     ForgeDirection normal, right, up;
@@ -96,11 +98,18 @@ public class Symmetry {
     int scoreBlock(Coord at) {
         Block block = at.getBlock();
         Material mat = block.getMaterial();
-        if (mat == Material.cloth || mat == Material.wood || mat == Material.carpet || mat == Material.iron
-                || mat == Material.piston || mat == Material.clay || mat == Material.glass || mat == Material.web) {
+        if (mat == Material.cloth || mat == Material.wood
+            || mat == Material.carpet
+            || mat == Material.iron
+            || mat == Material.piston
+            || mat == Material.clay
+            || mat == Material.glass
+            || mat == Material.web) {
             return 1;
         }
-        if (block instanceof BlockLog || block instanceof BlockCarpet || block instanceof BlockFence || block instanceof BlockStairs) {
+        if (block instanceof BlockLog || block instanceof BlockCarpet
+            || block instanceof BlockFence
+            || block instanceof BlockStairs) {
             return 1;
         }
         return 0;

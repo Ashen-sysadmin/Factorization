@@ -1,18 +1,23 @@
 package factorization.beauty;
 
-import factorization.common.BlockIcons;
-import factorization.shared.Core;
-import factorization.util.NumUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import factorization.common.BlockIcons;
+import factorization.shared.Core;
+import factorization.util.NumUtil;
+
 public class TileEntitySteamShaftRenderer extends TileEntitySpecialRenderer {
+
     @Override
     public void renderTileEntityAt(TileEntity te, double dx, double dy, double dz, float partial) {
-        Minecraft.getMinecraft().getTextureManager().bindTexture(Core.blockAtlas);
+        Minecraft.getMinecraft()
+            .getTextureManager()
+            .bindTexture(Core.blockAtlas);
         TileEntitySteamShaft shaft = (TileEntitySteamShaft) te;
         GL11.glPushMatrix();
         GL11.glTranslated(dx + 0.5, dy + 0.5, dz + 0.5);

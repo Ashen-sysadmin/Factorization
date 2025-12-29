@@ -1,7 +1,8 @@
 package factorization.util;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import io.netty.buffer.ByteBuf;
+import java.io.DataInput;
+import java.io.IOException;
+
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -14,11 +15,13 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 
-import java.io.DataInput;
-import java.io.IOException;
+import cpw.mods.fml.common.network.ByteBufUtils;
+import io.netty.buffer.ByteBuf;
 
 public final class DataUtil {
-    public static final ItemStack NULL_ITEM = new ItemStack((Item) null, 0, 0); // Forge may throw a huge hissy fit over this at some point.
+
+    public static final ItemStack NULL_ITEM = new ItemStack((Item) null, 0, 0); // Forge may throw a huge hissy fit over
+                                                                                // this at some point.
 
     public static void writeTank(NBTTagCompound tag, FluidTank tank, String name) {
         FluidStack ls = tank.getFluid();
@@ -63,7 +66,6 @@ public final class DataUtil {
     static public ItemStack readStack(ByteBuf input) throws IOException {
         return ByteBufUtils.readItemStack(input);
     }
-
 
     public static NBTTagCompound item2tag(ItemStack is) {
         NBTTagCompound tag = new NBTTagCompound();

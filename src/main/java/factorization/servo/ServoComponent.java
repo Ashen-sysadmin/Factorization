@@ -1,7 +1,22 @@
 package factorization.servo;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
+import net.minecraft.client.renderer.RenderBlocks;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
@@ -10,30 +25,21 @@ import factorization.servo.instructions.*;
 import factorization.shared.Core;
 import factorization.util.RenderUtil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 
 public abstract class ServoComponent implements IDataSerializable {
-    private static HashMap<String, Class<? extends ServoComponent>> componentMap = new HashMap<String, Class<? extends ServoComponent>>(50, 0.5F);
+
+    private static HashMap<String, Class<? extends ServoComponent>> componentMap = new HashMap<String, Class<? extends ServoComponent>>(
+        50,
+        0.5F);
     final private static String componentTagKey = "SCId";
 
     public static void register(Class<? extends ServoComponent> componentClass, ArrayList<ItemStack> sortedList) {
         String name;
         ServoComponent decor;
         try {
-            decor = componentClass.getConstructor().newInstance();
-        } catch (/*ReflectiveOperationException Java 7 */ Throwable e) {
+            decor = componentClass.getConstructor()
+                .newInstance();
+        } catch (/* ReflectiveOperationException Java 7 */ Throwable e) {
             Core.logSevere("Unable to instantiate %s: %s", componentClass, e);
             e.printStackTrace();
             throw new IllegalArgumentException(e);
@@ -48,11 +54,13 @@ public abstract class ServoComponent implements IDataSerializable {
     }
 
     private static BiMap<Short, Class<? extends ServoComponent>> the_idMap = null;
+
     private static BiMap<Short, Class<? extends ServoComponent>> getPacketIdMap() {
         if (the_idMap == null) {
             ArrayList<String> names = new ArrayList<String>(componentMap.keySet());
             Collections.sort(names);
-            ImmutableBiMap.Builder<Short, Class<? extends ServoComponent>> builder = ImmutableBiMap.<Short, Class<? extends ServoComponent>>builder();
+            ImmutableBiMap.Builder<Short, Class<? extends ServoComponent>> builder = ImmutableBiMap
+                .<Short, Class<? extends ServoComponent>>builder();
             for (short i = 0; i < names.size(); i++) {
                 builder.put(i, componentMap.get(names.get(i)));
             }
@@ -60,11 +68,11 @@ public abstract class ServoComponent implements IDataSerializable {
         }
         return the_idMap;
     }
-    
+
     public static Iterable<Class<? extends ServoComponent>> getComponents() {
         return getPacketIdMap().values();
     }
-    
+
     public short getNetworkId() {
         BiMap<Class<? extends ServoComponent>, Short> map = getPacketIdMap().inverse();
         Short o = map.get(getClass());
@@ -80,9 +88,11 @@ public abstract class ServoComponent implements IDataSerializable {
             String componentName;
             if (data.hasLegacy(prefix + componentTagKey)) {
                 // This is actually the opposite of legacy!
-                componentName = data.asSameShare(prefix + componentTagKey).putString(getName());
+                componentName = data.asSameShare(prefix + componentTagKey)
+                    .putString(getName());
             } else {
-                componentName = data.asSameShare(componentTagKey).putString(getName());
+                componentName = data.asSameShare(componentTagKey)
+                    .putString(getName());
             }
             Class<? extends ServoComponent> componentClass = getComponent(componentName);
             ServoComponent sc;
@@ -94,7 +104,8 @@ public abstract class ServoComponent implements IDataSerializable {
             }
             return sc.putData(prefix, data);
         } else {
-            data.asSameShare(prefix + componentTagKey).putString(getName());
+            data.asSameShare(prefix + componentTagKey)
+                .putString(getName());
             return putData(prefix, data);
         }
     }
@@ -116,7 +127,8 @@ public abstract class ServoComponent implements IDataSerializable {
         }
         try {
             ServoComponent decor = componentClass.newInstance();
-            return new DataInNBT(tag).as(Share.VISIBLE, "sc").putIDS(decor);
+            return new DataInNBT(tag).as(Share.VISIBLE, "sc")
+                .putIDS(decor);
         } catch (Throwable e) {
             e.printStackTrace();
             return null;
@@ -126,17 +138,19 @@ public abstract class ServoComponent implements IDataSerializable {
     protected final void save(NBTTagCompound tag) {
         tag.setString(componentTagKey, getName());
         try {
-            (new DataOutNBT(tag)).as(Share.VISIBLE, "sc").putIDS(this);
+            (new DataOutNBT(tag)).as(Share.VISIBLE, "sc")
+                .putIDS(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
+
     void writeToPacket(DataOutputStream dos) throws IOException {
         dos.writeShort(getNetworkId());
-        (new DataOutPacket(dos, Side.SERVER)).as(Share.VISIBLE, "sc").putIDS(this);
+        (new DataOutPacket(dos, Side.SERVER)).as(Share.VISIBLE, "sc")
+            .putIDS(this);
     }
-    
+
     static ServoComponent readFromPacket(ByteBuf dis) throws IOException {
         short id = dis.readShort();
         Class<? extends ServoComponent> componentClass = getPacketIdMap().get(id);
@@ -146,7 +160,8 @@ public abstract class ServoComponent implements IDataSerializable {
         }
         try {
             ServoComponent decor = componentClass.newInstance();
-            (new DataInByteBuf(dis, Side.CLIENT)).as(Share.VISIBLE, "sc").putIDS(decor);
+            (new DataInByteBuf(dis, Side.CLIENT)).as(Share.VISIBLE, "sc")
+                .putIDS(decor);
             return decor;
         } catch (IOException e) {
             throw e;
@@ -155,7 +170,7 @@ public abstract class ServoComponent implements IDataSerializable {
             return null;
         }
     }
-    
+
     public ItemStack toItem() {
         ItemStack ret;
         if (this instanceof Instruction) {
@@ -171,37 +186,39 @@ public abstract class ServoComponent implements IDataSerializable {
         ret.setItemDamage(dmg);
         return ret;
     }
-    
+
     public ServoComponent copyComponent() {
         NBTTagCompound tag = new NBTTagCompound();
         save(tag);
         return load(tag);
     }
-    
+
     public static ServoComponent fromItem(ItemStack is) {
         if (!is.hasTagCompound()) {
             return null;
         }
         return load(is.getTagCompound());
     }
-    
-    //return True if the item should be consumed by a survival-mode player
+
+    // return True if the item should be consumed by a survival-mode player
     public abstract boolean onClick(EntityPlayer player, Coord block, ForgeDirection side);
+
     public abstract boolean onClick(EntityPlayer player, ServoMotor motor);
-    
+
     /**
      * @return a unique name, something like "modname.componentType.name"
      */
     public abstract String getName();
-    
+
     /**
      * Render to the Tessellator. This must be appropriate for a SimpleBlockRenderingHandler.
+     * 
      * @param where to render it at in world. If null, it is being rendered in an inventory (or so). Render to 0,0,0.
-     * @param rb RenderBlocks
+     * @param rb    RenderBlocks
      */
     @SideOnly(Side.CLIENT)
     public abstract void renderStatic(Coord where, RenderBlocks rb);
-    
+
     @SideOnly(Side.CLIENT)
     public void renderDynamic() {
         Tessellator tess = Tessellator.instance;
@@ -209,72 +226,50 @@ public abstract class ServoComponent implements IDataSerializable {
         renderStatic(null, RenderUtil.getRB());
         tess.draw();
     }
-    
+
     @SideOnly(Side.CLIENT)
     public void addInformation(List info) {
-        //info.add("Servo Component");
+        // info.add("Servo Component");
     }
 
     static ArrayList<ItemStack> sorted_instructions = new ArrayList<ItemStack>();
     static ArrayList<ItemStack> sorted_decors = new ArrayList<ItemStack>();
 
     static {
-        //registerRecursivelyFromPackage("factorization.common.servo.actuators");
-        //registerRecursivelyFromPackage("factorization.common.servo.instructions");
-        Class<? extends ServoComponent>[] decorations = (Class<? extends ServoComponent>[])new Class[] {
-                WoodenServoGrate.class,
-                GlassServoGrate.class,
-                IronServoGrate.class,
-                ScanColor.class,
-        };
-        Class<? extends ServoComponent>[] instructions = (Class<? extends ServoComponent>[])new Class[] {
-                // Color by class, sort by color
-                // Cyan: Motion instructions
-                EntryControl.class,
-                SetDirection.class,
-                Spin.class,
-                RotateTop.class,
-                SetSpeed.class,
-                Trap.class,
+        // registerRecursivelyFromPackage("factorization.common.servo.actuators");
+        // registerRecursivelyFromPackage("factorization.common.servo.instructions");
+        Class<? extends ServoComponent>[] decorations = (Class<? extends ServoComponent>[]) new Class[] {
+            WoodenServoGrate.class, GlassServoGrate.class, IronServoGrate.class, ScanColor.class, };
+        Class<? extends ServoComponent>[] instructions = (Class<? extends ServoComponent>[]) new Class[] {
+            // Color by class, sort by color
+            // Cyan: Motion instructions
+            EntryControl.class, SetDirection.class, Spin.class, RotateTop.class, SetSpeed.class, Trap.class,
 
-                // Red: Redstone-ish instructions
-                RedstonePulse.class,
-                SocketCtrl.class,
-                ReadRedstone.class,
-                CountItems.class,
-                ShifterControl.class,
+            // Red: Redstone-ish instructions
+            RedstonePulse.class, SocketCtrl.class, ReadRedstone.class, CountItems.class, ShifterControl.class,
 
-                // Yellow: Math instructions
-                Drop.class,
-                Dup.class,
-                IntegerValue.class,
-                Sum.class,
-                Product.class,
-                BooleanValue.class,
-                Compare.class,
+            // Yellow: Math instructions
+            Drop.class, Dup.class, IntegerValue.class, Sum.class, Product.class, BooleanValue.class, Compare.class,
 
-                // White: Computation instructions
-                Jump.class,
-                SetEntryAction.class,
-                SetRepeatedInstruction.class,
-                InstructionGroup.class,
-        };
+            // White: Computation instructions
+            Jump.class, SetEntryAction.class, SetRepeatedInstruction.class, InstructionGroup.class, };
 
         for (Class<? extends ServoComponent> cl : decorations) register(cl, sorted_decors);
         for (Class<? extends ServoComponent> cl : instructions) register(cl, sorted_instructions);
     }
-    
+
     public static void setupRecipes() {
         for (Class<? extends ServoComponent> klazz : componentMap.values()) {
             try {
-                klazz.newInstance().addRecipes();
+                klazz.newInstance()
+                    .addRecipes();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     protected void addRecipes() {}
 
-    public void onItemUse(Coord here, EntityPlayer player) { }
+    public void onItemUse(Coord here, EntityPlayer player) {}
 }

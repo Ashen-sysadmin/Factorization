@@ -1,30 +1,33 @@
 package factorization.servo;
 
-import factorization.servo.stepper.StepperEngine;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
 import factorization.common.BlockIcons;
+import factorization.servo.stepper.StepperEngine;
 import factorization.shared.BlockRenderHelper;
 import factorization.shared.Core;
 
-
 public abstract class Decorator extends ServoComponent {
+
     public abstract void motorHit(ServoMotor motor);
+
     public boolean preMotorHit(ServoMotor motor) {
         return false;
     }
 
-    public void stepperHit(StepperEngine engine) { }
-    
+    public void stepperHit(StepperEngine engine) {}
+
     @SideOnly(Side.CLIENT)
     private static class StretchedIIcon implements IIcon {
+
         public IIcon under;
 
         @Override
@@ -81,10 +84,10 @@ public abstract class Decorator extends ServoComponent {
             return under.getIconName();
         }
     }
-    
+
     @SideOnly(Side.CLIENT)
     private static StretchedIIcon[] stretcher;
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public void renderStatic(Coord where, RenderBlocks rb) {
@@ -117,16 +120,18 @@ public abstract class Decorator extends ServoComponent {
             block.renderRotated(Tessellator.instance, where);
         }
     }
-    
+
     public abstract IIcon getIcon(ForgeDirection side);
+
     public float getSize() {
-        return TileEntityServoRail.width - 1F/2048F;
-        //return 6F/16F;
+        return TileEntityServoRail.width - 1F / 2048F;
+        // return 6F/16F;
     }
+
     public boolean stretchIIcon() {
         return true;
     }
-    
+
     public static boolean playerHasProgrammer(EntityPlayer player) {
         if (player == null) {
             return false;
@@ -137,20 +142,20 @@ public abstract class Decorator extends ServoComponent {
         }
         return cur.getItem() == Core.registry.logicMatrixProgrammer;
     }
-    
+
     public boolean isFreeToPlace() {
         return false;
     }
-    
+
     public String getInfo() {
         return null;
     }
-    
+
     public void onPlacedOnRail(TileEntityServoRail sr) {}
-    
+
     public boolean collides() {
         return true;
     }
-    
-    public void afterClientLoad(TileEntityServoRail rail) { }
+
+    public void afterClientLoad(TileEntityServoRail rail) {}
 }

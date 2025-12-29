@@ -3,6 +3,7 @@ package factorization.api.datahelpers;
 import java.io.IOException;
 
 public class DataIdentity extends MergedDataHelper {
+
     public static final DataHelper instance = new DataIdentity();
 
     @Override

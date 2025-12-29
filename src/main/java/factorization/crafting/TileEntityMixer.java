@@ -1,5 +1,24 @@
 package factorization.crafting;
 
+import java.io.IOException;
+import java.util.*;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.InventoryCraftResult;
+import net.minecraft.inventory.InventoryCrafting;
+import net.minecraft.inventory.SlotCrafting;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.ShapelessRecipes;
+import net.minecraft.util.IIcon;
+import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.ShapelessOreRecipe;
+
 import factorization.api.Charge;
 import factorization.api.Coord;
 import factorization.api.IChargeConductor;
@@ -19,42 +38,27 @@ import factorization.util.InvUtil.FzInv;
 import factorization.util.ItemUtil;
 import factorization.util.PlayerUtil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.InventoryCraftResult;
-import net.minecraft.inventory.InventoryCrafting;
-import net.minecraft.inventory.SlotCrafting;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.ShapelessRecipes;
-import net.minecraft.util.IIcon;
-import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.oredict.ShapelessOreRecipe;
 
-import java.io.IOException;
-import java.util.*;
+public class TileEntityMixer extends TileEntityFactorization implements IChargeConductor {
 
-public class TileEntityMixer extends TileEntityFactorization implements
-        IChargeConductor {
-    //inventory: 4 input slots, 4 output slots
+    // inventory: 4 input slots, 4 output slots
     public static final int INPUT_SIZE = 4;
     public ItemStack input[] = new ItemStack[INPUT_SIZE], output[] = new ItemStack[4];
-    public static final int[] IN_s = {0, 1, 2, 3}, OUT_s = {4, 5, 6, 7};
+    public static final int[] IN_s = { 0, 1, 2, 3 }, OUT_s = { 4, 5, 6, 7 };
     public ArrayList<ItemStack> outputBuffer = new ArrayList();
     public int progress = 0;
     public int speed = 0;
     Charge charge = new Charge(this);
-    
+
     @Override
     public IIcon getIcon(ForgeDirection dir) {
         switch (dir) {
-        case UP: return BlockIcons.mixer.top;
-        case DOWN: return BlockIcons.mixer.bottom;
-        default: return BlockIcons.mixer.side;
+            case UP:
+                return BlockIcons.mixer.top;
+            case DOWN:
+                return BlockIcons.mixer.bottom;
+            default:
+                return BlockIcons.mixer.side;
         }
     }
 
@@ -62,12 +66,15 @@ public class TileEntityMixer extends TileEntityFactorization implements
     public void putData(DataHelper data) throws IOException {
         super.putData(data);
         charge.serialize("", data);
-        progress = data.as(Share.PRIVATE, "progress").putInt(progress);
-        speed = data.as(Share.VISIBLE, "speed").putInt(speed);
-        outputBuffer = data.as(Share.PRIVATE, "outBuffer").putItemList(outputBuffer);
+        progress = data.as(Share.PRIVATE, "progress")
+            .putInt(progress);
+        speed = data.as(Share.VISIBLE, "speed")
+            .putInt(speed);
+        outputBuffer = data.as(Share.PRIVATE, "outBuffer")
+            .putItemList(outputBuffer);
         putSlots(data);
     }
-    
+
     @Override
     public void markDirty() {
         super.markDirty();
@@ -77,7 +84,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
         dirty = true;
         cache = null;
     }
-    
+
     @Override
     public void dropContents() {
         super.dropContents();
@@ -117,7 +124,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
             output[slot] = is;
         }
     }
-    
+
     @Override
     public ItemStack decrStackSize(int i, int amount) {
         markDirty();
@@ -137,7 +144,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
         }
         return IN_s;
     }
-    
+
     @Override
     public boolean isItemValidForSlot(int slotIndex, ItemStack itemstack) {
         return slotIndex < input.length;
@@ -201,12 +208,15 @@ public class TileEntityMixer extends TileEntityFactorization implements
     public float getRotation() {
         return rotation;
     }
-    
-    public static class WeirdRecipeException extends Throwable {}
 
-    public static final CraftingManagerGeneric<TileEntityMixer> recipes = CraftingManagerGeneric.get(TileEntityMixer.class);
+    public static class WeirdRecipeException extends Throwable {
+    }
+
+    public static final CraftingManagerGeneric<TileEntityMixer> recipes = CraftingManagerGeneric
+        .get(TileEntityMixer.class);
 
     public static class RecipeMatchInfo implements IVexatiousCrafting<TileEntityMixer> {
+
         public ArrayList inputs = new ArrayList();
         public ItemStack output;
         public IRecipe theRecipe;
@@ -236,8 +246,9 @@ public class TileEntityMixer extends TileEntityFactorization implements
             inputs.add(o);
             size++;
         }
-        
-        public RecipeMatchInfo(List<Object> recipeInput, ItemStack recipeOutput, IRecipe theRecipe) throws WeirdRecipeException {
+
+        public RecipeMatchInfo(List<Object> recipeInput, ItemStack recipeOutput, IRecipe theRecipe)
+            throws WeirdRecipeException {
             for (Object o : recipeInput) {
                 if (o instanceof ItemStack) {
                     add(o);
@@ -246,7 +257,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
                         throw new WeirdRecipeException();
                     }
                     ArrayList<ItemStack> parts = new ArrayList();
-                    for (Object p : (Collection)o) {
+                    for (Object p : (Collection) o) {
                         if (p instanceof ItemStack) {
                             parts.add((ItemStack) p);
                         }
@@ -277,7 +288,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
                 Object o = inputs.get(i);
                 List<ItemStack> all;
                 if (o instanceof ItemStack) {
-                    all = Arrays.asList((ItemStack)o);
+                    all = Arrays.asList((ItemStack) o);
                 } else {
                     all = new ArrayList();
                     all.addAll((List<ItemStack>) o);
@@ -349,7 +360,8 @@ public class TileEntityMixer extends TileEntityFactorization implements
                     for (ItemStack is : ((Iterable<ItemStack>) o)) {
                         ItemStack got = ItemUtil.normalize(inv.pull(is, 1, false));
                         if (got != null) {
-                            for (Iterator<ItemStack> iterator = ((Iterable<ItemStack>) o).iterator(); iterator.hasNext();) {
+                            for (Iterator<ItemStack> iterator = ((Iterable<ItemStack>) o).iterator(); iterator
+                                .hasNext();) {
                                 ItemStack others = iterator.next();
                                 if (others != is) {
                                     iterator.remove();
@@ -390,13 +402,14 @@ public class TileEntityMixer extends TileEntityFactorization implements
         if (recipes_loaded) return;
         recipes_loaded = true;
         ArrayList<RecipeMatchInfo> found = new ArrayList<RecipeMatchInfo>();
-        outer: for (Object o: CraftingManager.getInstance().getRecipeList()) {
+        outer: for (Object o : CraftingManager.getInstance()
+            .getRecipeList()) {
             IRecipe recipe = (IRecipe) o;
             List<Object> inputList = null;
             ItemStack output = null;
             if (recipe instanceof ShapelessRecipes) {
                 ShapelessRecipes sr = (ShapelessRecipes) recipe;
-                inputList = sr.recipeItems;
+                inputList = (List<Object>) (List<?>) sr.recipeItems;
                 output = sr.getRecipeOutput();
             }
             if (recipe instanceof ShapelessOreRecipe) {
@@ -420,12 +433,15 @@ public class TileEntityMixer extends TileEntityFactorization implements
                 if (p instanceof String) {
                     ArrayList<ItemStack> ores = OreDictionary.getOres((String) p);
                     for (int X = 0; X < ores.size(); X++) {
-                        ores.set(X, ores.get(X).copy());
+                        ores.set(
+                            X,
+                            ores.get(X)
+                                .copy());
                     }
                     p = ores;
                 }
                 if (p instanceof List) {
-                    for (ItemStack is : (List<ItemStack>)p) {
+                    for (ItemStack is : (List<ItemStack>) p) {
                         if (!isOkayRecipeItem(is)) {
                             continue outer;
                         }
@@ -436,7 +452,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
                         continue outer;
                     }
                 }
-                
+
             }
             try {
                 found.add(new RecipeMatchInfo(inputList, output, recipe));
@@ -445,6 +461,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
             }
         }
         Collections.sort(found, new Comparator<RecipeMatchInfo>() {
+
             @SuppressWarnings("SubtractionInCompareTo")
             @Override
             public int compare(RecipeMatchInfo o1, RecipeMatchInfo o2) {
@@ -455,7 +472,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
             recipes.add(rmi);
         }
     }
-    
+
     public static boolean isOkayRecipeItem(ItemStack is) {
         if (is == null) {
             return false;
@@ -468,33 +485,35 @@ public class TileEntityMixer extends TileEntityFactorization implements
         if (item == Items.paper || item == Items.book) {
             return false;
         }
-        /*if (is.getItemDamage() > 0xFF) {
-            return false;
-        }*/ //??? What was this for?
+        /*
+         * if (is.getItemDamage() > 0xFF) {
+         * return false;
+         * }
+         */ // ??? What was this for?
         if (item.hasContainerItem(is)) {
-            //We're going to filter out items like:
-            //  Logic matrix programmers
-            //  Diamond drawplates
+            // We're going to filter out items like:
+            // Logic matrix programmers
+            // Diamond drawplates
             ItemStack container = ItemUtil.normalize(item.getContainerItem(is));
             if (container == null) {
                 return true;
             }
             if (container.getItem() != item) {
-                //Like water bucket -> empty bucket; OK
+                // Like water bucket -> empty bucket; OK
                 return true;
             }
             if (container.isItemStackDamageable() || container.isItemDamaged()) {
-                //Like a drawplate
+                // Like a drawplate
                 return false;
             }
             if (container.isItemEqual(is)) {
-                //Like a logic matrix programmer
+                // Like a logic matrix programmer
                 return false;
             }
         }
         return true;
     }
-    
+
     IVexatiousCrafting<TileEntityMixer> getRecipe() {
         boolean empty = true;
         for (int i = 0; i < input.length; i++) {
@@ -522,7 +541,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
 
     static boolean addItems(ItemStack out[], ItemStack src[]) {
         for (ItemStack is : src) {
-            //increase already-started stacks
+            // increase already-started stacks
             for (int i = 0; i < out.length; i++) {
                 if (out[i] != null && ItemUtil.couldMerge(is, out[i])) {
                     int free = out[i].getMaxStackSize() - out[i].stackSize;
@@ -538,7 +557,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
             if (is == null) {
                 continue;
             }
-            //create a new stack in an empty slot
+            // create a new stack in an empty slot
             for (int i = 0; i < out.length; i++) {
                 if (out[i] == null) {
                     out[i] = is.copy();
@@ -583,7 +602,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
         int i = Math.max(2, speed);
         return charge.tryTake(i) > 0;
     }
-    
+
     int add(InventoryCrafting craft, int craft_slot, ItemStack is) {
         if (is == null) {
             return craft_slot;
@@ -598,7 +617,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
         }
         return craft_slot;
     }
-    
+
     boolean dumpBuffer() {
         if (outputBuffer.size() > 0) {
             ItemStack toAdd = outputBuffer.get(0);
@@ -633,7 +652,7 @@ public class TileEntityMixer extends TileEntityFactorization implements
         if (speed < 5 && extractEnergy()) {
             speed++;
         } else if (!extractEnergy() && speed > 0) {
-            int ns = Math.min(speed - 1, (int)(speed*0.8));
+            int ns = Math.min(speed - 1, (int) (speed * 0.8));
             ns = Math.max(ns, 0);
             speed = ns;
         }

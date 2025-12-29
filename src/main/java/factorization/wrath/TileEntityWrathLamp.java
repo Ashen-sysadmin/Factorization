@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 
-import factorization.api.datahelpers.DataHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,8 +15,10 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import factorization.api.datahelpers.DataHelper;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.shared.BlockClass;
@@ -25,10 +26,11 @@ import factorization.shared.Core;
 import factorization.shared.TileEntityCommon;
 
 public class TileEntityWrathLamp extends TileEntityCommon {
+
     static final int radius = 6;
     static final int radiusSq = radius * radius;
     static final int diameter = radius * 2;
-    static final int maxDepth = 24; //XXX TODO
+    static final int maxDepth = 24; // XXX TODO
     private short beamDepths[] = new short[(diameter + 1) * (diameter + 1)];
     private Updater updater = new Idler();
     static boolean isUpdating = false;
@@ -38,6 +40,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
     static PriorityQueue<Coord> airToUpdate = new PriorityQueue(1024);
 
     private static class Coord implements Comparable<Coord> {
+
         World w;
         int x, y, z;
 
@@ -61,7 +64,8 @@ public class TileEntityWrathLamp extends TileEntityCommon {
     public static void handleAirUpdates() {
         update_count = 0;
         while (update_count < update_limit && airToUpdate.size() > 0) {
-            airToUpdate.remove().check();
+            airToUpdate.remove()
+                .check();
         }
     }
 
@@ -70,7 +74,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
         super.onPlacedBy(player, is, side, hitX, hitY, hitZ);
         updater = new InitialBuild();
     }
-    
+
     static final int NOTIFY_NEIGHBORS = factorization.api.Coord.NOTIFY_NEIGHBORS;
     static final int UPDATE_CLIENT = factorization.api.Coord.UPDATE;
     static boolean spammed_console = false;
@@ -80,7 +84,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
             return;
         }
         if (update_count > update_limit) {
-            if (airToUpdate.size() > 1024*8) {
+            if (airToUpdate.size() > 1024 * 8) {
                 if (!spammed_console) {
                     Core.logSevere("TileEntityWrathLamp.airToUpdate has %s entries!", airToUpdate.size());
                     spammed_console = true;
@@ -117,7 +121,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
     static HashSet<Chunk> toVisit = new HashSet(9 * 5);
 
     static TileEntityWrathLamp findLightAirParent(World world, int x, int y, int z) {
-        //NOTE: This could be optimized. Probably not really worth it tho.
+        // NOTE: This could be optimized. Probably not really worth it tho.
         toVisit.clear();
         for (int dcx : deltas) {
             for (int dcz : deltas) {
@@ -170,6 +174,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
     }
 
     private static ThreadLocal<Boolean> invalidating = new ThreadLocal<Boolean>();
+
     @Override
     public void invalidate() {
         super.invalidate();
@@ -247,8 +252,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
             float m_z = div(dz + addz, dx);
             if (Math.abs(idealm - m_x) <= Math.abs(idealm - m_z)) {
                 x += addx;
-            }
-            else {
+            } else {
                 z += addz;
             }
         }
@@ -269,6 +273,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
     }
 
     abstract class Updater {
+
         int start_height = -100;
 
         abstract Updater update();
@@ -277,6 +282,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
     }
 
     class InitialBuild extends Updater {
+
         int height = -100;
         int start_delay = 20;
         Updater next_updater = new Idler();
@@ -290,20 +296,18 @@ public class TileEntityWrathLamp extends TileEntityCommon {
             if (height == -100) {
                 if (start_height == -100) {
                     height = yCoord;
-                }
-                else {
+                } else {
                     height = start_height;
                 }
-            }
-            else {
+            } else {
                 height -= 1;
             }
             if (height < yCoord - maxDepth) {
                 return next_updater;
             }
             if (height == yCoord) {
-                //we are level with the lamp.
-                //Set areas we can't reach to -1
+                // we are level with the lamp.
+                // Set areas we can't reach to -1
                 Arrays.fill(beamDepths, (short) 0);
                 for (int x = xCoord - radius; x <= xCoord + radius; x++) {
                     for (int z = zCoord - radius; z <= zCoord + radius; z++) {
@@ -313,7 +317,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
                     }
                 }
             }
-            //NORELEASE: I've probably messed this up
+            // NORELEASE: I've probably messed this up
             for (int x = xCoord - radius; x <= xCoord + radius; x++) {
                 for (int z = zCoord - radius; z <= zCoord + radius; z++) {
                     // If it is air, make it LightAir™
@@ -329,30 +333,32 @@ public class TileEntityWrathLamp extends TileEntityCommon {
                         beamDepths[index] = (short) height;
                         continue;
                     }
-                    /*if (block == 0 && worldObj.getBlock(x, height - 1, z) == Blocks.cobblestone_wall) {
-                        block = -1;
-                    }*/
+                    /*
+                     * if (block == 0 && worldObj.getBlock(x, height - 1, z) == Blocks.cobblestone_wall) {
+                     * block = -1;
+                     * }
+                     */
                     if (worldObj.getBlock(x, height, z) == Blocks.air) {
-                        //Nice work, Mojang. If we didn't do this the hard way, the client will lag very badly near chunks that are unloaded.
-                        //XXX TODO FIXME: Seems a bit difficult. What's the right way to do this?
+                        // Nice work, Mojang. If we didn't do this the hard way, the client will lag very badly near
+                        // chunks that are unloaded.
+                        // XXX TODO FIXME: Seems a bit difficult. What's the right way to do this?
                         Chunk chunk = worldObj.getChunkFromBlockCoords(x, z);
                         chunk.func_150807_a(x & 15, height, z & 15, Core.registry.lightair_block, 0);
                         worldObj.markBlockForUpdate(x, height, z);
-                    } else if (block == Core.registry.lightair_block) {
-                    } else if (x == xCoord && height == yCoord && z == zCoord) {
-                        //this is ourself. Hi, self.
-                        //Don't terminate the beamDepth early.
-                    } else {
-                        beamDepths[index] = (short) height;
-                    }
+                    } else if (block == Core.registry.lightair_block) {} else
+                        if (x == xCoord && height == yCoord && z == zCoord) {
+                            // this is ourself. Hi, self.
+                            // Don't terminate the beamDepth early.
+                        } else {
+                            beamDepths[index] = (short) height;
+                        }
 
                 }
             }
 
             if (height == 0) {
                 return next_updater;
-            }
-            else {
+            } else {
                 return this;
             }
         }
@@ -369,6 +375,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
     }
 
     class Idler extends Updater {
+
         boolean couldUpdate(int dx, int dz) {
             return worldObj.isAirBlock(xCoord + dx, yCoord, zCoord + dz);
         }
@@ -390,6 +397,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
     }
 
     public static class RelightTask extends Entity {
+
         int delay;
 
         public RelightTask(World par1World) {
@@ -401,14 +409,12 @@ public class TileEntityWrathLamp extends TileEntityCommon {
             delay = 20 * 4;
         }
 
-        //No need to bother saving this.
+        // No need to bother saving this.
         @Override
-        protected void readEntityFromNBT(NBTTagCompound var1) {
-        }
+        protected void readEntityFromNBT(NBTTagCompound var1) {}
 
         @Override
-        protected void writeEntityToNBT(NBTTagCompound var1) {
-        }
+        protected void writeEntityToNBT(NBTTagCompound var1) {}
 
         @Override
         public void onUpdate() {
@@ -446,7 +452,7 @@ public class TileEntityWrathLamp extends TileEntityCommon {
     public boolean isBlockSolidOnSide(int side) {
         return false;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(ForgeDirection dir) {

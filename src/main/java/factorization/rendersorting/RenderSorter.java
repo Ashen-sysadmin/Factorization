@@ -1,33 +1,27 @@
 package factorization.rendersorting;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.shared.Core;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.entity.RenderItem;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.IIcon;
-import net.minecraft.world.World;
-import net.minecraftforge.client.IItemRenderer;
-import net.minecraftforge.client.MinecraftForgeClient;
-import net.minecraftforge.event.world.WorldEvent;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
+import net.minecraftforge.client.IItemRenderer;
+import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.event.world.WorldEvent;
+
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
+import factorization.shared.Core;
 
 public class RenderSorter implements Comparator<Object> {
+
     public static void dirtyTileEntity(TileEntity te) {
         if (!te.getWorldObj().isRemote) return;
         List tes = Minecraft.getMinecraft().renderGlobal.tileEntities;
@@ -93,7 +87,8 @@ public class RenderSorter implements Comparator<Object> {
         Class aClass = a.getClass();
         Class bClass = b.getClass();
 
-        if (aClass != bClass) return aClass.getCanonicalName().compareTo(bClass.getCanonicalName());
+        if (aClass != bClass) return aClass.getCanonicalName()
+            .compareTo(bClass.getCanonicalName());
         if (a instanceof ISortableRenderer) {
             ISortableRenderer ai = (ISortableRenderer) a;
             return ai.compareRenderer(b);
@@ -106,7 +101,9 @@ public class RenderSorter implements Comparator<Object> {
         if (a.hasEffect(0)) return 100;
         IItemRenderer ar = MinecraftForgeClient.getItemRenderer(a, renderType);
         if (ar == null) return 10 + a.getItemSpriteNumber();
-        return 1000 + Math.abs(ar.getClass().hashCode() % Short.MAX_VALUE);
+        return 1000 + Math.abs(
+            ar.getClass()
+                .hashCode() % Short.MAX_VALUE);
     }
 
     public static int compareItemRender(ItemStack a, ItemStack b, IItemRenderer.ItemRenderType renderType) {

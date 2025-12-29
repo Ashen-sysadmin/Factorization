@@ -16,7 +16,8 @@ public enum Style {
      */
     CLEAR,
     /**
-     * If the message is for a {@link ISaneCoord} or {@link TileEntity}, then it will not take the block's bounding box into consideration
+     * If the message is for a {@link ISaneCoord} or {@link TileEntity}, then it will not take the block's bounding box
+     * into consideration
      * (Other targets don't consider bounding boxes)
      */
     EXACTPOSITION,
@@ -40,7 +41,8 @@ public enum Style {
      */
     UPDATE_SAME_ITEM,
     /**
-     * This will enlarge messages far away from the camera so that they occupy about the same area on the screen as nearby messages.
+     * This will enlarge messages far away from the camera so that they occupy about the same area on the screen as
+     * nearby messages.
      * You will likely want to pass in DRAWFAR with this one.
      */
     SCALE_SIZE,

@@ -3,6 +3,7 @@ package factorization.truth.cmd;
 import factorization.truth.api.*;
 
 public class CmdGenerate extends AgnosticCommand {
+
     @Override
     protected void call(ITypesetter out, ITokenizer tokenizer) throws TruthError {
         String arg = tokenizer.getParameter("\\generate path");

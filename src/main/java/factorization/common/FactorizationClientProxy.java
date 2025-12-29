@@ -1,24 +1,5 @@
 package factorization.common;
 
-import factorization.api.Coord;
-import factorization.artifact.ContainerForge;
-import factorization.artifact.GuiArtifactForge;
-import factorization.artifact.RenderBrokenArtifact;
-import factorization.beauty.*;
-import factorization.charge.*;
-import factorization.citizen.EntityCitizen;
-import factorization.citizen.RenderCitizen;
-import factorization.mechanics.BlockRenderHinge;
-import factorization.mechanics.SocketPoweredCrank;
-import factorization.mechanics.TileEntityHinge;
-import factorization.mechanics.TileEntityHingeRenderer;
-import factorization.rendersorting.RenderSorter;
-import factorization.servo.stepper.RenderStepperEngine;
-import factorization.servo.stepper.StepperEngine;
-import factorization.shared.*;
-import factorization.weird.*;
-import factorization.weird.poster.EntityPoster;
-import factorization.weird.poster.RenderPoster;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -36,14 +17,23 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
+
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
+import factorization.api.Coord;
+import factorization.artifact.ContainerForge;
+import factorization.artifact.GuiArtifactForge;
+import factorization.artifact.RenderBrokenArtifact;
+import factorization.beauty.*;
 import factorization.ceramics.BlockRenderGreenware;
 import factorization.ceramics.ItemRenderGlazeBucket;
 import factorization.ceramics.TileEntityGreenware;
 import factorization.ceramics.TileEntityGreenwareRender;
+import factorization.charge.*;
+import factorization.citizen.EntityCitizen;
+import factorization.citizen.RenderCitizen;
 import factorization.colossi.ColossusController;
 import factorization.colossi.ColossusControllerRenderer;
 import factorization.crafting.BlockRenderCompressionCrafter;
@@ -57,6 +47,10 @@ import factorization.crafting.TileEntityMixer;
 import factorization.crafting.TileEntityMixerRenderer;
 import factorization.darkiron.BlockDarkIronOre;
 import factorization.darkiron.GlintRenderer;
+import factorization.mechanics.BlockRenderHinge;
+import factorization.mechanics.SocketPoweredCrank;
+import factorization.mechanics.TileEntityHinge;
+import factorization.mechanics.TileEntityHingeRenderer;
 import factorization.oreprocessing.BlockRenderCrystallizer;
 import factorization.oreprocessing.ContainerCrystallizer;
 import factorization.oreprocessing.ContainerSlagFurnace;
@@ -65,10 +59,14 @@ import factorization.oreprocessing.GuiSlag;
 import factorization.oreprocessing.TileEntityCrystallizer;
 import factorization.oreprocessing.TileEntityCrystallizerRender;
 import factorization.oreprocessing.TileEntityGrinderRender;
-import factorization.servo.BlockRenderServoRail;
 import factorization.redstone.GuiParasieve;
+import factorization.rendersorting.RenderSorter;
+import factorization.servo.BlockRenderServoRail;
 import factorization.servo.RenderServoMotor;
 import factorization.servo.ServoMotor;
+import factorization.servo.stepper.RenderStepperEngine;
+import factorization.servo.stepper.StepperEngine;
+import factorization.shared.*;
 import factorization.sockets.BlockRenderSocketBase;
 import factorization.sockets.SocketLacerator;
 import factorization.sockets.SocketScissors;
@@ -76,10 +74,14 @@ import factorization.sockets.TileEntitySocketRenderer;
 import factorization.sockets.fanturpeller.SocketFanturpeller;
 import factorization.twistedblock.TwistedRender;
 import factorization.utiligoo.GooRenderer;
+import factorization.weird.*;
+import factorization.weird.poster.EntityPoster;
+import factorization.weird.poster.RenderPoster;
 import factorization.wrath.BlockRenderLamp;
 import factorization.wrath.TileEntityWrathLamp;
 
 public class FactorizationClientProxy extends FactorizationProxy {
+
     public FactorizationKeyHandler keyHandler = new FactorizationKeyHandler();
     public RenderSorter renderSorter;
 
@@ -89,14 +91,17 @@ public class FactorizationClientProxy extends FactorizationProxy {
         // 1) this is too early access FzConfig
         // 2) Has issue w/ anonymous classes that Ars Magica uses.
         // These are easy to fix, but this is 1.7.
-        /*if (FzConfig.sort_renderers) {
-            Core.loadBus(renderSorter = new RenderSorter());
-        }*/
+        /*
+         * if (FzConfig.sort_renderers) {
+         * Core.loadBus(renderSorter = new RenderSorter());
+         * }
+         */
     }
 
     @Override
     public Profiler getProfiler() {
-        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+        if (FMLCommonHandler.instance()
+            .getEffectiveSide() == Side.CLIENT) {
             return Minecraft.getMinecraft().mcProfiler;
         } else {
             return super.getProfiler();
@@ -111,7 +116,7 @@ public class FactorizationClientProxy extends FactorizationProxy {
         if (ID == FactoryType.ARTIFACTFORGEGUI.gui) {
             return new GuiArtifactForge(new ContainerForge(new Coord(world, x, y, z), player));
         }
-        
+
         TileEntity te = world.getTileEntity(x, y, z);
         if (!(te instanceof TileEntityFactorization)) {
             return null;
@@ -147,7 +152,7 @@ public class FactorizationClientProxy extends FactorizationProxy {
         cont.addSlotsForGui(fac, player.inventory);
         return gui;
     }
-    
+
     @Override
     public void pokePocketCrafting() {
         // If the player has a pocket crafting table open, have it update
@@ -161,17 +166,15 @@ public class FactorizationClientProxy extends FactorizationProxy {
     @Override
     public void playSoundFX(String src, float volume, float pitch) {
         ISound sound = new PositionedSoundRecord(new ResourceLocation(src), volume, pitch, 0, 0, 0);
-        Minecraft.getMinecraft().getSoundHandler().playSound(sound);
+        Minecraft.getMinecraft()
+            .getSoundHandler()
+            .playSound(sound);
     }
 
     @Override
     public EntityPlayer getClientPlayer() {
         return Minecraft.getMinecraft().thePlayer;
     }
-
-
-
-
 
     private void setTileEntityRendererDispatcher(Class clazz, TileEntitySpecialRenderer r) {
         ClientRegistry.bindTileEntitySpecialRenderer(clazz, r);
@@ -188,7 +191,9 @@ public class FactorizationClientProxy extends FactorizationProxy {
             setTileEntityRendererDispatcher(TileEntityCrystallizer.class, new TileEntityCrystallizerRender());
             setTileEntityRendererDispatcher(TileEntitySteamTurbine.class, new TileEntitySteamTurbineRender());
             setTileEntityRendererDispatcher(TileEntityLeydenJar.class, new TileEntityLeydenJarRender());
-            setTileEntityRendererDispatcher(TileEntityCompressionCrafter.class, new TileEntityCompressionCrafterRenderer());
+            setTileEntityRendererDispatcher(
+                TileEntityCompressionCrafter.class,
+                new TileEntityCompressionCrafterRenderer());
             setTileEntityRendererDispatcher(SocketScissors.class, new TileEntitySocketRenderer());
             setTileEntityRendererDispatcher(SocketLacerator.class, new TileEntitySocketRenderer());
             setTileEntityRendererDispatcher(SocketFanturpeller.class, new TileEntitySocketRenderer());
@@ -206,7 +211,8 @@ public class FactorizationClientProxy extends FactorizationProxy {
         RenderingRegistry.registerEntityRenderingHandler(EntityPoster.class, new RenderPoster());
         RenderingRegistry.registerEntityRenderingHandler(EntityCitizen.class, new RenderCitizen());
         RenderingRegistry.registerEntityRenderingHandler(EntityMinecartDayBarrel.class, new RenderMinecartDayBarrel());
-        RenderingRegistry.registerEntityRenderingHandler(EntityLeafBomb.class, new RenderSnowball(Core.registry.leafBomb, 0));
+        RenderingRegistry
+            .registerEntityRenderingHandler(EntityLeafBomb.class, new RenderSnowball(Core.registry.leafBomb, 0));
 
         RenderingRegistry.registerBlockHandler(new FactorizationRender());
         RenderingRegistry.registerBlockHandler(new FactorizationRenderNonTE());
@@ -223,7 +229,7 @@ public class FactorizationClientProxy extends FactorizationProxy {
         new BlockRenderCrystallizer();
         new BlockRenderCompressionCrafter();
         new BlockRenderGreenware().setup();
-        //new BlockRenderRocketEngine();
+        // new BlockRenderRocketEngine();
         new BlockRenderServoRail();
         new BlockRenderHinge();
         new BlockRenderSapExtractor();
@@ -235,28 +241,15 @@ public class FactorizationClientProxy extends FactorizationProxy {
         new BlockRenderBiblioGen();
         new BlockRenderWindMill();
         new BlockRenderWaterWheel();
-        for (FactoryType ft : new FactoryType[] {
-                FactoryType.SOCKET_EMPTY,
-                FactoryType.SOCKET_LACERATOR,
-                FactoryType.SOCKET_ROBOTHAND,
-                FactoryType.SOCKET_SHIFTER,
-                FactoryType.SOCKET_BLOWER,
-                FactoryType.SOCKET_PUMP,
-                FactoryType.SOCKET_BARE_MOTOR,
-                FactoryType.SOCKET_SCISSORS,
-                FactoryType.SOCKET_POWERED_CRANK
-        }) {
+        for (FactoryType ft : new FactoryType[] { FactoryType.SOCKET_EMPTY, FactoryType.SOCKET_LACERATOR,
+            FactoryType.SOCKET_ROBOTHAND, FactoryType.SOCKET_SHIFTER, FactoryType.SOCKET_BLOWER,
+            FactoryType.SOCKET_PUMP, FactoryType.SOCKET_BARE_MOTOR, FactoryType.SOCKET_SCISSORS,
+            FactoryType.SOCKET_POWERED_CRANK }) {
             new BlockRenderSocketBase(ft);
         }
-        for (FactoryType ft : new FactoryType[] {
-                FactoryType.STAMPER,
-                FactoryType.PACKAGER,
-                FactoryType.SLAGFURNACE,
-                FactoryType.PARASIEVE,
-                FactoryType.CALIOMETRIC_BURNER,
-                FactoryType.CREATIVE_CHARGE,
-                FactoryType.LEGENDARIUM
-                }) {
+        for (FactoryType ft : new FactoryType[] { FactoryType.STAMPER, FactoryType.PACKAGER, FactoryType.SLAGFURNACE,
+            FactoryType.PARASIEVE, FactoryType.CALIOMETRIC_BURNER, FactoryType.CREATIVE_CHARGE,
+            FactoryType.LEGENDARIUM }) {
             FactorizationBlockRender.setDefaultRender(ft);
         }
         new BlockRenderEmpty(FactoryType.EXTENDED);
@@ -272,13 +265,13 @@ public class FactorizationClientProxy extends FactorizationProxy {
         setTileEntityRendererDispatcher(BlockDarkIronOre.Glint.class, new GlintRenderer());
         Core.loadBus(GooRenderer.INSTANCE);
     }
-    
+
     @Override
     public void texturepackChanged(IIconRegister reg) {
         TileEntityGrinderRender.remakeModel();
         BlockRenderServoRail.registerColoredIcons(reg);
     }
-    
+
     @Override
     public boolean BlockRenderHelper_has_texture(BlockRenderHelper block, int f) {
         if (block.textures == null) {
@@ -286,33 +279,34 @@ public class FactorizationClientProxy extends FactorizationProxy {
         }
         return block.textures[f] != null;
     }
-    
+
     @Override
     public void BlockRenderHelper_clear_texture(BlockRenderHelper block) {
         block.textures = null;
     }
-    
+
     @Override
     public String getPocketCraftingTableKey() {
         return GameSettings.getKeyDisplayString(FactorizationKeyHandler.pocket_key.getKeyCode());
     }
-    
+
     @Override
     public boolean isClientHoldingShift() {
-        if (FMLCommonHandler.instance().getEffectiveSide() != Side.CLIENT) {
+        if (FMLCommonHandler.instance()
+            .getEffectiveSide() != Side.CLIENT) {
             return false;
         }
         Minecraft mc = Minecraft.getMinecraft();
         return org.lwjgl.input.Keyboard.isKeyDown(42 /* sneak */);
-        //return !mc.gameSettings.keyBindSneak.pressed;
+        // return !mc.gameSettings.keyBindSneak.pressed;
     }
-    
+
     @Override
     public void afterLoad() {
         Core.logInfo("Reloading game settings");
         Minecraft.getMinecraft().gameSettings.loadOptions();
     }
-    
+
     @Override
     public void sendBlockClickPacket() {
         Minecraft mc = Minecraft.getMinecraft();

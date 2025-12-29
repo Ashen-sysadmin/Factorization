@@ -1,6 +1,7 @@
 package factorization.common;
 
-import factorization.shared.Core;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
@@ -11,9 +12,10 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-import java.util.Random;
+import factorization.shared.Core;
 
 public class BlastedBedrock extends Block {
+
     protected BlastedBedrock() {
         super(Material.rock);
         setBlockUnbreakable();
@@ -34,8 +36,8 @@ public class BlastedBedrock extends Block {
     }
 
     @Override
-    protected void dropBlockAsItem(World p_149642_1_, int p_149642_2_, int p_149642_3_, int p_149642_4_, ItemStack p_149642_5_) {
-    }
+    protected void dropBlockAsItem(World p_149642_1_, int p_149642_2_, int p_149642_3_, int p_149642_4_,
+        ItemStack p_149642_5_) {}
 
     @Override
     public boolean canDropFromExplosion(Explosion p_149659_1_) {

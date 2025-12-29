@@ -1,5 +1,11 @@
 package factorization.sockets;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.api.FzOrientation;
 import factorization.api.Quaternion;
@@ -8,13 +14,9 @@ import factorization.fzds.HammerEnabled;
 import factorization.fzds.interfaces.IDeltaChunk;
 import factorization.servo.TileEntityServoRail;
 import factorization.util.SpaceUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
-import net.minecraftforge.common.util.ForgeDirection;
 
 public class RayTracer {
+
     final TileEntitySocketBase base;
     final ISocketHolder socket;
     final Coord trueCoord;
@@ -30,7 +32,8 @@ public class RayTracer {
 
     AxisAlignedBB entBox = null;
 
-    public RayTracer(TileEntitySocketBase base, ISocketHolder socket, Coord at, FzOrientation orientation, boolean powered) {
+    public RayTracer(TileEntitySocketBase base, ISocketHolder socket, Coord at, FzOrientation orientation,
+        boolean powered) {
         this.base = base;
         this.socket = socket;
         this.trueCoord = at;
@@ -86,7 +89,7 @@ public class RayTracer {
             idc.shadow2real(at);
             AxisAlignedBB box = SpaceUtil.createAABB(v, v);
             box.minY += 2;
-            //AabbDebugger.addBox(box);
+            // AabbDebugger.addBox(box);
             double x = v.xCoord;
             double y = v.yCoord;
             double z = v.zCoord;
@@ -105,12 +108,16 @@ public class RayTracer {
                 }
             }
 
-            /*if (mopBlock(target, orientation.facing)) {
-                return true;
-            }*/
+            /*
+             * if (mopBlock(target, orientation.facing)) {
+             * return true;
+             * }
+             */
 
-            /*idc.shadow2real(at);
-            if (runPass(orientation, at, idc)) return true;*/
+            /*
+             * idc.shadow2real(at);
+             * if (runPass(orientation, at, idc)) return true;
+             */
         }
         return false;
     }
@@ -142,7 +149,6 @@ public class RayTracer {
         return tofo;
     }
 
-
     boolean runPass(FzOrientation orientation, Coord coord, IDeltaChunk idc) {
         final ForgeDirection top = orientation.top;
         final ForgeDirection face = orientation.facing;
@@ -153,7 +159,7 @@ public class RayTracer {
                 entBox = base.getEntityBox(socket, coord, top, 0);
                 if (idc != null) {
                     entBox = idc.shadow2real(entBox);
-                    //AabbDebugger.addBox(entBox);
+                    // AabbDebugger.addBox(entBox);
                 }
             }
             for (Entity entity : getEntities(coord, top, idc)) {
@@ -167,15 +173,15 @@ public class RayTracer {
         }
 
         Coord targetBlock = coord.add(top);
-        if (mopBlock(targetBlock, top.getOpposite())) return true; //nose-to-nose with the servo
+        if (mopBlock(targetBlock, top.getOpposite())) return true; // nose-to-nose with the servo
         if (onlyFirstBlock) return false;
-        if (mopBlock(targetBlock.add(top), top.getOpposite())) return true; //a block away
+        if (mopBlock(targetBlock.add(top), top.getOpposite())) return true; // a block away
         if (mopBlock(coord, top)) return true;
         if (!lookAround) return false;
-        if (mopBlock(targetBlock.add(face), face.getOpposite())) return true; //running forward
-        if (mopBlock(targetBlock.add(face.getOpposite()), face)) return true; //running backward
-        if (mopBlock(targetBlock.add(right), right.getOpposite())) return true; //to the servo's right
-        if (mopBlock(targetBlock.add(right.getOpposite()), right)) return true; //to the servo's left
+        if (mopBlock(targetBlock.add(face), face.getOpposite())) return true; // running forward
+        if (mopBlock(targetBlock.add(face.getOpposite()), face)) return true; // running backward
+        if (mopBlock(targetBlock.add(right), right.getOpposite())) return true; // to the servo's right
+        if (mopBlock(targetBlock.add(right.getOpposite()), right)) return true; // to the servo's left
 
         return false;
     }
@@ -183,7 +189,8 @@ public class RayTracer {
     boolean mopBlock(Coord target, ForgeDirection side) {
         if (base != socket && target.getTE(TileEntityServoRail.class) != null) return false;
         boolean isThis = base == socket && target.isAt(base);
-        Vec3 hitVec = Vec3.createVectorHelper(base.xCoord + side.offsetX, base.yCoord + side.offsetY, base.zCoord + side.offsetZ);
+        Vec3 hitVec = Vec3
+            .createVectorHelper(base.xCoord + side.offsetX, base.yCoord + side.offsetY, base.zCoord + side.offsetZ);
         return base.handleRay(socket, target.createMop(side, hitVec), target.w, isThis, powered);
     }
 
@@ -202,7 +209,8 @@ public class RayTracer {
         SpaceUtil.setMax(entBox, max);
         AxisAlignedBB realBox = SpaceUtil.newBox();
         SpaceUtil.setMin(entBox, idc.shadow2real(min));
-        SpaceUtil.setMax(entBox, idc.shadow2real(max)); // IDC re-uses the same copy of this vector, hence these contortions.
+        SpaceUtil.setMax(entBox, idc.shadow2real(max)); // IDC re-uses the same copy of this vector, hence these
+                                                        // contortions.
         return (Iterable<Entity>) coord.w.getEntitiesWithinAABBExcludingEntity(null, realBox);
     }
 }

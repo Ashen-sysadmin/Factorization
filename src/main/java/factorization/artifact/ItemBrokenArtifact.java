@@ -1,12 +1,8 @@
 package factorization.artifact;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.shared.Core;
-import factorization.shared.ItemFactorization;
-import factorization.util.ItemUtil;
-import factorization.util.LangUtil;
+import java.util.Collections;
+import java.util.List;
+
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,10 +12,16 @@ import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.event.AnvilUpdateEvent;
 
-import java.util.Collections;
-import java.util.List;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.shared.Core;
+import factorization.shared.ItemFactorization;
+import factorization.util.ItemUtil;
+import factorization.util.LangUtil;
 
 public class ItemBrokenArtifact extends ItemFactorization {
+
     public ItemBrokenArtifact() {
         super("brokenArtifact", Core.TabType.ARTIFACT);
         setMaxStackSize(1);
@@ -38,7 +40,7 @@ public class ItemBrokenArtifact extends ItemFactorization {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void registerIcons(IIconRegister register) { }
+    public void registerIcons(IIconRegister register) {}
 
     public static ItemStack get(ItemStack orig) {
         if (orig == null) return null;
@@ -52,11 +54,12 @@ public class ItemBrokenArtifact extends ItemFactorization {
     public String getItemStackDisplayName(ItemStack is) {
         ItemStack held = get(is);
         if (held == null) return super.getUnlocalizedNameInefficiently(is);
-        return LangUtil.translateWithCorrectableFormat("item.factorization:brokenArtifact.shards", held.getDisplayName());
+        return LangUtil
+            .translateWithCorrectableFormat("item.factorization:brokenArtifact.shards", held.getDisplayName());
     }
 
     @Override
-    public void getSubItems(Item stack, CreativeTabs tab, List list) { }
+    public void getSubItems(Item stack, CreativeTabs tab, List list) {}
 
     @Override
     protected void addExtraInformation(ItemStack is, EntityPlayer player, List list, boolean verbose) {
@@ -64,7 +67,8 @@ public class ItemBrokenArtifact extends ItemFactorization {
         if (held == null) return;
         ItemStack fresh = new ItemStack(held.getItem());
         ItemStack repair = getRepairItemStack(fresh);
-        String got = LangUtil.translateWithCorrectableFormat("item.factorization:brokenArtifact.repairhint", repair.getDisplayName());
+        String got = LangUtil
+            .translateWithCorrectableFormat("item.factorization:brokenArtifact.repairhint", repair.getDisplayName());
         Collections.addAll(list, got.split("\\\\n"));
         List infos = held.getTooltip(player, false);
         if (!infos.isEmpty()) {
@@ -78,14 +82,16 @@ public class ItemBrokenArtifact extends ItemFactorization {
         Item template = held.getItem();
 
         if (template instanceof ItemTool) {
-            return ((ItemTool) template).func_150913_i(/*getToolMaterial*/).func_150995_f(/*getRepairItem*/);
+            return ((ItemTool) template).func_150913_i(/* getToolMaterial */)
+                .func_150995_f(/* getRepairItem */);
         }
         return template;
     }
 
     public ItemStack getRepairItemStack(ItemStack held) {
         if (held.getItem() instanceof ItemTool) {
-            return ((ItemTool) held.getItem()).func_150913_i(/*getToolMaterial*/).getRepairItemStack();
+            return ((ItemTool) held.getItem()).func_150913_i(/* getToolMaterial */)
+                .getRepairItemStack();
         }
         return held.copy();
     }

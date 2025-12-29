@@ -1,5 +1,22 @@
 package factorization.servo;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.*;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.apache.commons.lang3.StringUtils;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.relauncher.Side;
@@ -21,31 +38,17 @@ import factorization.shared.NetworkFactorization.MessageType;
 import factorization.shared.TileEntityCommon;
 import factorization.util.ItemUtil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.*;
-import net.minecraftforge.common.util.ForgeDirection;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TileEntityServoRail extends TileEntityCommon implements IChargeConductor {
-    public static final float width = 7F/16F;
-    
+
+    public static final float width = 7F / 16F;
+
     Charge charge = new Charge(this);
     public Decorator decoration = null;
     public byte priority = 0;
     String comment = "";
     FzColor color = FzColor.NO_COLOR;
-    
+
     @Override
     public FactoryType getFactoryType() {
         return FactoryType.SERVORAIL;
@@ -60,27 +63,31 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
     public Charge getCharge() {
         return charge;
     }
-    
+
     @Override
     public String getInfo() {
         return null;
     }
-    
+
     @Override
     public void updateEntity() {
         charge.update();
     }
-    
+
     private static final String decor_tag_key = "decor";
 
     @Override
     public void putData(DataHelper data) throws IOException {
         charge.serialize("", data);
-        priority = data.as(Share.VISIBLE, "priority").putByte(priority);
-        color = data.as(Share.VISIBLE, "color").putEnum(color);
-        comment = data.as(Share.VISIBLE, "rem").putString(comment);
+        priority = data.as(Share.VISIBLE, "priority")
+            .putByte(priority);
+        color = data.as(Share.VISIBLE, "color")
+            .putEnum(color);
+        comment = data.as(Share.VISIBLE, "rem")
+            .putString(comment);
         if (data.isReader()) {
-            NBTTagCompound dtag = data.as(Share.VISIBLE, decor_tag_key).putTag(new NBTTagCompound());
+            NBTTagCompound dtag = data.as(Share.VISIBLE, decor_tag_key)
+                .putTag(new NBTTagCompound());
             ServoComponent component = ServoComponent.load(dtag);
             if (component instanceof Decorator) {
                 decoration = (Decorator) component;
@@ -90,10 +97,11 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
             if (decoration != null) {
                 decoration.save(decor);
             }
-            data.as(Share.VISIBLE, decor_tag_key).putTag(decor);
+            data.as(Share.VISIBLE, decor_tag_key)
+                .putTag(decor);
         }
     }
-    
+
     boolean has(ForgeDirection dir) {
         TileEntity te = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ);
         if (te instanceof TileEntityServoRail) {
@@ -101,7 +109,7 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
         }
         return false;
     }
-    
+
     public boolean fillSideInfo(boolean[] sides) {
         boolean any = false;
         for (int i = 0; i < 6; i++) {
@@ -111,17 +119,19 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
         }
         return any;
     }
-    
+
     private boolean getCollisionBoxes(AxisAlignedBB aabb, List list, Entity entity) {
-        boolean remote = (entity != null && entity.worldObj != null) ? entity.worldObj.isRemote : FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT;
+        boolean remote = (entity != null && entity.worldObj != null) ? entity.worldObj.isRemote
+            : FMLCommonHandler.instance()
+                .getEffectiveSide() == Side.CLIENT;
         BlockRenderHelper block = remote ? Core.registry.clientTraceHelper : Core.registry.serverTraceHelper;
         boolean[] sides = new boolean[6];
         fillSideInfo(sides);
         int count = 0;
         float f = TileEntityServoRail.width;
-        //Shame java doesn't have macros, huh?
+        // Shame java doesn't have macros, huh?
         if (sides[0] || sides[1]) {
-            //DOWN, UP
+            // DOWN, UP
             count++;
             float low = sides[0] ? 0 : f;
             float high = sides[1] ? 1 : 1 - f;
@@ -132,7 +142,7 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
             }
         }
         if (sides[2] || sides[3]) {
-            //NORTH, SOUTH
+            // NORTH, SOUTH
             count++;
             float low = sides[2] ? 0 : f;
             float high = sides[3] ? 1 : 1 - f;
@@ -143,7 +153,7 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
             }
         }
         if (sides[4] || sides[5]) {
-            //WEST, EAST
+            // WEST, EAST
             count++;
             float low = sides[4] ? 0 : f;
             float high = sides[5] ? 1 : 1 - f;
@@ -162,12 +172,14 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
         }
         return true;
     }
-    
+
     @Override
     public boolean addCollisionBoxesToList(Block ignore, AxisAlignedBB aabb, List list, Entity entity) {
         if (decoration != null && decoration.collides()) {
             float f = decoration.getSize();
-            boolean remote = (entity != null && entity.worldObj != null) ? entity.worldObj.isRemote : FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT;
+            boolean remote = (entity != null && entity.worldObj != null) ? entity.worldObj.isRemote
+                : FMLCommonHandler.instance()
+                    .getEffectiveSide() == Side.CLIENT;
             BlockRenderHelper block = remote ? Core.registry.clientTraceHelper : Core.registry.serverTraceHelper;
             block.setBlockBounds(f, f, f, 1 - f, 1 - f, 1 - f);
             AxisAlignedBB a = block.getCollisionBoundingBoxFromPool(worldObj, xCoord, yCoord, zCoord);
@@ -176,45 +188,52 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
                 return true;
             }
         }
-        //return getCollisionBoxes(aabb, list, entity);
+        // return getCollisionBoxes(aabb, list, entity);
         return false;
     }
-    
+
     @Override
     public AxisAlignedBB getCollisionBoundingBoxFromPool() {
         return null;
     }
-    
+
     @Override
     public MovingObjectPosition collisionRayTrace(Vec3 startVec, Vec3 endVec) {
         ArrayList<AxisAlignedBB> boxes = new ArrayList(4);
         getCollisionBoxes(null, boxes, null);
-        Block b = FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER ? Core.registry.serverTraceHelper : Core.registry.clientTraceHelper;
+        Block b = FMLCommonHandler.instance()
+            .getEffectiveSide() == Side.SERVER ? Core.registry.serverTraceHelper : Core.registry.clientTraceHelper;
         for (AxisAlignedBB ab : boxes) {
             ab = ab.getOffsetBoundingBox(-xCoord, -yCoord, -zCoord);
-            float d = 1F/16F;
-            b.setBlockBounds((float) ab.minX - d, (float) ab.minY - d, (float) ab.minZ - d, (float) ab.maxX + d, (float) ab.maxY + d, (float) ab.maxZ + d);
+            float d = 1F / 16F;
+            b.setBlockBounds(
+                (float) ab.minX - d,
+                (float) ab.minY - d,
+                (float) ab.minZ - d,
+                (float) ab.maxX + d,
+                (float) ab.maxY + d,
+                (float) ab.maxZ + d);
             MovingObjectPosition mop = b.collisionRayTrace(worldObj, xCoord, yCoord, zCoord, startVec, endVec);
             if (mop != null) {
                 return mop;
             }
         }
-        
+
         return null;
     }
-    
+
     @Override
     public void setBlockBounds(Block b) {
         float f = width; // - 1F/32F;
         b.setBlockBounds(f, f, f, 1 - f, 1 - f, 1 - f);
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(ForgeDirection dir) {
         return BlockIcons.servo$rail;
     }
-    
+
     public void setDecoration(Decorator newDecor) {
         decoration = newDecor;
         if (decoration != null) {
@@ -222,11 +241,11 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
         }
         markDirty();
     }
-    
+
     public Decorator getDecoration() {
         return decoration;
     }
-    
+
     void showDecorNotification(EntityPlayer player) {
         String info = decoration == null ? null : decoration.getInfo();
         info = info == null ? "" : info;
@@ -250,7 +269,7 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
             notice.send(player);
         }
     }
-    
+
     @Override
     public boolean activate(EntityPlayer entityplayer, ForgeDirection side) {
         final Coord here = getCoord();
@@ -280,7 +299,7 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
         }
         return ret;
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public boolean handleMessageFromServer(MessageType messageType, ByteBuf input) throws IOException {
@@ -304,12 +323,13 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
         }
         if (messageType == MessageType.ServoRailEditComment) {
             comment = ByteBufUtils.readUTF8String(input);
-            FMLCommonHandler.instance().showGuiScreen(new GuiCommentEditor(this));
+            FMLCommonHandler.instance()
+                .showGuiScreen(new GuiCommentEditor(this));
             return true;
         }
         return false;
     }
-    
+
     @Override
     public boolean handleMessageFromClient(MessageType messageType, ByteBuf input) throws IOException {
         if (messageType == MessageType.ServoRailEditComment) {
@@ -318,12 +338,12 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
         }
         return super.handleMessageFromClient(messageType, input);
     }
-    
+
     @Override
     public boolean isBlockSolidOnSide(int side) {
         return false;
     }
-    
+
     @Override
     protected void onRemove() {
         super.onRemove();
@@ -334,7 +354,7 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
             getCoord().spawnItem(decoration.toItem());
         }
     }
-    
+
     @Override
     public ItemStack getPickedBlock() {
         final Decorator decoration = getDecoration();
@@ -343,7 +363,7 @@ public class TileEntityServoRail extends TileEntityCommon implements IChargeCond
         }
         return getDroppedBlock();
     }
-    
+
     @Override
     public boolean recolourBlock(ForgeDirection side, FzColor fzColor) {
         if (fzColor != color) {

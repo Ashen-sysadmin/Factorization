@@ -1,16 +1,18 @@
 package factorization.scrap;
 
-import factorization.util.DataUtil;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StringUtils;
 
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import factorization.util.DataUtil;
 
 public final class ScannerHelper {
+
     public static Item nextItem(Scanner in) {
         final String name = in.next();
         Item ret = DataUtil.getItemFromName(name);
@@ -26,6 +28,7 @@ public final class ScannerHelper {
     }
 
     private static final Pattern stackPattern = Pattern.compile("([a-zA-Z_09:]+)(%[\\d]+)?(#[\\d])+");
+
     public static ItemStack nextStack(Scanner in) {
         // domain:itemName%damageValue#stacksize
         String stackText = in.next(stackPattern);
@@ -41,7 +44,8 @@ public final class ScannerHelper {
     public static Class nextClass(Scanner in) {
         String className = in.next();
         try {
-            return ScannerHelper.class.getClassLoader().loadClass(className);
+            return ScannerHelper.class.getClassLoader()
+                .loadClass(className);
         } catch (Throwable t) {
             t.printStackTrace();
             throw new CompileError("Class not found: " + className);

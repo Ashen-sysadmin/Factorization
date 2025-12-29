@@ -11,15 +11,16 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
+
 import factorization.notify.Notice;
 
 public class MC16009 extends CommandBase {
-    
+
     @Override
     public int getRequiredPermissionLevel() {
         return 0;
     }
-    
+
     @Override
     public String getCommandName() {
         return "mc16009";
@@ -27,12 +28,12 @@ public class MC16009 extends CommandBase {
 
     String markDupes = "markDupes";
     String showUUIDs = "showUUIDs";
-    
+
     @Override
     public String getCommandUsage(ICommandSender sender) {
         return "/mc16009 " + markDupes + "|" + showUUIDs;
     }
-    
+
     @Override
     public List addTabCompletionOptions(ICommandSender sender, String[] args) {
         return Arrays.asList(markDupes, showUUIDs);
@@ -50,14 +51,16 @@ public class MC16009 extends CommandBase {
             showEntityUUIDs(player.worldObj, player);
         }
     }
-    
 
     void showEntityUUIDs(World world, EntityPlayer player) {
         for (Entity ent : (Iterable<Entity>) world.loadedEntityList) {
-            new Notice(ent, ent.getUniqueID().toString()).send(player);
+            new Notice(
+                ent,
+                ent.getUniqueID()
+                    .toString()).send(player);
         }
     }
-    
+
     void countDupeEntities(World world, EntityPlayer player) {
         int n = 0;
         int total = 0;
@@ -71,6 +74,5 @@ public class MC16009 extends CommandBase {
         }
         player.addChatMessage(new ChatComponentText("" + n + " dupes out of " + total));
     }
-    
 
 }

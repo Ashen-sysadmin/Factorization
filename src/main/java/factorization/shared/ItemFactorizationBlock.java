@@ -2,25 +2,25 @@ package factorization.shared;
 
 import java.util.List;
 
-import factorization.util.ItemUtil;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
-import factorization.astro.TileEntityRocketEngine;
 import factorization.ceramics.TileEntityGreenware;
 import factorization.ceramics.TileEntityGreenware.ClayState;
 import factorization.charge.TileEntityLeydenJar;
 import factorization.common.FactoryType;
+import factorization.util.ItemUtil;
 
 public class ItemFactorizationBlock extends ItemBlock {
+
     public ItemFactorizationBlock(Block id) {
         super(id);
         setMaxDamage(0);
@@ -28,9 +28,8 @@ public class ItemFactorizationBlock extends ItemBlock {
     }
 
     @Override
-    public boolean placeBlockAt(ItemStack is, EntityPlayer player,
-            World w, int x, int y, int z, int side, float hitX, float hitY,
-            float hitZ, int md) {
+    public boolean placeBlockAt(ItemStack is, EntityPlayer player, World w, int x, int y, int z, int side, float hitX,
+        float hitY, float hitZ, int md) {
         Coord here = new Coord(w, x, y, z);
         FactoryType f = FactoryType.fromMd((byte) is.getItemDamage());
         if (f == null) {
@@ -40,7 +39,9 @@ public class ItemFactorizationBlock extends ItemBlock {
         TileEntityCommon tec = f.makeTileEntity();
         if (tec == null) return false;
         here.setAsTileEntityLocation(tec);
-        Coord placedAgainst = here.add(ForgeDirection.getOrientation(side).getOpposite());
+        Coord placedAgainst = here.add(
+            ForgeDirection.getOrientation(side)
+                .getOpposite());
         boolean good = tec.canPlaceAgainst(player, placedAgainst, side);
         if (!good) {
             return false;
@@ -48,9 +49,10 @@ public class ItemFactorizationBlock extends ItemBlock {
         if (super.placeBlockAt(is, player, w, x, y, z, side, hitX, hitY, hitZ, md)) {
             here.setAsTileEntityLocation(tec);
             tec.onPlacedBy(player, is, side, hitX, hitY, hitZ);
-            tec.getBlockClass().enforce(here);
+            tec.getBlockClass()
+                .enforce(here);
             here.setTE(tec);
-            
+
             here.markBlockForUpdate();
             return true;
         }
@@ -65,9 +67,9 @@ public class ItemFactorizationBlock extends ItemBlock {
     @Override
     public int getMetadata(int i) {
         return 15;
-        //return i;
+        // return i;
     }
-    
+
     @Override
     public String getUnlocalizedName(ItemStack is) {
         int md = is.getItemDamage();
@@ -77,7 +79,8 @@ public class ItemFactorizationBlock extends ItemBlock {
 
     @Override
     public void addInformation(ItemStack is, EntityPlayer player, List infoList, boolean verbose) {
-        if (Core.registry.greenware_item != null && is.isItemEqual(Core.registry.greenware_item) /* required to not compare NBT here */) {
+        if (Core.registry.greenware_item != null
+            && is.isItemEqual(Core.registry.greenware_item) /* required to not compare NBT here */) {
             NBTTagCompound tag = is.getTagCompound();
             if (tag != null) {
                 TileEntityGreenware teg = (TileEntityGreenware) FactoryType.CERAMIC.getRepresentative();
@@ -93,14 +96,14 @@ public class ItemFactorizationBlock extends ItemBlock {
                 FactoryType ft = FactoryType.LEYDENJAR;
                 TileEntityLeydenJar jar = (TileEntityLeydenJar) ft.getRepresentative();
                 jar.loadFromStack(is);
-                perc = (int)(jar.getLevel()*100);
-                //infoList.add(( + "% charged"));
+                perc = (int) (jar.getLevel() * 100);
+                // infoList.add(( + "% charged"));
             }
             infoList.add(StatCollector.translateToLocalFormatted("factorization.factoryBlock.LEYDENJAR.perc", perc));
         }
         Core.brand(is, player, infoList, verbose);
     }
-    
+
     @Override
     public boolean getShareTag() {
         return true;

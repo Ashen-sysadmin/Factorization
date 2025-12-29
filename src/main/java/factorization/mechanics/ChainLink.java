@@ -1,10 +1,5 @@
 package factorization.mechanics;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.shared.Core;
-import factorization.util.NumUtil;
-import factorization.util.SpaceUtil;
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.Tessellator;
@@ -12,7 +7,14 @@ import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.Vec3;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.shared.Core;
+import factorization.util.NumUtil;
+import factorization.util.SpaceUtil;
+
 public class ChainLink {
+
     private Vec3 start, end, prevStart, prevEnd;
 
     int bagIndex = -1;
@@ -49,8 +51,8 @@ public class ChainLink {
     }
 
     @SideOnly(Side.CLIENT)
-    void draw(WorldClient world, Tessellator tess, ICamera camera, float partial,
-                     AxisAlignedBB workBox, Vec3 workStart, Vec3 workEnd) {
+    void draw(WorldClient world, Tessellator tess, ICamera camera, float partial, AxisAlignedBB workBox, Vec3 workStart,
+        Vec3 workEnd) {
         Vec3 forward = SpaceUtil.subtract(workStart, workEnd);
         double length = forward.lengthVector();
         Vec3 side1 = forward.crossProduct(Vec3.createVectorHelper(1, 0, 1));
@@ -58,7 +60,8 @@ public class ChainLink {
             side1 = forward.crossProduct(Vec3.createVectorHelper(-1, 0, -1));
         }
         side1 = side1.normalize();
-        Vec3 side2 = forward.crossProduct(side1).normalize();
+        Vec3 side2 = forward.crossProduct(side1)
+            .normalize();
         final double d = 0.25;
         final double iconLength = 2 * d;
         SpaceUtil.incrScale(side1, d);
@@ -73,8 +76,7 @@ public class ChainLink {
         SpaceUtil.incrAdd(workStart, SpaceUtil.scale(normForward, extraLinkage));
         linkCount += extraLinkage;
 
-
-        double g = 9F/32F;
+        double g = 9F / 32F;
         double h = g + 0.5;
         drawPlane(world, tess, workStart, workEnd, side1, g - linkCount, 1 + g);
         drawPlane(world, tess, workStart, workEnd, side2, h - linkCount, 1 + h);
@@ -89,25 +91,34 @@ public class ChainLink {
         tess.setBrightness(brightness);
     }
 
-    void drawPlane(WorldClient world, Tessellator tess, Vec3 workStart, Vec3 workEnd, Vec3 right, double uStart, double uEnd) {
+    void drawPlane(WorldClient world, Tessellator tess, Vec3 workStart, Vec3 workEnd, Vec3 right, double uStart,
+        double uEnd) {
         setupLight(world, tess, workStart);
-        tess.addVertexWithUV(workStart.xCoord + right.xCoord,
-                workStart.yCoord + right.yCoord,
-                workStart.zCoord + right.zCoord,
-                uStart, 1);
-        tess.addVertexWithUV(workStart.xCoord - right.xCoord,
-                workStart.yCoord - right.yCoord,
-                workStart.zCoord - right.zCoord,
-                uStart, 0);
+        tess.addVertexWithUV(
+            workStart.xCoord + right.xCoord,
+            workStart.yCoord + right.yCoord,
+            workStart.zCoord + right.zCoord,
+            uStart,
+            1);
+        tess.addVertexWithUV(
+            workStart.xCoord - right.xCoord,
+            workStart.yCoord - right.yCoord,
+            workStart.zCoord - right.zCoord,
+            uStart,
+            0);
         setupLight(world, tess, workEnd);
-        tess.addVertexWithUV(workEnd.xCoord - right.xCoord,
-                workEnd.yCoord - right.yCoord,
-                workEnd.zCoord - right.zCoord,
-                uEnd, 0);
-        tess.addVertexWithUV(workEnd.xCoord + right.xCoord,
-                workEnd.yCoord + right.yCoord,
-                workEnd.zCoord + right.zCoord,
-                uEnd, 1);
+        tess.addVertexWithUV(
+            workEnd.xCoord - right.xCoord,
+            workEnd.yCoord - right.yCoord,
+            workEnd.zCoord - right.zCoord,
+            uEnd,
+            0);
+        tess.addVertexWithUV(
+            workEnd.xCoord + right.xCoord,
+            workEnd.yCoord + right.yCoord,
+            workEnd.zCoord + right.zCoord,
+            uEnd,
+            1);
     }
 
     public void release() {

@@ -1,12 +1,14 @@
 package factorization.compat.ic2;
 
-import factorization.api.IRotationalEnergySource;
-import factorization.api.adapter.Adapter;
-import ic2.api.energy.tile.IKineticSource;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import factorization.api.IRotationalEnergySource;
+import factorization.api.adapter.Adapter;
+import ic2.api.energy.tile.IKineticSource;
+
 public class RotationalEnergySourceAdapter implements Adapter<TileEntity, IRotationalEnergySource> {
+
     @Override
     public IRotationalEnergySource adapt(TileEntity val) {
         return new Kinetic2Rotational(val, (IKineticSource) val);
@@ -23,6 +25,7 @@ public class RotationalEnergySourceAdapter implements Adapter<TileEntity, IRotat
     }
 
     private static class Kinetic2Rotational implements IRotationalEnergySource {
+
         public static double IC2_FZ_RATIO = 1500;
         public static double IC2_ANGULAR_VELOCITY_RATIO = 1.0 / 1000.0;
 

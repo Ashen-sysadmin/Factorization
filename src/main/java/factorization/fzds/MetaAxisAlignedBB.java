@@ -1,9 +1,8 @@
 package factorization.fzds;
 
-import factorization.fzds.interfaces.IFzdsShenanigans;
-import factorization.shared.Core;
-import factorization.util.NumUtil;
-import factorization.util.SpaceUtil;
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
@@ -11,35 +10,37 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
-import java.util.ArrayList;
-import java.util.List;
+import factorization.fzds.interfaces.IFzdsShenanigans;
+import factorization.shared.Core;
+import factorization.util.NumUtil;
+import factorization.util.SpaceUtil;
 
 public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans {
+
     /*
      * So, there's 2 operations: calculate<Axis>Offset and intersectsWith.
-     * For each operation, we need to work a list of relevant AABBs in hammer space and apply the operation to each of them.
+     * For each operation, we need to work a list of relevant AABBs in hammer space and apply the operation to each of
+     * them.
      * 1. Convert the argument AABB to an AABB in shadow space:
-     * 		calculate the length of the diagonal
-     * 		Calculate the center, as a vector. Transform the vector.
-     * 		Build a new AABB using the transformed center; it will be a cube with the min/max just center ± diagonal/2
-     * 		Faster for simpler cases, tho slower if the unnecessarily larger area
-     * 
-     * 		alternative method:
-     * 			Convert input AABB to 8 points, convert them all to shadow space, make AABB out of the maximum
-     * 			Too expensive!
-     * 				
+     * calculate the length of the diagonal
+     * Calculate the center, as a vector. Transform the vector.
+     * Build a new AABB using the transformed center; it will be a cube with the min/max just center ± diagonal/2
+     * Faster for simpler cases, tho slower if the unnecessarily larger area
+     * alternative method:
+     * Convert input AABB to 8 points, convert them all to shadow space, make AABB out of the maximum
+     * Too expensive!
      * 2. We now have a list of AABBs in shadow space, and the passed in AABB in real world space.
      * 3. Iterate over the AABBs, converting each one to real space & applying the operation
      */
     private DimensionSliceEntity idc;
     private World shadowWorld;
-    
+
     public MetaAxisAlignedBB(DimensionSliceEntity idc, World shadowWorld) {
         super(0, 0, 0, 0, 0, 0);
         this.idc = idc;
         this.shadowWorld = shadowWorld;
     }
-    
+
     public MetaAxisAlignedBB setUnderlying(AxisAlignedBB bb) {
         this.setBB(bb);
         return this;
@@ -48,7 +49,8 @@ public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans
     private static final List<AxisAlignedBB> EMPTY = new ArrayList<AxisAlignedBB>();
 
     List<AxisAlignedBB> getShadowBoxesWithinShadowBox(final AxisAlignedBB box) {
-        final double averageEdgeLength = box.getAverageEdgeLength(); // I've measured the average averageEdgeLength to be about 24.
+        final double averageEdgeLength = box.getAverageEdgeLength(); // I've measured the average averageEdgeLength to
+                                                                     // be about 24.
         if (averageEdgeLength > 1024) {
             Core.logSevere("Giant MetaAABB!? {}", this);
             Thread.dumpStack();
@@ -78,7 +80,8 @@ public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans
         for (int chunkX = chunkMinX; chunkX < chunkMaxX; chunkX++) {
             for (int chunkZ = chunkMinZ; chunkZ < chunkMaxZ; chunkZ++) {
                 // We could do a shadowWorld.blockExists() check here. Let's not:
-                // { small DSE, large multi-chunk DSE} × { DSE moving, DSE stopped } × { adjacent loaded, adjacent unloaded, adjacent not generated }
+                // { small DSE, large multi-chunk DSE} × { DSE moving, DSE stopped } × { adjacent loaded, adjacent
+                // unloaded, adjacent not generated }
                 // If the DSE is stopped, then things may load, but minor.
                 // If the adjacent is loaded, then no issue.
                 // { small DSE, large DSE} × { DSE moving } × { adjacent unloaded, adjacent not generated }
@@ -99,13 +102,15 @@ public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans
                 for (int y = boxMinY; y < boxMaxY; y++) {
                     for (int z = lz; z < hz; z++) {
                         for (int x = lx; x < hx; x++) {
-                            if (!(NumUtil.intersect(x, x + 1, box.minX, box.maxX)
-                                    && NumUtil.intersect(y, y + 1 /* Or +2 for fences. Nobody loves you, fences. */, box.minY, box.maxY)
-                                    && NumUtil.intersect(z, z + 1, box.minZ, box.maxZ))) {
+                            if (!(NumUtil.intersect(x, x + 1, box.minX, box.maxX) && NumUtil.intersect(
+                                y,
+                                y + 1 /* Or +2 for fences. Nobody loves you, fences. */,
+                                box.minY,
+                                box.maxY) && NumUtil.intersect(z, z + 1, box.minZ, box.maxZ))) {
                                 // A simple sampling run while fighting a colossus found:
-                                //   20% of blocks visited collided
-                                //   31% of blocks visited could be excluded by the simple cube check
-                                //   79% of blocks visited did not collide via addCollisionBoxesToList
+                                // 20% of blocks visited collided
+                                // 31% of blocks visited could be excluded by the simple cube check
+                                // 79% of blocks visited did not collide via addCollisionBoxesToList
                                 // Seems worthwhile.
                                 continue;
                             }
@@ -129,8 +134,8 @@ public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans
         // If it is too big, then there will be significant lag with e.g. splash potions.
         // Currently using width = 1.
         // (Which is cheating. It should be 2 due to fences, but I think this is a good tradeoff)
-        
-        // Here's how this number is derived 
+
+        // Here's how this number is derived
         // Take our max-sized cube.
         // Calculate the distance between the center of the cube and a corner.
         // If we move that cube to the origin and rotate it so that the corner pokes out as far as it can,
@@ -138,13 +143,15 @@ public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans
         // area is what our expansion should be.
         // corner_radius = sqrt(3 * (width/2)**2)
         // expansion = corner_radius + 1 - 0.5
-        
+
         // Optimization: make the expansion depend on the rotation; so the expansion would
         // range from 0, at no rotation, to <whatever the maximum should be> at the most extreme angles.
         // Could probably be done as a simpleish function depending on rotationQuaternion.w
-        // Or could do it a bit slower & cache it. (And maybe doing it live wouldn't be bad, since this isn't the slow part yet)
+        // Or could do it a bit slower & cache it. (And maybe doing it live wouldn't be bad, since this isn't the slow
+        // part yet)
         AxisAlignedBB shadowBox = convertRealBoxToShadowBox(realBox);
-        if (!idc.getRotation().isZero()) {
+        if (!idc.getRotation()
+            .isZero()) {
             shadowBox = outset(shadowBox, expansion, expansion, expansion);
         }
         return getShadowBoxesWithinShadowBox(shadowBox);
@@ -167,11 +174,12 @@ public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans
         real2shadowBox.maxZ = shadowMiddle.zCoord + d;
         return real2shadowBox;
     }
-    
+
     private Vec3 minMinusMiddle = SpaceUtil.newVec();
     private Vec3 maxMinusMiddle = SpaceUtil.newVec();
     private AxisAlignedBB shadowWorker = SpaceUtil.newBox();
     private Vec3 shadowMiddle = SpaceUtil.newVec();
+
     AxisAlignedBB convertShadowBoxToRealBox(AxisAlignedBB shadowBox) {
         // We're gonna try a different approach here.
         // Will work well so long as everything is a cube.
@@ -186,16 +194,17 @@ public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans
         SpaceUtil.updateAABB(shadowWorker, minMinusMiddle, maxMinusMiddle);
         return shadowWorker;
     }
-    
+
     Vec3 convertRealVecToShadowVec(Vec3 real) {
         return idc.real2shadow(real);
     }
-    
+
     Vec3 convertShadowVecToRealVec(Vec3 shadow) {
         return idc.shadow2real(shadow);
     }
-    
+
     private final AxisAlignedBB worker = SpaceUtil.newBox();
+
     private AxisAlignedBB expand(AxisAlignedBB collider, double dx, double dy, double dz) {
         if (dx >= 0) {
             worker.minX = collider.minX;
@@ -233,9 +242,8 @@ public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans
 
     /*
      * The three functions are decomposed here:
-     *  - Vec3 offset = rotateOffset(XcurrentOffset, YcurrentOffset, ZcurrentOffset)
-     *  - bbs.get(i).calculate_AXIS_Offset
-     * 
+     * - Vec3 offset = rotateOffset(XcurrentOffset, YcurrentOffset, ZcurrentOffset)
+     * - bbs.get(i).calculate_AXIS_Offset
      * *NOTE* currentOffset is the length of a vector aligned to the relevant axis in **real world space**.
      * So, we just need to rotate the vector and use that to adjust the peek-area.
      */
@@ -249,7 +257,7 @@ public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans
         }
         return currentOffset;
     }
-    
+
     @Override
     public double calculateYOffset(AxisAlignedBB collider, double currentOffset) {
         collider = collider.copy();
@@ -260,7 +268,7 @@ public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans
         }
         return currentOffset;
     }
-    
+
     @Override
     public double calculateZOffset(AxisAlignedBB collider, double currentOffset) {
         collider = collider.copy();
@@ -288,7 +296,7 @@ public class MetaAxisAlignedBB extends AxisAlignedBB implements IFzdsShenanigans
     public boolean intersectsWith(AxisAlignedBB collider) {
         return intersectsWithGet(collider) != null;
     }
-    
+
     @Override
     public String toString() {
         return "META" + super.toString();

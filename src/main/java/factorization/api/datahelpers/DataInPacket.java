@@ -3,16 +3,17 @@ package factorization.api.datahelpers;
 import java.io.DataInput;
 import java.io.IOException;
 
-import factorization.util.DataUtil;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+
 import cpw.mods.fml.relauncher.Side;
+import factorization.util.DataUtil;
 
 public class DataInPacket extends DataHelper {
+
     private final DataInput dis;
     private final Side side;
-    
+
     public DataInPacket(DataInput dis, Side side) {
         this.dis = dis;
         this.side = side;
@@ -22,7 +23,7 @@ public class DataInPacket extends DataHelper {
     protected boolean shouldStore(Share share) {
         return share.is_public;
     }
-    
+
     @Override
     public boolean isReader() {
         return true;

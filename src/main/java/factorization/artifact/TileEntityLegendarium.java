@@ -1,6 +1,25 @@
 package factorization.artifact;
 
+import java.io.IOException;
+import java.util.*;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockSign;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.TileEntitySign;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.IIcon;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldSavedData;
+import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import com.google.common.base.Strings;
+
 import factorization.api.Coord;
 import factorization.api.ICoordFunction;
 import factorization.api.datahelpers.DataHelper;
@@ -18,26 +37,11 @@ import factorization.util.FzUtil;
 import factorization.util.ItemUtil;
 import factorization.util.SpaceUtil;
 import factorization.weird.poster.EntityPoster;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockSign;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntitySign;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.IIcon;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldSavedData;
-import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import java.io.IOException;
-import java.util.*;
 
 public class TileEntityLegendarium extends TileEntityCommon {
-    static final int MIN_SIZE = FzConfig.legendarium_queue_size; // The queue must be this size before something can be removed
+
+    static final int MIN_SIZE = FzConfig.legendarium_queue_size; // The queue must be this size before something can be
+                                                                 // removed
     static final int POSTER_RANGE = 16;
     static final float MIN_DAMAGE = 0.10F;
     static final int DAMAGE_PAD = 24;
@@ -52,8 +56,10 @@ public class TileEntityLegendarium extends TileEntityCommon {
 
     @Override
     public void putData(DataHelper data) throws IOException {
-        last_insert_time = data.as(Share.PRIVATE, "lastInsertTime").putLong(last_insert_time);
-        queue = data.as(Share.PRIVATE, "queue").putItemList(queue);
+        last_insert_time = data.as(Share.PRIVATE, "lastInsertTime")
+            .putLong(last_insert_time);
+        queue = data.as(Share.PRIVATE, "queue")
+            .putItemList(queue);
     }
 
     @Override
@@ -78,7 +84,8 @@ public class TileEntityLegendarium extends TileEntityCommon {
         if (is == null) return false;
         if (is.stackSize != 1) return false;
         if (is.getMaxStackSize() > 1) return false;
-        if (!is.getItem().isRepairable()) return false;
+        if (!is.getItem()
+            .isRepairable()) return false;
         if (is.getMaxDamage() <= 1) return false;
         if (is.getHasSubtypes()) return false;
         return true;
@@ -97,7 +104,8 @@ public class TileEntityLegendarium extends TileEntityCommon {
 
     void sound(String name) {
         Sound.legendariumInsert.playAt(this);
-        //worldObj.playSound(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, "factorization:legendarium_insert", 1, 1, false);
+        // worldObj.playSound(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, "factorization:legendarium_insert", 1, 1,
+        // false);
     }
 
     long getWaitTicks() {
@@ -119,15 +127,15 @@ public class TileEntityLegendarium extends TileEntityCommon {
         if (held == null) {
             if (isOverfull()) {
                 ItemStack front = queue.get(0);
-                new Notice(this, "factorization.legendarium.canremove")
-                        .withStyle(Style.DRAWITEM)
-                        .withItem(front)
-                        .sendTo(player);
+                new Notice(this, "factorization.legendarium.canremove").withStyle(Style.DRAWITEM)
+                    .withItem(front)
+                    .sendTo(player);
                 return true;
             }
             long ticks = getWaitTicks();
             if (ticks > 0) {
-                new Notice(this, "factorization.legendarium.wait", FzUtil.unitTranslateTimeTicks(ticks, 2)).sendTo(player);
+                new Notice(this, "factorization.legendarium.wait", FzUtil.unitTranslateTimeTicks(ticks, 2))
+                    .sendTo(player);
             } else {
                 new Notice(this, "factorization.legendarium.caninsert").sendTo(player);
             }
@@ -145,7 +153,6 @@ public class TileEntityLegendarium extends TileEntityCommon {
             return true;
         }
 
-
         long ticks = getWaitTicks();
         if (ticks > 0) {
             new Notice(this, "factorization.legendarium.wait", FzUtil.unitTranslateTimeTicks(ticks, 2)).sendTo(player);
@@ -161,7 +168,7 @@ public class TileEntityLegendarium extends TileEntityCommon {
     }
 
     boolean canRemove() {
-        return true; //return queue.size() >= MIN_SIZE;
+        return true; // return queue.size() >= MIN_SIZE;
     }
 
     @Override
@@ -185,12 +192,14 @@ public class TileEntityLegendarium extends TileEntityCommon {
         final ItemStack artifact = queue.remove(0);
         ItemUtil.giveItem(player, new Coord(this), artifact, ForgeDirection.UNKNOWN);
         markDirty();
-        //sound("remove");
+        // sound("remove");
         populatePosters();
     }
 
     static final String legendariumCount = "legendariumCount";
+
     public static class LegendariumPopulation extends WorldSavedData {
+
         NBTTagCompound data = new NBTTagCompound();
 
         public LegendariumPopulation(String name) {
@@ -211,7 +220,8 @@ public class TileEntityLegendarium extends TileEntityCommon {
 
         private static String getName(World world) {
             final IChunkProvider chunkGenerator = world.provider.createChunkGenerator();
-            return chunkGenerator.getClass().getName();
+            return chunkGenerator.getClass()
+                .getName();
         }
 
         String isFree(World world) {
@@ -234,8 +244,10 @@ public class TileEntityLegendarium extends TileEntityCommon {
         }
 
         static LegendariumPopulation load() {
-            World w = MinecraftServer.getServer().worldServerForDimension(0);
-            LegendariumPopulation ret = (LegendariumPopulation) w.loadItemData(LegendariumPopulation.class, legendariumCount);
+            World w = MinecraftServer.getServer()
+                .worldServerForDimension(0);
+            LegendariumPopulation ret = (LegendariumPopulation) w
+                .loadItemData(LegendariumPopulation.class, legendariumCount);
             if (ret == null) {
                 ret = new LegendariumPopulation(legendariumCount);
             }
@@ -243,7 +255,8 @@ public class TileEntityLegendarium extends TileEntityCommon {
         }
 
         public void save() {
-            World w = MinecraftServer.getServer().worldServerForDimension(0);
+            World w = MinecraftServer.getServer()
+                .worldServerForDimension(0);
             w.setItemData(legendariumCount, this);
             this.setDirty(true);
             w.perWorldStorage.saveAllData();
@@ -306,6 +319,7 @@ public class TileEntityLegendarium extends TileEntityCommon {
         AxisAlignedBB box = SpaceUtil.createAABB(min, max);
         List<EntityPoster> ret = worldObj.getEntitiesWithinAABB(EntityPoster.class, box);
         Collections.sort(ret, new Comparator<EntityPoster>() {
+
             @Override
             public int compare(EntityPoster o1, EntityPoster o2) {
                 double d1 = o1.getDistanceSq(xCoord, yCoord, zCoord);
@@ -319,9 +333,11 @@ public class TileEntityLegendarium extends TileEntityCommon {
     }
 
     void iterateSign(EntityPoster poster, ICoordFunction function) {
-        /*Coord min = new Coord(poster).add(-SIGN_RANGE, -SIGN_RANGE, -SIGN_RANGE);
-        Coord max = new Coord(poster).add(+SIGN_RANGE, +SIGN_RANGE, +SIGN_RANGE);
-        Coord.iterateCube(min, max, function);*/
+        /*
+         * Coord min = new Coord(poster).add(-SIGN_RANGE, -SIGN_RANGE, -SIGN_RANGE);
+         * Coord max = new Coord(poster).add(+SIGN_RANGE, +SIGN_RANGE, +SIGN_RANGE);
+         * Coord.iterateCube(min, max, function);
+         */
         for (Coord n : new Coord(poster).getNeighborsAdjacent()) {
             function.handle(n);
         }
@@ -335,13 +351,16 @@ public class TileEntityLegendarium extends TileEntityCommon {
         for (EntityPoster poster : getPosters()) {
             if (poster.getItem() != null) continue;
             if (!it.hasNext()) break;
-            final ItemStack artifact = it.next().copy();
+            final ItemStack artifact = it.next()
+                .copy();
             poster.setItem(artifact);
             poster.setLocked(true);
             poster.syncData();
             ret++;
             ICoordFunction setSign = new ICoordFunction() {
+
                 boolean set = false;
+
                 @Override
                 public void handle(Coord here) {
                     if (set) return;
@@ -413,6 +432,7 @@ public class TileEntityLegendarium extends TileEntityCommon {
             poster.syncData();
             ret++;
             ICoordFunction clearSign = new ICoordFunction() {
+
                 @Override
                 public void handle(Coord here) {
                     if (!(here.getBlock() instanceof BlockSign)) return;
@@ -448,6 +468,10 @@ public class TileEntityLegendarium extends TileEntityCommon {
     public void markDirty() {
         super.markDirty();
         scheduleTick();
-        new Coord(this).w.notifyBlocksOfNeighborChange(new Coord(this).x, new Coord(this).y, new Coord(this).z, new Coord(this).getBlock());
+        new Coord(this).w.notifyBlocksOfNeighborChange(
+            new Coord(this).x,
+            new Coord(this).y,
+            new Coord(this).z,
+            new Coord(this).getBlock());
     }
 }

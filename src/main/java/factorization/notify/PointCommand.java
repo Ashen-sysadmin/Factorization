@@ -34,15 +34,16 @@ public class PointCommand extends CommandBase {
     public int getRequiredPermissionLevel() {
         return 0;
     }
-    
+
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender sender) {
         return super.canCommandSenderUseCommand(sender) && sender instanceof EntityPlayer;
     }
-    
+
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
-        String msg = Joiner.on(" ").join(args);
+        String msg = Joiner.on(" ")
+            .join(args);
         Minecraft mc = Minecraft.getMinecraft();
         EntityPlayer player = mc.thePlayer;
         MovingObjectPosition mop = getMouseOver(player, 64);
@@ -52,13 +53,14 @@ public class PointCommand extends CommandBase {
         }
         try {
             switch (mop.typeOfHit) {
-            default: return;
-            case BLOCK:
-                PointNetworkHandler.INSTANCE.pointAtCoord(Coord.fromMop(player.worldObj, mop), msg);
-                break;
-            case ENTITY:
-                PointNetworkHandler.INSTANCE.pointAtEntity(mop.entityHit, msg);
-                break;
+                default:
+                    return;
+                case BLOCK:
+                    PointNetworkHandler.INSTANCE.pointAtCoord(Coord.fromMop(player.worldObj, mop), msg);
+                    break;
+                case ENTITY:
+                    PointNetworkHandler.INSTANCE.pointAtEntity(mop.entityHit, msg);
+                    break;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -78,16 +80,14 @@ public class PointCommand extends CommandBase {
         }
 
         Vec3 vec31 = player.getLook(par1);
-        Vec3 vec32 = vec3.addVector(vec31.xCoord * d0, vec31.yCoord * d0,
-                vec31.zCoord * d0);
+        Vec3 vec32 = vec3.addVector(vec31.xCoord * d0, vec31.yCoord * d0, vec31.zCoord * d0);
         pointedEntity = null;
         Vec3 vec33 = null;
         float f1 = 1.0F;
         List list = player.worldObj.getEntitiesWithinAABBExcludingEntity(
-                player,
-                player.boundingBox.addCoord(vec31.xCoord * d0,
-                        vec31.yCoord * d0, vec31.zCoord * d0).expand(
-                        (double) f1, (double) f1, (double) f1));
+            player,
+            player.boundingBox.addCoord(vec31.xCoord * d0, vec31.yCoord * d0, vec31.zCoord * d0)
+                .expand((double) f1, (double) f1, (double) f1));
         double d2 = d1;
 
         for (int i = 0; i < list.size(); ++i) {
@@ -95,24 +95,20 @@ public class PointCommand extends CommandBase {
 
             if (entity.canBeCollidedWith()) {
                 float f2 = entity.getCollisionBorderSize();
-                AxisAlignedBB axisalignedbb = entity.boundingBox.expand(
-                        (double) f2, (double) f2, (double) f2);
-                MovingObjectPosition movingobjectposition = axisalignedbb
-                        .calculateIntercept(vec3, vec32);
+                AxisAlignedBB axisalignedbb = entity.boundingBox.expand((double) f2, (double) f2, (double) f2);
+                MovingObjectPosition movingobjectposition = axisalignedbb.calculateIntercept(vec3, vec32);
 
                 if (axisalignedbb.isVecInside(vec3)) {
                     if (0.0D < d2 || d2 == 0.0D) {
                         pointedEntity = entity;
-                        vec33 = movingobjectposition == null ? vec3
-                                : movingobjectposition.hitVec;
+                        vec33 = movingobjectposition == null ? vec3 : movingobjectposition.hitVec;
                         d2 = 0.0D;
                     }
                 } else if (movingobjectposition != null) {
                     double d3 = vec3.distanceTo(movingobjectposition.hitVec);
 
                     if (d3 < d2 || d2 == 0.0D) {
-                        if (entity == player.ridingEntity
-                                && !entity.canRiderInteract()) {
+                        if (entity == player.ridingEntity && !entity.canRiderInteract()) {
                             if (d2 == 0.0D) {
                                 pointedEntity = entity;
                                 vec33 = movingobjectposition.hitVec;

@@ -1,7 +1,5 @@
 package factorization.coremodhooks;
 
-import cpw.mods.fml.common.eventhandler.EventBus;
-import factorization.util.SpaceUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
@@ -13,21 +11,25 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
+import cpw.mods.fml.common.eventhandler.EventBus;
+import factorization.util.SpaceUtil;
+
 public class HookTargetsClient {
+
     public static void keyTyped(char chr, int keysym) {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc == null) return;
         MinecraftForge.EVENT_BUS.post(new UnhandledGuiKeyEvent(chr, keysym, mc.thePlayer, mc.currentScreen));
     }
-    
+
     public static boolean attackButtonPressed() {
         return MinecraftForge.EVENT_BUS.post(new HandleAttackKeyEvent());
     }
-    
+
     public static boolean useButtonPressed() {
         return MinecraftForge.EVENT_BUS.post(new HandleUseKeyEvent());
     }
-    
+
     private static boolean hasColliders(World world, Vec3 traceStart) {
         Chunk c = world.getChunkFromBlockCoords((int) traceStart.xCoord, (int) traceStart.zCoord);
         if (c == null) return false;
@@ -36,17 +38,23 @@ public class HookTargetsClient {
         if (colliders == null || colliders.length == 0) return false;
         return true;
     }
-    
+
     public static MovingObjectPosition boxTrace(World world, Vec3 traceStart, Vec3 traceEnd) {
         MovingObjectPosition ret = world.rayTraceBlocks(SpaceUtil.copy(traceStart), SpaceUtil.copy(traceEnd));
         if (!hasColliders(world, traceStart) && !hasColliders(world, traceEnd)) return ret;
-        
+
         Entity box = new Entity(world) {
-            @Override protected void entityInit() { }
-            @Override protected void readEntityFromNBT(NBTTagCompound tag) { }
-            @Override protected void writeEntityToNBT(NBTTagCompound tag) { }
+
+            @Override
+            protected void entityInit() {}
+
+            @Override
+            protected void readEntityFromNBT(NBTTagCompound tag) {}
+
+            @Override
+            protected void writeEntityToNBT(NBTTagCompound tag) {}
         };
-        double d = 0.2; //4.0/16.0;
+        double d = 0.2; // 4.0/16.0;
         box.setPosition(traceStart.xCoord, traceStart.yCoord, traceStart.zCoord);
         box.boundingBox.minX = traceStart.xCoord - d;
         box.boundingBox.minY = traceStart.yCoord - d;
@@ -54,20 +62,20 @@ public class HookTargetsClient {
         box.boundingBox.maxX = traceStart.xCoord + d;
         box.boundingBox.maxY = traceStart.yCoord + d;
         box.boundingBox.maxZ = traceStart.zCoord + d;
-        
+
         double dx = traceEnd.xCoord - traceStart.xCoord;
         double dy = traceEnd.yCoord - traceStart.yCoord;
         double dz = traceEnd.zCoord - traceStart.zCoord;
-        
+
         int iterations = 8;
-        
+
         double meh = 1.0 / (iterations + 1);
         for (int i = 0; i < iterations; i++) {
             box.moveEntity(dx * meh, dy * meh, dz * meh);
         }
-        
+
         Vec3 hit = Vec3.createVectorHelper(box.posX, box.posY, box.posZ);
-        
+
         {
             box.boundingBox.minX = box.posX - d;
             box.boundingBox.minY = box.posY - d;
@@ -76,16 +84,16 @@ public class HookTargetsClient {
             box.boundingBox.maxY = box.posY + d;
             box.boundingBox.maxZ = box.posZ + d;
         }
-        
-        if (ret == null || ret.hitVec == null || ret.typeOfHit == MovingObjectType.MISS) return new MovingObjectPosition(null, hit);
-        
+
+        if (ret == null || ret.hitVec == null || ret.typeOfHit == MovingObjectType.MISS)
+            return new MovingObjectPosition(null, hit);
+
         double retLen = ret.hitVec.lengthVector();
-        
+
         dx = box.posX - traceStart.xCoord;
         dy = box.posY - traceStart.yCoord;
         dz = box.posZ - traceStart.zCoord;
-        
-        
+
         if (retLen * retLen > dx * dx + dy * dy + dz * dz) {
             return ret;
         }
@@ -93,6 +101,7 @@ public class HookTargetsClient {
     }
 
     public static ThreadLocal<Boolean> clientWorldLoadEventAbort = new ThreadLocal<Boolean>();
+
     public static boolean abortClientLoadEvent(EventBus bus, WorldEvent.Load event) {
         if (clientWorldLoadEventAbort.get() == Boolean.TRUE) return false;
         return bus.post(event);

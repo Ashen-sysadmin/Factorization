@@ -27,13 +27,14 @@ import org.lwjgl.opengl.GL11;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class RenderMessages extends RenderMessagesProxy {
+
     static ArrayList<ClientMessage> messages = new ArrayList();
-    
+
     {
         NotifyImplementation.loadBus(this);
         ClientCommandHandler.instance.registerCommand(new PointCommand());
     }
-    
+
     @Override
     public void addMessage(Object locus, ItemStack item, String format, String... args) {
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
@@ -49,9 +50,9 @@ public class RenderMessages extends RenderMessagesProxy {
             updateMessage(msg);
             return;
         }
-        
+
         boolean force_position = msg.style.contains(Style.FORCE);
-        
+
         if (messages.size() > 4 && !force_position) {
             messages.remove(0);
         }
@@ -60,18 +61,20 @@ public class RenderMessages extends RenderMessagesProxy {
             return;
         }
         for (ClientMessage m : messages) {
-            if (m.getPosition(0).distanceTo(testPos) < 1.05 && !force_position) {
+            if (m.getPosition(0)
+                .distanceTo(testPos) < 1.05 && !force_position) {
                 m.creationTime = 0;
             }
         }
-        if (msg.msg == null || msg.msg.trim().length() == 0) {
+        if (msg.msg == null || msg.msg.trim()
+            .length() == 0) {
             if (!(msg.show_item && msg.item != null)) {
                 return;
             }
         }
         messages.add(msg);
     }
-    
+
     void updateMessage(ClientMessage update) {
         for (ClientMessage msg : messages) {
             if (!msg.locus.equals(update.locus)) {
@@ -91,7 +94,7 @@ public class RenderMessages extends RenderMessagesProxy {
     public void renderMessages(RenderWorldLastEvent event) {
         doRenderMessages(event); // Forge events are too hard for eclipse to hot-swap?
     }
-    
+
     void doRenderMessages(RenderWorldLastEvent event) {
         World w = Minecraft.getMinecraft().theWorld;
         if (w == null) {
@@ -109,13 +112,13 @@ public class RenderMessages extends RenderMessagesProxy {
         GL11.glPushMatrix();
         GL11.glTranslated(-cx, -cy, -cz);
         GL11.glPushAttrib(GL11.GL_BLEND);
-        
+
         GL11.glDepthMask(false);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glColor4f(1, 1, 1, 1);
-        
+
         while (it.hasNext()) {
             ClientMessage m = it.next();
             long timeExisted = approximateNow - m.creationTime;
@@ -131,7 +134,7 @@ public class RenderMessages extends RenderMessagesProxy {
                 }
             }
             GL11.glDisable(GL11.GL_LIGHTING);
-            float lifeLeft = (m.lifeTime - timeExisted)/1000F;
+            float lifeLeft = (m.lifeTime - timeExisted) / 1000F;
             float opacity = 1F;
             if (lifeLeft < 1) {
                 opacity = lifeLeft / 1F;
@@ -163,7 +166,7 @@ public class RenderMessages extends RenderMessagesProxy {
         float scaling = 1.6F / 60F;
         scaling *= 2F / 3F;
         GL11.glPushMatrix();
-        
+
         int lineCount = lines.length;
         float centeringOffset = 0;
         if (m.show_item) {
@@ -174,7 +177,7 @@ public class RenderMessages extends RenderMessagesProxy {
         }
 
         Vec3 vec = m.getPosition(partial);
-        
+
         float x = (float) vec.xCoord;
         float y = (float) vec.yCoord;
         float z = (float) vec.zCoord;
@@ -185,10 +188,11 @@ public class RenderMessages extends RenderMessagesProxy {
             double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
             scaling *= Math.sqrt(dist);
         }
-        
+
         ISaneCoord co = m.asCoordMaybe();
         if (co != null && !m.position_important) {
-            Block b = co.w().getBlock(co.x(), co.y(), co.z());
+            Block b = co.w()
+                .getBlock(co.x(), co.y(), co.z());
             AxisAlignedBB bb = b.getCollisionBoundingBoxFromPool(co.w(), co.x(), co.y(), co.z());
             if (bb != null) {
                 y += bb.maxY - bb.minY;
@@ -207,7 +211,7 @@ public class RenderMessages extends RenderMessagesProxy {
         GL11.glRotatef(pvx, 1.0F, 0.0F, 0.0F);
         GL11.glScalef(-scaling, -scaling, scaling);
         GL11.glTranslatef(0, -10 * lineCount, 0);
-        
+
         {
             Tessellator tess = Tessellator.instance;
             int var16 = (lineCount - 1) * 10;
@@ -231,7 +235,7 @@ public class RenderMessages extends RenderMessagesProxy {
         {
             int i = 0;
             int B = (int) (0xFF * Math.min(1, 0.5F + opacity));
-            int color = (B << 16) + (B << 8) + B + ((int) (0xFF*opacity) << 24);
+            int color = (B << 16) + (B << 8) + B + ((int) (0xFF * opacity) << 24);
             GL11.glTranslatef(0, centeringOffset, 0);
             for (String line : lines) {
                 fr.drawString(line, -fr.getStringWidth(line) / 2, 10 * i, color);
@@ -240,12 +244,12 @@ public class RenderMessages extends RenderMessagesProxy {
         }
         {
             if (m.show_item) {
-                //GL11.glColor4f(opacity, opacity, opacity, opacity);
+                // GL11.glColor4f(opacity, opacity, opacity, opacity);
                 // :| Friggin' resets the transparency don't it...
                 GL11.glTranslatef(0, -centeringOffset, 0);
                 TextureManager re = mc.renderEngine;
-                
-                GL11.glTranslatef((float) (halfWidth + 4), -lineCount/2, 0);
+
+                GL11.glTranslatef((float) (halfWidth + 4), -lineCount / 2, 0);
                 renderItem.zLevel -= 50;
                 GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
                 renderItem.renderItemAndEffectIntoGUI(fr, re, m.item, 0, 0);
@@ -256,7 +260,7 @@ public class RenderMessages extends RenderMessagesProxy {
         GL11.glPopMatrix();
 
     }
-    
+
     @Override
     public void onscreen(String message, String[] formatArgs) {
         Minecraft mc = Minecraft.getMinecraft();
@@ -267,10 +271,11 @@ public class RenderMessages extends RenderMessagesProxy {
         String msg = I18n.format(message, targs);
         mc.ingameGUI.func_110326_a(msg, false);
     }
-    
+
     @Override
     public void replaceable(IChatComponent msg, int msgKey) {
         Minecraft mc = Minecraft.getMinecraft();
-        mc.ingameGUI.getChatGUI().printChatMessageWithOptionalDeletion(msg, msgKey);
+        mc.ingameGUI.getChatGUI()
+            .printChatMessageWithOptionalDeletion(msg, msgKey);
     }
 }

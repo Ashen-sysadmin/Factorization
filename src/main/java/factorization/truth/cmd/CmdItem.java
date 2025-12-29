@@ -1,14 +1,15 @@
 package factorization.truth.cmd;
 
-import factorization.truth.DocumentationModule;
-import factorization.truth.api.*;
-import factorization.truth.word.ItemWord;
-import factorization.util.DataUtil;
+import java.util.ArrayList;
+
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-import java.util.ArrayList;
+import factorization.truth.DocumentationModule;
+import factorization.truth.api.*;
+import factorization.truth.word.ItemWord;
+import factorization.util.DataUtil;
 
 public class CmdItem implements ITypesetCommand {
 
@@ -35,7 +36,6 @@ public class CmdItem implements ITypesetCommand {
                 throw new TruthError("Could not find block or item: " + itemName);
             }
         }
-
 
         if (items == null || items.isEmpty()) {
             throw new TruthError(itemName + " no such item");

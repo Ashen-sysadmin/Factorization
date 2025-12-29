@@ -4,10 +4,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
+
 import factorization.fzds.interfaces.IDeltaChunk;
 import factorization.fzds.interfaces.IFzdsEntryControl;
 
 class UniversalCollider extends Entity implements IFzdsEntryControl {
+
     private final DimensionSliceEntity dimensionSliceEntity;
 
     public UniversalCollider(DimensionSliceEntity dimensionSliceEntity, World world) {
@@ -16,19 +18,19 @@ class UniversalCollider extends Entity implements IFzdsEntryControl {
     }
 
     @Override
-    protected void entityInit() { }
+    protected void entityInit() {}
 
     @Override
-    protected void readEntityFromNBT(NBTTagCompound tag) { }
+    protected void readEntityFromNBT(NBTTagCompound tag) {}
 
     @Override
-    protected void writeEntityToNBT(NBTTagCompound tag) { }
-    
+    protected void writeEntityToNBT(NBTTagCompound tag) {}
+
     @Override
     public AxisAlignedBB getBoundingBox() {
         return this.dimensionSliceEntity.metaAABB;
     }
-    
+
     @Override
     public Entity[] getParts() {
         return this.dimensionSliceEntity.getRayParts();
@@ -45,10 +47,10 @@ class UniversalCollider extends Entity implements IFzdsEntryControl {
     }
 
     @Override
-    public void onEnter(IDeltaChunk dse) { }
+    public void onEnter(IDeltaChunk dse) {}
 
     @Override
-    public void onExit(IDeltaChunk dse) { }
+    public void onExit(IDeltaChunk dse) {}
 
     @Override
     public boolean doesEntityNotTriggerPressurePlate() {

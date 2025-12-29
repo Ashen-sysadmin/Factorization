@@ -1,25 +1,8 @@
 package factorization.sockets.fanturpeller;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.api.Coord;
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.IDataSerializable;
-import factorization.api.datahelpers.Share;
-import factorization.common.FactoryType;
-import factorization.common.FzConfig;
-import factorization.fzds.DeltaChunk;
-import factorization.fzds.interfaces.IDeltaChunk;
-import factorization.mechanics.MechanicsController;
-import factorization.notify.Notice;
-import factorization.servo.RenderServoMotor;
-import factorization.servo.ServoMotor;
-import factorization.shared.Core;
-import factorization.sockets.ISocketHolder;
-import factorization.util.InvUtil;
-import factorization.util.InvUtil.FzInv;
-import factorization.util.NumUtil;
-import factorization.util.SpaceUtil;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import net.minecraft.command.IEntitySelector;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -40,15 +23,35 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import org.lwjgl.opengl.GL11;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.api.Coord;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.IDataSerializable;
+import factorization.api.datahelpers.Share;
+import factorization.common.FactoryType;
+import factorization.common.FzConfig;
+import factorization.fzds.DeltaChunk;
+import factorization.fzds.interfaces.IDeltaChunk;
+import factorization.mechanics.MechanicsController;
+import factorization.notify.Notice;
+import factorization.servo.RenderServoMotor;
+import factorization.servo.ServoMotor;
+import factorization.shared.Core;
+import factorization.sockets.ISocketHolder;
+import factorization.util.InvUtil;
+import factorization.util.InvUtil.FzInv;
+import factorization.util.NumUtil;
+import factorization.util.SpaceUtil;
 
 public class BlowEntities extends SocketFanturpeller implements IEntitySelector {
+
     short dropDelay = 0;
     ArrayList<ItemStack> buffer = new ArrayList<ItemStack>(1);
-    
+
     @Override
     public String getInfo() {
         String msg = (isSucking ? "Suck" : "Blow") + " entities";
@@ -57,33 +60,35 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
         }
         return msg;
     }
-    
+
     @Override
     public IDataSerializable serialize(String prefix, DataHelper data) throws IOException {
         super.serialize(prefix, data);
-        dropDelay = data.as(Share.PRIVATE, "dropDelay").putShort(dropDelay);
-        buffer = data.as(Share.PRIVATE, "murderBuff").putItemList(buffer);
+        dropDelay = data.as(Share.PRIVATE, "dropDelay")
+            .putShort(dropDelay);
+        buffer = data.as(Share.PRIVATE, "murderBuff")
+            .putItemList(buffer);
         return this;
     }
-    
+
     @Override
     public FactoryType getFactoryType() {
         return FactoryType.SOCKET_BLOWER;
     }
-    
+
     @Override
     protected boolean shouldFeedJuice() {
         return buffer.isEmpty();
     }
-    
+
     @Override
     int getRequiredCharge() {
-        return 1 + target_speed*target_speed;
+        return 1 + target_speed * target_speed;
     }
-    
+
     private AxisAlignedBB area = AxisAlignedBB.getBoundingBox(0, 0, 0, 0, 0, 0);
     private AxisAlignedBB death_area = AxisAlignedBB.getBoundingBox(0, 0, 0, 0, 0, 0);
-    
+
     void addCoord(double x, double y, double z) {
         if (x < 0.0D) area.minX += x;
         if (x > 0.0D) area.maxX += x;
@@ -96,7 +101,7 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
     @Override
     protected void fanturpellerUpdate(ISocketHolder socket, Coord coord, boolean powered) {
         if (powered) return;
-        //We can't do an isRemote check because position doesn't get synced enough.
+        // We can't do an isRemote check because position doesn't get synced enough.
         if (!shouldDoWork()) return;
         if (!isSucking && !worldObj.isRemote) {
             dropItems(coord, socket);
@@ -119,13 +124,13 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
             coord.adjust(facing.getOpposite());
         }
         int side_range = target_speed;
-        int front_range = 3 + target_speed*target_speed;
+        int front_range = 3 + target_speed * target_speed;
         if (isSucking) front_range++;
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             if (dir == facing) {
-                addCoord(dir.offsetX*front_range, dir.offsetY*front_range, dir.offsetZ*front_range);
+                addCoord(dir.offsetX * front_range, dir.offsetY * front_range, dir.offsetZ * front_range);
             } else if (dir.getOpposite() != facing) {
-                addCoord(dir.offsetX*side_range, dir.offsetY*side_range, dir.offsetZ*side_range);
+                addCoord(dir.offsetX * side_range, dir.offsetY * side_range, dir.offsetZ * side_range);
             }
         }
         double s = 0.025;
@@ -151,17 +156,23 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
             ForgeDirection d = facing;
             float ds = isSucking ? 3 : 0;
             for (int i = 0; i < count; i++) {
-                double x = pick(area.minX, area.maxX) + d.offsetX*ds;
-                double y = pick(area.minY, area.maxY) + d.offsetY*ds;
-                double z = pick(area.minZ, area.maxZ) + d.offsetZ*ds;
-                //Good ones: explode, cloud, smoke, snowshovel
-                worldObj.spawnParticle("cloud", x, y, z, facing.offsetX*s, facing.offsetY*s, facing.offsetZ*s);
+                double x = pick(area.minX, area.maxX) + d.offsetX * ds;
+                double y = pick(area.minY, area.maxY) + d.offsetY * ds;
+                double z = pick(area.minZ, area.maxZ) + d.offsetZ * ds;
+                // Good ones: explode, cloud, smoke, snowshovel
+                worldObj.spawnParticle("cloud", x, y, z, facing.offsetX * s, facing.offsetY * s, facing.offsetZ * s);
             }
         }
     }
 
     private void iterateFzdsEntities(int front_range, double s, ForgeDirection dir, IDeltaChunk idc) {
-        iterateEntities(front_range, s, idc.shadow2real(dir), idc.shadow2real(area), idc.shadow2real(death_area), idc.worldObj);
+        iterateEntities(
+            front_range,
+            s,
+            idc.shadow2real(dir),
+            idc.shadow2real(area),
+            idc.shadow2real(death_area),
+            idc.worldObj);
         if (!worldObj.isRemote && Core.dev_environ && idc.getController() instanceof MechanicsController) {
             Vec3 force = SpaceUtil.fromDirection(dir);
             double forceScale = target_speed / 20.0;
@@ -171,10 +182,11 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
         }
     }
 
-    private void iterateEntities(int front_range, double s, ForgeDirection dir, AxisAlignedBB box, AxisAlignedBB deathBox, World w) {
-        //AabbDebugger.addBox(box);
+    private void iterateEntities(int front_range, double s, ForgeDirection dir, AxisAlignedBB box,
+        AxisAlignedBB deathBox, World w) {
+        // AabbDebugger.addBox(box);
         boolean rising = dir.offsetY == (isSucking ? -1 : +1);
-        for (Entity ent : (Iterable<Entity>)w.getEntitiesWithinAABBExcludingEntity(null, box, this)) {
+        for (Entity ent : (Iterable<Entity>) w.getEntitiesWithinAABBExcludingEntity(null, box, this)) {
             if (rising) {
                 waftEntity(ent);
             }
@@ -195,27 +207,27 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
         double d = max - min;
         return min + d * worldObj.rand.nextDouble();
     }
-    
+
     void suckEntity(Entity ent, int front_range, ForgeDirection dir, double s) {
         double ms = s;
         double distSq = ent.getDistanceSq(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5);
-        ms /= distSq/(front_range*10);
+        ms /= distSq / (front_range * 10);
         if (ms > 0.15) ms = 0.15;
-        double dx = ms*dir.offsetX;
-        double dy = ms*dir.offsetY;
-        double dz = ms*dir.offsetZ;
+        double dx = ms * dir.offsetX;
+        double dy = ms * dir.offsetY;
+        double dz = ms * dir.offsetZ;
         if (isSucking || dir == ForgeDirection.UP) {
             if (dir.offsetX == 0) {
                 double diff = ent.posX - xCoord - 0.5;
-                dx -= diff*ms;
+                dx -= diff * ms;
             }
             if (dir.offsetY == 0) {
                 double diff = ent.posY - yCoord - 0.5;
-                dy -= diff*ms;
+                dy -= diff * ms;
             }
             if (dir.offsetZ == 0) {
                 double diff = ent.posZ - zCoord - 0.5;
-                dz -= diff*ms;
+                dz -= diff * ms;
             }
             if (ent.motionY < dy) {
                 ent.motionY = dy;
@@ -223,16 +235,16 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
         }
         ent.moveEntity(dx, dy, dz);
     }
-    
+
     void waftEntity(Entity ent) {
         double damp = 0.5;
         ent.motionX *= damp;
         ent.motionZ *= damp;
         if (ent.motionY < 0.05) {
-            ent.motionY = (ent.motionY + 0.05)/2;
+            ent.motionY = (ent.motionY + 0.05) / 2;
         }
     }
-    
+
     void murderEntity(Entity ent) {
         if (ent.isDead) return;
         if (ent instanceof EntityItem) {
@@ -242,7 +254,7 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
             return;
         }
         if (ent instanceof EntityGhast) {
-            if (ent.getClass() != EntityGhast.class) return; //I'm thinking of Twilight Forest's Ur-Ghast here.
+            if (ent.getClass() != EntityGhast.class) return; // I'm thinking of Twilight Forest's Ur-Ghast here.
             EntityGhast ghast = (EntityGhast) ent;
             if (worldObj.getTotalWorldTime() % 30 == 0) {
                 ghast.attackEntityFrom(DamageSource.generic, 1);
@@ -251,14 +263,14 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
                 ghast.waypointZ = ghast.posZ;
                 ghast.courseChangeCooldown = 40;
                 if (ghast.isDead) {
-                    //NOTE: Potential for bonus ghast tears here. I'm okay with this?
+                    // NOTE: Potential for bonus ghast tears here. I'm okay with this?
                     buffer.add(new ItemStack(Items.ghast_tear));
                 }
             }
             if (!worldObj.isRemote && ghast.getHealth() > 0) {
-                ghast.rotationYaw += worldObj.rand.nextGaussian()*12;
+                ghast.rotationYaw += worldObj.rand.nextGaussian() * 12;
             }
-            
+
         } else if (ent instanceof EntityChicken) {
             EntityChicken chicken = (EntityChicken) ent;
             if (chicken.getHealth() <= 1) {
@@ -272,8 +284,9 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
             bat.attackEntityFrom(DamageSource.generic, 1);
         }
     }
-    
+
     boolean found_player = false;
+
     @Override
     public boolean isEntityApplicable(Entity entity) {
         if (entity instanceof EntityItem) {
@@ -282,7 +295,9 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
         if (target_speed <= 1) {
             return false;
         }
-        if (entity instanceof EntityLiving || entity instanceof IProjectile || entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock) {
+        if (entity instanceof EntityLiving || entity instanceof IProjectile
+            || entity instanceof EntityTNTPrimed
+            || entity instanceof EntityFallingBlock) {
             return true;
         }
         if (FzConfig.fanturpeller_works_on_players && entity instanceof EntityPlayer) {
@@ -301,7 +316,7 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
             dropDelay--;
             return;
         }
-        dropDelay = 20*2;
+        dropDelay = 20 * 2;
         FzInv back = null;
         if (socket == this) {
             coord.adjust(facing.getOpposite());
@@ -316,14 +331,14 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
         ItemStack is = back.pullWithLimit(1);
         back.onInvChanged();
         if (is == null) {
-            dropDelay = 20*6;
+            dropDelay = 20 * 6;
             return;
         }
         coord.adjust(facing);
         coord.spawnItem(is);
         coord.adjust(facing.getOpposite());
     }
-    
+
     @Override
     protected void onRemove() {
         super.onRemove();
@@ -332,7 +347,7 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
             InvUtil.spawnItemStack(here, item);
         }
     }
-    
+
     @Override
     public boolean activate(EntityPlayer player, ForgeDirection side) {
         if (!buffer.isEmpty()) {
@@ -341,48 +356,50 @@ public class BlowEntities extends SocketFanturpeller implements IEntitySelector 
         }
         return super.activate(player, side);
     }
-    
+
     @Override
     public void click(EntityPlayer entityplayer) {
         InvUtil.emptyBuffer(entityplayer, buffer, this);
     }
-    
+
     @Override
     public void installedOnServo(ServoMotor servoMotor) {
         super.installedOnServo(servoMotor);
         servoMotor.resizeInventory(3);
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public void renderItemOnServo(RenderServoMotor render, ServoMotor motor, ItemStack is, float partial) {
         GL11.glPushMatrix();
-        GL11.glTranslatef(0, 5F/16F, 0);
+        GL11.glTranslatef(0, 5F / 16F, 0);
         float turn = scaleRotation(NumUtil.interp(prevFanRotation, fanRotation, partial));
         GL11.glRotatef(-turn, 0, 1, 0);
-        float s = 9F/16F;
+        float s = 9F / 16F;
         GL11.glScalef(s, s, s);
 
         GL11.glPushMatrix();
         GL11.glRotatef(90, 1, 0, 0);
-        GL11.glRotatef(45/2F, 0, 0, 1);
-        GL11.glTranslatef(0, 0, -2F/16F);
+        GL11.glRotatef(45 / 2F, 0, 0, 1);
+        GL11.glTranslatef(0, 0, -2F / 16F);
         render.renderItem(is);
         GL11.glPopMatrix();
-        
+
         for (int i = 1; i < motor.getSizeInventory(); i++) {
             is = motor.getStackInSlot(i);
             if (is == null) continue;
             GL11.glPushMatrix();
-            float r = 360*i/2 + 58;
+            float r = 360 * i / 2 + 58;
             GL11.glRotatef(r, 0, 1, 0);
-            GL11.glTranslatef(0, 0, 9F/16F);
+            GL11.glTranslatef(0, 0, 9F / 16F);
             GL11.glRotatef(r, 0, 1, 0);
-            /*if (isSucking) {
-                GL11.glRotatef(15, 1, 0, 0);
-            } else {
-                GL11.glRotatef(-15, 1, 0, 0);
-            }*/
+            /*
+             * if (isSucking) {
+             * GL11.glRotatef(15, 1, 0, 0);
+             * } else {
+             * GL11.glRotatef(-15, 1, 0, 0);
+             * }
+             */
             render.renderItem(is);
             GL11.glPopMatrix();
         }

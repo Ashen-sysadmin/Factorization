@@ -1,19 +1,7 @@
 package factorization.weird.poster;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.api.Coord;
-import factorization.api.Quaternion;
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.Share;
-import factorization.rendersorting.ISortableRenderer;
-import factorization.rendersorting.RenderSorter;
-import factorization.shared.Core;
-import factorization.shared.EntityFz;
-import factorization.util.ItemUtil;
-import factorization.util.NumUtil;
-import factorization.util.PlayerUtil;
-import factorization.util.SpaceUtil;
+import java.io.IOException;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -28,9 +16,23 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.IItemRenderer;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.io.IOException;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import factorization.api.Coord;
+import factorization.api.Quaternion;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.Share;
+import factorization.rendersorting.ISortableRenderer;
+import factorization.rendersorting.RenderSorter;
+import factorization.shared.Core;
+import factorization.shared.EntityFz;
+import factorization.util.ItemUtil;
+import factorization.util.NumUtil;
+import factorization.util.PlayerUtil;
+import factorization.util.SpaceUtil;
 
 public class EntityPoster extends EntityFz implements ISortableRenderer<EntityPoster> {
+
     public ItemStack inv = new ItemStack(Core.registry.spawnPoster);
     public Quaternion rot = new Quaternion();
     public double scale = 1.0;
@@ -92,7 +94,8 @@ public class EntityPoster extends EntityFz implements ISortableRenderer<EntityPo
         return super.isInRangeToRender3d(p_145770_1_, p_145770_3_, p_145770_5_);
     }
 
-    public void setBase(double baseScale, Quaternion baseRotation, ForgeDirection norm, ForgeDirection top, AxisAlignedBB bounds) {
+    public void setBase(double baseScale, Quaternion baseRotation, ForgeDirection norm, ForgeDirection top,
+        AxisAlignedBB bounds) {
         this.scale = this.base_scale = baseScale;
         this.base_rotation = baseRotation;
         this.rot = new Quaternion(base_rotation);
@@ -102,7 +105,8 @@ public class EntityPoster extends EntityFz implements ISortableRenderer<EntityPo
         this.norm = norm;
         this.top = top;
 
-        Vec3 tiltV = SpaceUtil.fromDirection(norm).crossProduct(SpaceUtil.fromDirection(top));
+        Vec3 tiltV = SpaceUtil.fromDirection(norm)
+            .crossProduct(SpaceUtil.fromDirection(top));
         this.tilt = SpaceUtil.round(tiltV, norm);
 
         updateSize();
@@ -115,7 +119,9 @@ public class EntityPoster extends EntityFz implements ISortableRenderer<EntityPo
         Quaternion rNorm = Quaternion.getRotationQuaternionRadians(spin_normal * SPIN_PER_CLICK, norm);
         Quaternion rVert = Quaternion.getRotationQuaternionRadians(spin_vertical * SPIN_PER_CLICK, top);
         Quaternion rTilt = Quaternion.getRotationQuaternionRadians(spin_tilt * SPIN_PER_CLICK, tilt);
-        rot = rVert.multiply(rNorm).multiply(rTilt).multiply(base_rotation);
+        rot = rVert.multiply(rNorm)
+            .multiply(rTilt)
+            .multiply(base_rotation);
     }
 
     @SideOnly(Side.CLIENT)
@@ -129,7 +135,8 @@ public class EntityPoster extends EntityFz implements ISortableRenderer<EntityPo
         ItemStack held = player.getHeldItem();
         if (held == null) return false;
         Item it = held.getItem();
-        return it == Core.registry.spawnPoster || it == Core.registry.logicMatrixProgrammer || ItemUtil.swordSimilar(inv, held);
+        return it == Core.registry.spawnPoster || it == Core.registry.logicMatrixProgrammer
+            || ItemUtil.swordSimilar(inv, held);
     }
 
     public boolean hitByEntity(Entity ent) {
@@ -166,29 +173,42 @@ public class EntityPoster extends EntityFz implements ISortableRenderer<EntityPo
 
     @Override
     protected void putData(DataHelper data) throws IOException {
-        inv = data.as(Share.VISIBLE, "inv").putItemStack(inv);
-        rot = data.as(Share.VISIBLE, "rot").putIDS(rot);
-        scale = data.as(Share.VISIBLE, "scale").putDouble(scale);
-        base_rotation = data.as(Share.PRIVATE, "baseRot").putIDS(base_rotation);
-        base_scale = data.as(Share.PRIVATE, "baseScale").putDouble(base_scale);
-        spin_normal = data.as(Share.PRIVATE, "spinNormal").putShort(spin_normal);
-        spin_vertical = data.as(Share.PRIVATE, "spinVertical").putShort(spin_vertical);
-        spin_tilt = data.as(Share.PRIVATE, "spinTilt").putShort(spin_tilt);
-        delta_scale = data.as(Share.PRIVATE, "deltaScale").putByte(delta_scale);
-        norm = data.as(Share.PRIVATE, "norm").putEnum(norm);
-        top = data.as(Share.PRIVATE, "top").putEnum(top);
-        tilt = data.as(Share.PRIVATE, "tilt").putEnum(tilt);
+        inv = data.as(Share.VISIBLE, "inv")
+            .putItemStack(inv);
+        rot = data.as(Share.VISIBLE, "rot")
+            .putIDS(rot);
+        scale = data.as(Share.VISIBLE, "scale")
+            .putDouble(scale);
+        base_rotation = data.as(Share.PRIVATE, "baseRot")
+            .putIDS(base_rotation);
+        base_scale = data.as(Share.PRIVATE, "baseScale")
+            .putDouble(base_scale);
+        spin_normal = data.as(Share.PRIVATE, "spinNormal")
+            .putShort(spin_normal);
+        spin_vertical = data.as(Share.PRIVATE, "spinVertical")
+            .putShort(spin_vertical);
+        spin_tilt = data.as(Share.PRIVATE, "spinTilt")
+            .putShort(spin_tilt);
+        delta_scale = data.as(Share.PRIVATE, "deltaScale")
+            .putByte(delta_scale);
+        norm = data.as(Share.PRIVATE, "norm")
+            .putEnum(norm);
+        top = data.as(Share.PRIVATE, "top")
+            .putEnum(top);
+        tilt = data.as(Share.PRIVATE, "tilt")
+            .putEnum(tilt);
         if (data.isReader()) {
             updateSize();
             if (inv == null) {
                 inv = new ItemStack(Core.registry.spawnPoster);
             }
         }
-        locked = data.as(Share.PRIVATE, "locked").putBoolean(locked);
+        locked = data.as(Share.PRIVATE, "locked")
+            .putBoolean(locked);
     }
 
     @Override
-    protected void entityInit() { }
+    protected void entityInit() {}
 
     private static final double SCALE_INCR = 1.125;
     private static final double SPIN_PER_CLICK = Math.PI * 2 / 32;
@@ -201,7 +221,8 @@ public class EntityPoster extends EntityFz implements ISortableRenderer<EntityPo
         if (held == null) return false;
         if (inv.getItem() == Core.registry.spawnPoster) {
             if (held.getItem() == Core.registry.spawnPoster) return true;
-            inv = player.getHeldItem().splitStack(1);
+            inv = player.getHeldItem()
+                .splitStack(1);
             syncData();
             return true;
         }

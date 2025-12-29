@@ -7,20 +7,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import factorization.api.datahelpers.*;
-import factorization.fzds.DeltaChunk;
-import factorization.fzds.interfaces.IDeltaChunk;
-import factorization.shared.*;
-import factorization.util.*;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
@@ -34,8 +25,8 @@ import org.lwjgl.opengl.GL11;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
-import factorization.api.FzOrientation;
 import factorization.api.IChargeConductor;
+import factorization.api.datahelpers.*;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.common.FzConfig;
@@ -43,14 +34,19 @@ import factorization.notify.Notice;
 import factorization.servo.LoggerDataHelper;
 import factorization.servo.RenderServoMotor;
 import factorization.servo.ServoMotor;
-import factorization.util.InvUtil.FzInv;
+import factorization.shared.*;
 import factorization.shared.NetworkFactorization.MessageType;
+import factorization.util.*;
+import factorization.util.InvUtil.FzInv;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 public abstract class TileEntitySocketBase extends TileEntityCommon implements ISocketHolder, IDataSerializable {
+
     /*
      * Some notes for when we get these moving on servos:
-     * 		These vars need to be set: worldObj, [xyz]Coord, facing
-     * 		Some things might call this's ISocketHolder methods rather than the passed in ISocketHolder's methods
+     * These vars need to be set: worldObj, [xyz]Coord, facing
+     * Some things might call this's ISocketHolder methods rather than the passed in ISocketHolder's methods
      */
     public ForgeDirection facing = ForgeDirection.UP;
     protected ItemStack[] parts = new ItemStack[3];
@@ -84,8 +80,10 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
 
     @Override
     public final void putData(DataHelper data) throws IOException {
-        facing = data.as(Share.VISIBLE, "fc").putEnum(facing);
-        parts = data.as(Share.PRIVATE, "socketParts").putItemArray(parts);
+        facing = data.as(Share.VISIBLE, "fc")
+            .putEnum(facing);
+        parts = data.as(Share.PRIVATE, "socketParts")
+            .putItemArray(parts);
         serialize("", data);
     }
 
@@ -106,8 +104,12 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
     protected AxisAlignedBB getEntityBox(ISocketHolder socket, Coord c, ForgeDirection top, double d) {
         int one = 1;
         AxisAlignedBB ab = AxisAlignedBB.getBoundingBox(
-                c.x + top.offsetX, c.y + top.offsetY, c.z + top.offsetZ,
-                c.x + one + top.offsetX, c.y + one + top.offsetY, c.z + one + top.offsetZ);
+            c.x + top.offsetX,
+            c.y + top.offsetY,
+            c.z + top.offsetZ,
+            c.x + one + top.offsetX,
+            c.y + one + top.offsetY,
+            c.z + one + top.offsetZ);
         if (d != 0) {
             ab.minX -= d;
             ab.minY -= d;
@@ -118,12 +120,12 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         }
         return ab;
     }
-    
+
     @Override
     public final ForgeDirection[] getValidRotations() {
         return full_rotation_array;
     }
-    
+
     @Override
     public final boolean rotate(ForgeDirection axis) {
         if (getClass() != SocketEmpty.class) {
@@ -135,17 +137,18 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         facing = axis;
         return true;
     }
-    
+
     @Override
     public boolean isBlockSolidOnSide(int side) {
-        return side == facing.getOpposite().ordinal();
+        return side == facing.getOpposite()
+            .ordinal();
     }
-    
+
     @Override
-    public final void sendMessage(MessageType msgType, Object ...msg) {
+    public final void sendMessage(MessageType msgType, Object... msg) {
         broadcastMessage(null, msgType, msg);
     }
-    
+
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(ForgeDirection dir) {
@@ -154,19 +157,23 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         }
         return BlockIcons.socket$side;
     }
-    
+
     protected boolean isBlockPowered() {
         if (FzConfig.sockets_ignore_front_redstone) {
             for (ForgeDirection fd : ForgeDirection.VALID_DIRECTIONS) {
                 if (fd == facing) continue;
-                if (worldObj.getIndirectPowerLevelTo(xCoord + fd.offsetX, yCoord + fd.offsetY, zCoord + fd.offsetZ, fd.ordinal()) > 0) return true;
+                if (worldObj.getIndirectPowerLevelTo(
+                    xCoord + fd.offsetX,
+                    yCoord + fd.offsetY,
+                    zCoord + fd.offsetZ,
+                    fd.ordinal()) > 0) return true;
             }
             return false;
         } else {
             return worldObj.getBlockPowerInput(xCoord, yCoord, zCoord) > 0;
         }
     }
-    
+
     @Override
     public boolean dumpBuffer(List<ItemStack> buffer) {
         if (buffer.size() == 0) {
@@ -199,12 +206,12 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         }
         return !buffer.isEmpty();
     }
-    
+
     @Override
     public void updateEntity() {
         genericUpdate(this, getCoord(), isBlockPowered());
     }
-    
+
     @Override
     protected void onRemove() {
         super.onRemove();
@@ -220,7 +227,7 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
             ft = sb.getParentFactoryType();
         }
     }
-    
+
     @Override
     public ItemStack getPickedBlock() {
         if (this instanceof SocketEmpty) {
@@ -229,15 +236,15 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         ItemStack is = getCreatingItem();
         return is == null ? null : ItemStack.copyItemStack(is);
     }
-    
+
     @Override
     public ItemStack getDroppedBlock() {
         return FactoryType.SOCKET_EMPTY.itemStack();
     }
-    
-    private static float[] pitch = new float[] {90, -90, 0, 0, 0, 0, 0};
-    private static float[] yaw = new float[] {0, 0, 180, 0, 90, -90, 0};
-    
+
+    private static float[] pitch = new float[] { 90, -90, 0, 0, 0, 0, 0 };
+    private static float[] yaw = new float[] { 0, 0, 180, 0, 90, -90, 0 };
+
     protected EntityPlayer getFakePlayer() {
         EntityPlayer player = PlayerUtil.makePlayer(getCoord(), "socket");
         player.worldObj = worldObj;
@@ -247,18 +254,19 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         for (int i = 0; i < player.inventory.mainInventory.length; i++) {
             player.inventory.mainInventory[i] = null;
         }
-        
+
         int i = facing.ordinal();
         player.rotationPitch = player.prevRotationPitch = pitch[i];
         player.rotationYaw = player.prevRotationYaw = yaw[i];
         player.limbSwingAmount = 0;
-        
+
         return player;
     }
-    
+
     protected IInventory getBackingInventory(ISocketHolder socket) {
         if (socket == this) {
-            TileEntity te = worldObj.getTileEntity(xCoord - facing.offsetX,yCoord - facing.offsetY,zCoord - facing.offsetZ);
+            TileEntity te = worldObj
+                .getTileEntity(xCoord - facing.offsetX, yCoord - facing.offsetY, zCoord - facing.offsetZ);
             if (te instanceof IInventory) {
                 return (IInventory) te;
             }
@@ -268,12 +276,13 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         }
         return null;
     }
-    
+
     @Override
     public boolean extractCharge(int amount) {
         if (this instanceof IChargeConductor) {
             IChargeConductor cc = (IChargeConductor) this;
-            return cc.getCharge().tryTake(amount) >= amount;
+            return cc.getCharge()
+                .tryTake(amount) >= amount;
         }
         return false;
     }
@@ -283,18 +292,20 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         return getCoord().createVector();
     }
 
-    //Overridable code
-    
-    public void genericUpdate(ISocketHolder socket, Coord coord, boolean powered) { }
-    
+    // Overridable code
+
+    public void genericUpdate(ISocketHolder socket, Coord coord, boolean powered) {}
+
     @Override
     public abstract FactoryType getFactoryType();
+
     public abstract ItemStack getCreatingItem();
+
     public abstract FactoryType getParentFactoryType();
-    
+
     @Override
     public abstract boolean canUpdate();
-    
+
     @SideOnly(Side.CLIENT)
     @Override
     public boolean handleMessageFromServer(MessageType messageType, ByteBuf input) throws IOException {
@@ -307,12 +318,13 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
             }
             DataInByteBuf dip = new DataInByteBuf(input, Side.CLIENT);
             serialize("", dip);
-            Minecraft.getMinecraft().displayGuiScreen(new GuiDataConfig(this));
+            Minecraft.getMinecraft()
+                .displayGuiScreen(new GuiDataConfig(this));
             return true;
         }
         return false;
     }
-    
+
     @Override
     public boolean handleMessageFromClient(MessageType messageType, ByteBuf input) throws IOException {
         if (super.handleMessageFromClient(messageType, input)) {
@@ -326,19 +338,20 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         }
         return false;
     }
-    
+
     /**
      * return true if mop-searching should stop
      */
-    public boolean handleRay(ISocketHolder socket, MovingObjectPosition mop, World mopWorld, boolean mopIsThis, boolean powered) {
+    public boolean handleRay(ISocketHolder socket, MovingObjectPosition mop, World mopWorld, boolean mopIsThis,
+        boolean powered) {
         return true;
     }
-    
+
     /**
      * Called when the socket is removed from a servo motor
      */
-    public void uninstall() { }
-    
+    public void uninstall() {}
+
     @Override
     public boolean activate(EntityPlayer player, ForgeDirection side) {
         ItemStack held = player.getHeldItem();
@@ -387,7 +400,7 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
                     }
                     TileEntityCommon upgrade = ft.makeTileEntity();
                     if (upgrade == null) continue;
-                    
+
                     replaceWith((TileEntitySocketBase) upgrade, this);
                     if (!player.capabilities.isCreativeMode) held.stackSize--;
                     Sound.socketInstall.playAt(this);
@@ -400,7 +413,7 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         }
         return false;
     }
-    
+
     public void mentionPrereq(ISocketHolder holder, EntityPlayer player) {
         FactoryType pft = getParentFactoryType();
         if (pft == null) return;
@@ -409,16 +422,18 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         ItemStack is = ((TileEntitySocketBase) tec).getCreatingItem();
         if (is == null) return;
         String msg = "Needs {ITEM_NAME}";
-        new Notice(holder, msg).withItem(is).send(player);
+        new Notice(holder, msg).withItem(is)
+            .send(player);
     }
-    
+
     protected void replaceWith(TileEntitySocketBase replacement, ISocketHolder socket) {
         invalidate();
         replacement.facing = facing;
         if (socket == this) {
             Coord at = getCoord();
             at.setTE(replacement);
-            replacement.getBlockClass().enforce(at);
+            replacement.getBlockClass()
+                .enforce(at);
             at.syncAndRedraw();
         } else if (socket instanceof ServoMotor) {
             ServoMotor motor = (ServoMotor) socket;
@@ -426,7 +441,7 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
             motor.syncWithSpawnPacket();
         }
     }
-    
+
     public boolean activateOnServo(EntityPlayer player, ServoMotor motor) {
         if (getWorldObj() == null /* wtf? */ || getWorldObj().isRemote) {
             return false;
@@ -453,28 +468,28 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         }
         return false;
     }
-    
-    public void onEnterNewBlock() { }
-    
+
+    public void onEnterNewBlock() {}
+
     @SideOnly(Side.CLIENT)
     public void renderTesr(ServoMotor motor, float partial) {}
-    
+
     @SideOnly(Side.CLIENT)
     public void renderStatic(ServoMotor motor, Tessellator tess) {}
-    
+
     @SideOnly(Side.CLIENT)
     public void renderInServo(ServoMotor motor, float partial) {
-        float s = 12F/16F;
+        float s = 12F / 16F;
         GL11.glScalef(s, s, s);
         float d = -0.5F;
-        float y = -2F/16F;
+        float y = -2F / 16F;
         GL11.glTranslatef(d, y, d);
-        
+
         GL11.glDisable(GL_LIGHTING);
         GL11.glPushMatrix();
         renderTesr(motor, partial);
         GL11.glPopMatrix();
-        
+
         Tessellator tess = Tessellator.instance;
         tess.startDrawingQuads();
         renderStatic(motor, tess);
@@ -482,15 +497,15 @@ public abstract class TileEntitySocketBase extends TileEntityCommon implements I
         GL11.glTranslatef(-d, -y, -d);
         GL11.glEnable(GL_LIGHTING);
     }
-    
+
     @SideOnly(Side.CLIENT)
     public void renderItemOnServo(RenderServoMotor render, ServoMotor motor, ItemStack is, float partial) {
         GL11.glPushMatrix();
-        GL11.glTranslatef(6.5F/16F, 4.5F/16F, 0);
+        GL11.glTranslatef(6.5F / 16F, 4.5F / 16F, 0);
         GL11.glRotatef(90, 0, 1, 0);
         render.renderItem(is);
         GL11.glPopMatrix();
     }
 
-    public void installedOnServo(ServoMotor servoMotor) { }
+    public void installedOnServo(ServoMotor servoMotor) {}
 }

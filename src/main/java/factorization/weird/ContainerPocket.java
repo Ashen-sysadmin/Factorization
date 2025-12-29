@@ -3,10 +3,6 @@ package factorization.weird;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
-import factorization.shared.*;
-import factorization.util.CraftUtil;
-import factorization.util.InvUtil;
-import factorization.util.ItemUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -19,9 +15,15 @@ import net.minecraft.inventory.SlotCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.world.World;
+
 import factorization.common.Command;
+import factorization.shared.*;
+import factorization.util.CraftUtil;
+import factorization.util.InvUtil;
+import factorization.util.ItemUtil;
 
 public class ContainerPocket extends Container {
+
     final EntityPlayer player;
     final InventoryPlayer playerInv;
     final IInventory inv;
@@ -35,7 +37,7 @@ public class ContainerPocket extends Container {
     Slot craftResultSlot;
 
     ItemStack fake_is;
-    
+
     boolean isCrafting = false;
     boolean dirty = false;
 
@@ -50,7 +52,7 @@ public class ContainerPocket extends Container {
         detectAndSendChanges();
         updateCraft();
     }
-    
+
     void addPlayerSlots(IInventory inventoryplayer) {
         int invdx = 0, invdy = 0;
         int y = 3;
@@ -78,15 +80,16 @@ public class ContainerPocket extends Container {
         mainInvThenHotbarSlots.addAll(mainInvSlots);
         mainInvThenHotbarSlots.addAll(hotbarSlots);
     }
-    
+
     @Override
     protected Slot addSlotToContainer(Slot slot) {
         return super.addSlotToContainer(slot);
     }
-    
 
     class RedirectedSlotCrafting extends SlotCrafting {
-        public RedirectedSlotCrafting(EntityPlayer player, IInventory craftMatrix, IInventory craftResult, int posX, int posY) {
+
+        public RedirectedSlotCrafting(EntityPlayer player, IInventory craftMatrix, IInventory craftResult, int posX,
+            int posY) {
             super(player, craftMatrix, craftResult, 0, posX, posY);
         }
 
@@ -107,8 +110,9 @@ public class ContainerPocket extends Container {
             updateCraft();
         }
     }
-    
+
     class InventoryProxy implements IInventory {
+
         IInventory src;
 
         public InventoryProxy(IInventory src) {
@@ -118,7 +122,7 @@ public class ContainerPocket extends Container {
         int remapSlotId(int i) {
             return i;
         }
-        
+
         boolean isCraftingArea(int slot) {
             if (slot < 8) return false;
             int col = slot % 9;
@@ -198,9 +202,9 @@ public class ContainerPocket extends Container {
             return true;
         }
     }
-    
+
     boolean isWorking = false;
-    
+
     void updateMatrix() {
         isWorking = true;
         int i = 0;
@@ -214,7 +218,7 @@ public class ContainerPocket extends Container {
         if (isWorking) {
             dirty = true;
             return;
-        } 
+        }
         updateMatrix();
         ItemStack result = null;
         IRecipe match = CraftUtil.findMatchingRecipe(craftMatrix, world);
@@ -224,19 +228,19 @@ public class ContainerPocket extends Container {
         craftResult.setInventorySlotContents(0, result);
         dirty = false;
     }
-    
+
     @Override
     public void putStacksInSlots(ItemStack[] stacks) {
         isWorking = true;
         super.putStacksInSlots(stacks);
         isWorking = false;
     }
-    
+
     @Override
     public void onCraftMatrixChanged(IInventory inv) {
         super.onCraftMatrixChanged(inv);
     }
-    
+
     @Override
     public void detectAndSendChanges() {
         if (!isCrafting) {
@@ -244,7 +248,6 @@ public class ContainerPocket extends Container {
         }
     }
 
-    
     @Override
     public boolean canInteractWith(EntityPlayer player) {
         return Core.registry.pocket_table.findPocket(player) != null;
@@ -252,19 +255,20 @@ public class ContainerPocket extends Container {
 
     public void executeCommand(Command cmd, int arg) {
         switch (cmd) {
-        default: return;
-        case craftBalance:
-            craftBalance();
-            break;
-        case craftFill:
-            craftFill(arg);
-            break;
-        case craftClear:
-            craftClear();
-            break;
-        case craftSwirl:
-            craftSwirl();
-            break;
+            default:
+                return;
+            case craftBalance:
+                craftBalance();
+                break;
+            case craftFill:
+                craftFill(arg);
+                break;
+            case craftClear:
+                craftClear();
+                break;
+            case craftSwirl:
+                craftSwirl();
+                break;
         }
         updateCraft();
     }
@@ -273,7 +277,7 @@ public class ContainerPocket extends Container {
     protected void retrySlotClick(int par1, int par2, boolean par3, EntityPlayer par4EntityPlayer) {
         super.retrySlotClick(par1, par2, par3, par4EntityPlayer);
     }
-    
+
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int slotId) {
         for (Slot slot : nonCraftingInventorySlots) {
@@ -316,12 +320,12 @@ public class ContainerPocket extends Container {
             if (held != null) {
                 ItemStack cursor = player.inventory.getItemStack();
                 if (cursor == null) {
-                     player.inventory.setItemStack(held);
-                     if (player instanceof EntityPlayerMP && !player.worldObj.isRemote) {
-                         EntityPlayerMP emp = (EntityPlayerMP) player;
-                         emp.updateHeldItem();
-                     }
-                     held = null;
+                    player.inventory.setItemStack(held);
+                    if (player instanceof EntityPlayerMP && !player.worldObj.isRemote) {
+                        EntityPlayerMP emp = (EntityPlayerMP) player;
+                        emp.updateHeldItem();
+                    }
+                    held = null;
                 } else if (ItemUtil.couldMerge(cursor, held)) {
                     int avail = cursor.getMaxStackSize() - cursor.stackSize;
                     int delta = Math.min(avail, held.stackSize);
@@ -340,7 +344,7 @@ public class ContainerPocket extends Container {
         }
         return super.transferStackInSlot(player, slotId);
     }
-    
+
     int getCraftCount(ItemStack res) {
         boolean hasEmpty = false;
         int space_to_fill = 0;
@@ -370,35 +374,29 @@ public class ContainerPocket extends Container {
         }
         updateMatrix();
     }
-    
-    //InventoryPlayer Slots:
-    //09 10 11 12 13 14 15 16 17
-    //18 19 20 21 22 23 24 25 26
-    //27 28 29 30 31 32 33 34 35
-    //00 01 02 03 04 05 06 07 08
-    private static final int slots[] = {
-        15, 16, 17,
-        26,
-        35, 34, 33,
-        24,
-    };
-    private static final int slotsTwice[] = {
-        15, 16, 17, 26, 35, 34, 33, 24,
-        15, 16, 17, 26, 35, 34, 33, 24,
-    };
+
+    // InventoryPlayer Slots:
+    // 09 10 11 12 13 14 15 16 17
+    // 18 19 20 21 22 23 24 25 26
+    // 27 28 29 30 31 32 33 34 35
+    // 00 01 02 03 04 05 06 07 08
+    private static final int slots[] = { 15, 16, 17, 26, 35, 34, 33, 24, };
+    private static final int slotsTwice[] = { 15, 16, 17, 26, 35, 34, 33, 24, 15, 16, 17, 26, 35, 34, 33, 24, };
+
     void craftSwirl() {
         boolean anyAction = false;
         for (int n = 0; n < 8; n++) {
-            //1. find a stack with > 1 item in it
-            //2. find an empty slot
-            //3. move 1 item from former into latter
+            // 1. find a stack with > 1 item in it
+            // 2. find an empty slot
+            // 3. move 1 item from former into latter
             boolean any = false;
             for (int slotIndexIndex = 0; slotIndexIndex < slots.length; slotIndexIndex++) {
                 ItemStack is = playerInv.getStackInSlot(slots[slotIndexIndex]);
                 if (is == null || is.stackSize <= 1) {
                     continue;
                 }
-                for (int probidex = slotIndexIndex; probidex < slotsTwice.length && probidex < slotIndexIndex + slots.length; probidex++) {
+                for (int probidex = slotIndexIndex; probidex < slotsTwice.length
+                    && probidex < slotIndexIndex + slots.length; probidex++) {
                     ItemStack empty = playerInv.getStackInSlot(slotsTwice[probidex]);
                     if (empty != null) {
                         continue;
@@ -415,7 +413,7 @@ public class ContainerPocket extends Container {
             }
         }
         if (!anyAction) {
-            //Did nothing. Shift the items around.
+            // Did nothing. Shift the items around.
             ItemStack swapeh = playerInv.getStackInSlot(slots[slots.length - 1]);
             for (int i = 0; i < slots.length; i++) {
                 ItemStack here = playerInv.getStackInSlot(slotsTwice[i]);
@@ -426,9 +424,10 @@ public class ContainerPocket extends Container {
         }
         updateMatrix();
     }
-    
+
     void craftBalance() {
         class Accumulator {
+
             ItemStack toMatch;
             int stackCount = 0;
             ArrayList<Integer> matchingSlots = new ArrayList<Integer>(9);
@@ -510,7 +509,7 @@ public class ContainerPocket extends Container {
         playerInv.setInventorySlotContents(slot, ItemUtil.normalize(toMove));
         updateMatrix();
     }
-    
+
     @Override
     public ItemStack slotClick(int slotId, int clickedButton, int mode, EntityPlayer player) {
         // In a pocket crafting table, use 2 stacks of iron & 1 stick to make a sword.
@@ -518,11 +517,11 @@ public class ContainerPocket extends Container {
         // Fill the rest of your inventory up with cobble.
         // Put your mouse over the crafting result, and press 3 to lose your sword.
         // Since it gets put in the crafting area and then gets wiped out.
-        
+
         // So this is code to dance around that issue. There may be similar
         boolean bad_news = false;
         if (mode == 2 && clickedButton >= 0 && clickedButton < 9) {
-            Slot slot2 = (Slot)this.inventorySlots.get(slotId);
+            Slot slot2 = (Slot) this.inventorySlots.get(slotId);
             if (slot2.canTakeStack(player)) {
                 bad_news = true;
             }
@@ -535,15 +534,16 @@ public class ContainerPocket extends Container {
             return ret;
         }
         final InventoryPlayer realInventory = player.inventory;
-        
+
         try {
             player.inventory = new InventoryPlayer(player) {
+
                 {
                     for (Field field : InventoryPlayer.class.getFields()) {
                         field.set(this, field.get(realInventory));
                     }
                 }
-                
+
                 @Override
                 public int getFirstEmptyStack() {
                     foundCraftingSlot: for (int i = 0; i < mainInventory.length; ++i) {
@@ -568,7 +568,8 @@ public class ContainerPocket extends Container {
                 updateCraft();
             }
         }
-        // (Could we just verify the crafting recipe instead of this nosense? Might not actually be possible. But if it is, it'd be less terrible.)
-        
+        // (Could we just verify the crafting recipe instead of this nosense? Might not actually be possible. But if it
+        // is, it'd be less terrible.)
+
     }
 }

@@ -1,5 +1,7 @@
 package factorization.weird;
 
+import java.util.Locale;
+
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Slot;
 
@@ -10,9 +12,8 @@ import factorization.common.Command;
 import factorization.common.FzConfig;
 import factorization.shared.Core;
 
-import java.util.Locale;
-
 public class GuiPocketTable extends GuiContainer {
+
     public ContainerPocket containerPocket;
 
     public GuiPocketTable(ContainerPocket container) {
@@ -46,16 +47,24 @@ public class GuiPocketTable extends GuiContainer {
             char key = FzConfig.pocketActions.charAt(i);
             String msg = null;
             switch (i) {
-            case 0: msg = "Empty the crafting grid"; break;
-            case 1: msg = "Swirl items ↷"; break;
-            case 2: msg = "Balance items"; break;
-            case 3: msg = "Fill grid with item under cursor"; break;
+                case 0:
+                    msg = "Empty the crafting grid";
+                    break;
+                case 1:
+                    msg = "Swirl items ↷";
+                    break;
+                case 2:
+                    msg = "Balance items";
+                    break;
+                case 3:
+                    msg = "Fill grid with item under cursor";
+                    break;
             }
             if (msg == null) {
                 continue;
             }
             int d = 10;
-            int y = -d*FzConfig.pocketActions.length() + d*i;
+            int y = -d * FzConfig.pocketActions.length() + d * i;
             this.fontRendererObj.drawString(key + ": " + msg, 8, y, color);
         }
         // this.fontRenderer.drawString("123456789", 178, 10, 4210752);
@@ -68,7 +77,8 @@ public class GuiPocketTable extends GuiContainer {
             super.keyTyped(key, par2);
             return;
         }
-        char my_key = ("" + key).toLowerCase(Locale.ROOT).charAt(0);
+        char my_key = ("" + key).toLowerCase(Locale.ROOT)
+            .charAt(0);
         // 'x' clears items out of the way. Fill inv, then bag (and make slurp
         // sound). [XXX TODO -- Doing this server-friendly'd require a packet or
         // something]

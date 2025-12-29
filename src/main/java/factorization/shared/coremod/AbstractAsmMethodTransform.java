@@ -1,41 +1,45 @@
-package factorization.coremod;
+package factorization.shared.coremod;
 
-import cpw.mods.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
+import cpw.mods.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
+
 abstract class AbstractAsmMethodTransform {
+
     protected final String obfClassName;
     final String srgName;
     final String mcpName;
     boolean satisfied = false;
+
     AbstractAsmMethodTransform(String obfClassName, String srgClassName, String srgName, String mcpName) {
         this.obfClassName = obfClassName;
         this.srgName = srgName;
         this.mcpName = mcpName;
     }
-    
+
     boolean applies(MethodNode method) {
         if (LoadingPlugin.deobfuscatedEnvironment) {
             return method.name.equals(mcpName);
         } else {
-            String method_as_srg = FMLDeobfuscatingRemapper.INSTANCE.mapMethodName(obfClassName, method.name, method.desc);
+            String method_as_srg = FMLDeobfuscatingRemapper.INSTANCE
+                .mapMethodName(obfClassName, method.name, method.desc);
             return srgName.equals(method_as_srg);
         }
     }
-    
+
     abstract void apply(MethodNode base, MethodNode addition);
-    
+
     static boolean isReturn(int op) {
-        return op == Opcodes.IRETURN
-                || op == Opcodes.LRETURN
-                || op == Opcodes.FRETURN
-                || op == Opcodes.DRETURN
-                || op == Opcodes.ARETURN
-                || op == Opcodes.RETURN;
+        return op == Opcodes.IRETURN || op == Opcodes.LRETURN
+            || op == Opcodes.FRETURN
+            || op == Opcodes.DRETURN
+            || op == Opcodes.ARETURN
+            || op == Opcodes.RETURN;
     }
-    
+
     static class Append extends AbstractAsmMethodTransform {
+
         Append(String obfClassName, String srgClassName, String srgName, String mcpName) {
             super(obfClassName, srgClassName, srgName, mcpName);
         }
@@ -57,8 +61,9 @@ abstract class AbstractAsmMethodTransform {
             base.instructions.remove(base_end);
         }
     }
-    
+
     static class Prepend extends AbstractAsmMethodTransform {
+
         Prepend(String obfClassName, String srgClassName, String srgName, String mcpName) {
             super(obfClassName, srgClassName, srgName, mcpName);
         }
@@ -82,15 +87,17 @@ abstract class AbstractAsmMethodTransform {
             }
             base.instructions.insertBefore(head, addition.instructions);
         }
-        
+
     }
-    
+
     static class MutateCall extends AbstractAsmMethodTransform {
+
         MutateCall(String obfClassName, String srgClassName, String srgName, String mcpName) {
             super(obfClassName, srgClassName, srgName, mcpName);
         }
 
-        private String find_notch_owner, find_mcp_owner, find_mcp_name, find_mcp_descr, find_srg_name, find_notch_name, find_notch_desc, find_mcp_desc;
+        private String find_notch_owner, find_mcp_owner, find_mcp_name, find_mcp_descr, find_srg_name, find_notch_name,
+            find_notch_desc, find_mcp_desc;
 
         public MutateCall setOwner(String owner) {
             this.find_mcp_owner = owner.replace(".", "/");
@@ -114,7 +121,6 @@ abstract class AbstractAsmMethodTransform {
             return this;
         }
 
-
         @Override
         void apply(MethodNode base, MethodNode addition) {
             boolean any = false;
@@ -127,20 +133,26 @@ abstract class AbstractAsmMethodTransform {
                 MethodInsnNode meth = (MethodInsnNode) insn;
                 String name = meth.name;
                 if (!meth.desc.equals(find_mcp_desc) && !meth.desc.equals(find_notch_desc)) continue;
-                boolean match = (meth.owner.equals(find_notch_owner) || meth.owner.equals(find_mcp_owner)) && (name.equals(find_mcp_name) || name.equals(find_srg_name) || name.equals(find_notch_name));
+                boolean match = (meth.owner.equals(find_notch_owner) || meth.owner.equals(find_mcp_owner))
+                    && (name.equals(find_mcp_name) || name.equals(find_srg_name) || name.equals(find_notch_name));
                 if (!match) {
                     continue;
                 }
                 meth.setOpcode(Opcodes.INVOKESTATIC);
-                meth.owner = "factorization/coremod/MethodSplices";
+                meth.owner = "factorization/shared/coremod/MethodSplices";
                 meth.name = addition.name;
                 meth.desc = addition.desc;
                 any = true;
             }
             if (!any) {
-                throw new RuntimeException("Method mutation failed: did not find " + find_mcp_owner + "." + find_mcp_name + " / " + find_mcp_desc);
+                throw new RuntimeException(
+                    "Method mutation failed: did not find " + find_mcp_owner
+                        + "."
+                        + find_mcp_name
+                        + " / "
+                        + find_mcp_desc);
             }
         }
-        
+
     }
 }

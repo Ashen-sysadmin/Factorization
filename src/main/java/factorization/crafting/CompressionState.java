@@ -6,34 +6,36 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import factorization.shared.*;
-import factorization.util.CraftUtil;
-import factorization.util.InvUtil;
-import factorization.util.ItemUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Coord;
 import factorization.notify.Notice;
 import factorization.notify.Style;
-import factorization.util.InvUtil.FzInv;
+import factorization.shared.*;
 import factorization.shared.NetworkFactorization.MessageType;
+import factorization.util.CraftUtil;
+import factorization.util.InvUtil;
+import factorization.util.InvUtil.FzInv;
+import factorization.util.ItemUtil;
 import factorization.weird.TileEntityDayBarrel;
 
 public class CompressionState {
+
     static int MAX_CRAFT = 32;
-    
+
     TileEntityCompressionCrafter start, root, otherEdge;
     ForgeDirection up, right, otherEdgeRight;
     CellInfo[] cells = new CellInfo[9];
-    HashSet<TileEntityCompressionCrafter> foundWalls = new HashSet(3*4);
+    HashSet<TileEntityCompressionCrafter> foundWalls = new HashSet(3 * 4);
     int height, width;
     EntityPlayer player;
-    
+
     boolean errored;
-    
-    //Clears the fields
+
+    // Clears the fields
     void reset() {
         start = root = otherEdge = null;
         up = right = ForgeDirection.UNKNOWN;
@@ -44,41 +46,42 @@ public class CompressionState {
         pair_height = -2;
         player = null;
     }
-    
+
     void error(TileEntityCompressionCrafter at, String msg, String... args) {
         if (errored) return;
-        new Notice(at, msg, args).withStyle(Style.FORCE).send(player);
+        new Notice(at, msg, args).withStyle(Style.FORCE)
+            .send(player);
         errored = true;
     }
-    
-    //Return true if the passed in CompACT is valid
+
+    // Return true if the passed in CompACT is valid
     boolean populateState(TileEntityCompressionCrafter cc) {
         /*
-         * Later I've realized that there's probably a simpler algorithm. This guy here is probably simpler. (Not completely described.)
-         * 
+         * Later I've realized that there's probably a simpler algorithm. This guy here is probably simpler. (Not
+         * completely described.)
          * get_clockwise_direction: TECC -> (direction, direction)
-         * 		Returns the two directions that could be 'clockwise' for the TECC.
-         * 		lower coords of the other-axiis is not correct. Might lookup in an array, or a rotation might be cool.
-         *  find_root: TECC -> (clockwise_direction, root_TECC)
-         *  	Similar to before
-         *  get_length: ICoord -> expected_face -> clockwise_direction -> int
-         *  	counts how many TECC are in direction; returns -1 if count is >3, or if there's one facing the wrong way, or...
-         *  	populate the hashset as we check each one
-         *  	make sure each faces expected_face
-         *  
-         *  root, right = find_root here
-         *  width = get_length root root.facing right
-         *  assert width > 0
-         *  height = get_length (root + right*width + facing) right.getOpposite root.facing
-         *  assert height > 0
-         *  width2 = get_length (root + right*(width - 1) + facing*height) root.facing.getOpposite right.getOpposite
-         *  assert width == width2
-         *  height2 = get_length (root + right.getOpposite + facing*height) right root.facing.getOpposite
-         *  assert height == height2
+         * Returns the two directions that could be 'clockwise' for the TECC.
+         * lower coords of the other-axiis is not correct. Might lookup in an array, or a rotation might be cool.
+         * find_root: TECC -> (clockwise_direction, root_TECC)
+         * Similar to before
+         * get_length: ICoord -> expected_face -> clockwise_direction -> int
+         * counts how many TECC are in direction; returns -1 if count is >3, or if there's one facing the wrong way,
+         * or...
+         * populate the hashset as we check each one
+         * make sure each faces expected_face
+         * root, right = find_root here
+         * width = get_length root root.facing right
+         * assert width > 0
+         * height = get_length (root + right*width + facing) right.getOpposite root.facing
+         * assert height > 0
+         * width2 = get_length (root + right*(width - 1) + facing*height) root.facing.getOpposite right.getOpposite
+         * assert width == width2
+         * height2 = get_length (root + right.getOpposite + facing*height) right root.facing.getOpposite
+         * assert height == height2
          */
         start = cc;
         up = cc.getFacing();
-        
+
         if (up == ForgeDirection.UNKNOWN) {
             error(cc, "Broken direction");
             return false;
@@ -113,17 +116,19 @@ public class CompressionState {
             error(root, "Missing compression crafters");
             return false;
         }
-        
+
         FzInv[] inv = cc.getAdjacentInventories();
         if (inv[0] == null) {
             return false;
         }
-        
+
         getCells();
         return true;
     }
-    
-    private static ForgeDirection[] forgeDirections = new ForgeDirection[] { ForgeDirection.DOWN, ForgeDirection.NORTH, ForgeDirection.WEST };
+
+    private static ForgeDirection[] forgeDirections = new ForgeDirection[] { ForgeDirection.DOWN, ForgeDirection.NORTH,
+        ForgeDirection.WEST };
+
     private static TileEntityCompressionCrafter findEdgeRoot(TileEntityCompressionCrafter at) {
         final ForgeDirection cd = at.getFacing();
         TileEntityCompressionCrafter first = at;
@@ -147,10 +152,9 @@ public class CompressionState {
         }
         return first;
     }
-    
 
     private ForgeDirection getRightDirection() {
-        //"The right chest is obviously the right one" -- etho, badly quoted.
+        // "The right chest is obviously the right one" -- etho, badly quoted.
         Coord here = root.getCoord();
         ForgeDirection[] validDirections = ForgeDirection.VALID_DIRECTIONS;
         for (int i = 0; i < validDirections.length; i++) {
@@ -158,7 +162,8 @@ public class CompressionState {
             if (dir == up || dir == up.getOpposite()) {
                 continue;
             }
-            TileEntityCompressionCrafter cc = here.add(dir).getTE(TileEntityCompressionCrafter.class);
+            TileEntityCompressionCrafter cc = here.add(dir)
+                .getTE(TileEntityCompressionCrafter.class);
             if (cc != null && cc.getFacing() == up) {
                 return dir;
             } else if (cc != null) {
@@ -166,21 +171,23 @@ public class CompressionState {
                 return ForgeDirection.UNKNOWN;
             }
         }
-        //Could be 1xn.
+        // Could be 1xn.
         Coord front = here.add(up);
         for (int i = 0; i < validDirections.length; i++) {
             ForgeDirection dir = validDirections[i];
             if (dir == up || dir == up.getOpposite()) {
                 continue;
             }
-            TileEntityCompressionCrafter cc = front.add(dir).getTE(TileEntityCompressionCrafter.class);
-            if (cc != null && cc.getFacing().getOpposite() == dir) {
+            TileEntityCompressionCrafter cc = front.add(dir)
+                .getTE(TileEntityCompressionCrafter.class);
+            if (cc != null && cc.getFacing()
+                .getOpposite() == dir) {
                 return dir;
             }
         }
         return ForgeDirection.UNKNOWN;
     }
-    
+
     private int pickSize() {
         double f = Math.random();
         if (f > 0.5) {
@@ -191,7 +198,7 @@ public class CompressionState {
         }
         return 1;
     }
-    
+
     void showTutorial(EntityPlayer player, TileEntityCompressionCrafter cc) {
         reset();
         this.player = player;
@@ -200,12 +207,12 @@ public class CompressionState {
         showExample();
         reset();
     }
-    
+
     private void showExample() {
         Notice.clear(player);
         int width = pickSize(), height = pickSize();
         ForgeDirection r = ForgeDirection.WEST;
-        if (up.offsetX*r.offsetX != 0) {
+        if (up.offsetX * r.offsetX != 0) {
             r = ForgeDirection.NORTH;
         }
         Coord c = root.getCoord();
@@ -229,18 +236,20 @@ public class CompressionState {
             mark(d);
             d.adjust(up);
         }
-        
+
         errored = false;
-        error(root, "Place as marked for %sx%s crafting grid\nThen give a redstone signal", ""+width, ""+height);
+        error(root, "Place as marked for %sx%s crafting grid\nThen give a redstone signal", "" + width, "" + height);
     }
-    
+
     void mark(Coord c) {
         if (c.getTE(TileEntityCompressionCrafter.class) != null) {
             return;
         }
-        new Notice(c, "").withItem(Core.registry.compression_crafter_item).withStyle(Style.FORCE, Style.EXACTPOSITION, Style.DRAWITEM, Style.DRAWFAR).send(player);
+        new Notice(c, "").withItem(Core.registry.compression_crafter_item)
+            .withStyle(Style.FORCE, Style.EXACTPOSITION, Style.DRAWITEM, Style.DRAWFAR)
+            .send(player);
     }
-    
+
     private TileEntityCompressionCrafter getOtherSideRoot() {
         Coord c = root.getCoord();
         c.adjust(right.getOpposite());
@@ -257,28 +266,31 @@ public class CompressionState {
         }
         return newRoot;
     }
-    
+
     private void getCells() {
         Coord corner = root.getCoord();
         corner.adjust(up);
         ForgeDirection out = right.getRotation(up);
         for (int dx = 0; dx < width; dx++) {
             for (int dy = 0; dy < height; dy++) {
-                Coord c = corner.add(dx*right.offsetX + dy*up.offsetX, dx*right.offsetY + dy*up.offsetY, dx*right.offsetZ + dy*up.offsetZ);
+                Coord c = corner.add(
+                    dx * right.offsetX + dy * up.offsetX,
+                    dx * right.offsetY + dy * up.offsetY,
+                    dx * right.offsetZ + dy * up.offsetZ);
                 cells[cellIndex(dx, dy)] = new CellInfo(c, out);
             }
         }
     }
-    
 
     static class CellInfo {
+
         static final int BARREL = 0, BREAK = 1, SMACKED = 2, PICKED = 3, length = 4;
-        //TODO: Crafting with liquids would be rad
-        
+        // TODO: Crafting with liquids would be rad
+
         final Coord cell;
         ItemStack[] items = new ItemStack[length];
         boolean airBlock = true;
-        
+
         public CellInfo(Coord cell, ForgeDirection top) {
             this.cell = cell;
             if (cell.isAir() || cell.getHardness() < 0) {
@@ -295,7 +307,7 @@ public class CompressionState {
                 b.stackSize = Math.min(b.stackSize, b.getMaxStackSize());
                 items[BARREL] = b;
                 airBlock = false;
-                //Barrel blocks can't be used to craft, even if they're empty.
+                // Barrel blocks can't be used to craft, even if they're empty.
                 return;
             }
             items[PICKED] = cell.getPickBlock(top);
@@ -309,39 +321,41 @@ public class CompressionState {
             }
             airBlock = items[PICKED] == null && items[BREAK] == null && items[SMACKED] == null;
         }
-        
+
         private static final ArrayList<ItemStack> empty = new ArrayList<ItemStack>();
+
         List<ItemStack> consume(int mode, int amount) {
             ItemStack leftOvers = items[mode];
             if (leftOvers == null) {
                 return empty;
             }
             switch (mode) {
-            case PICKED:
-                cell.setAir();
-                break;
-            case BREAK:
-                leftOvers.stackSize--;
-                cell.setAir();
-                break;
-            case BARREL:
-                //leftOvers.stackSize = 0;
-                cell.getTE(TileEntityDayBarrel.class).changeItemCount(-amount);
-                break;
-            case SMACKED:
-                List<ItemStack> craftRes = CraftUtil.craft1x1(null, true, items[BREAK]);
-                for (Iterator<ItemStack> it = craftRes.iterator(); it.hasNext();) {
-                    ItemStack is = it.next();
-                    if (ItemUtil.couldMerge(is, leftOvers)) {
-                        is.stackSize = leftOvers.stackSize;
-                        if (is.stackSize <= 0) {
-                            it.remove();
+                case PICKED:
+                    cell.setAir();
+                    break;
+                case BREAK:
+                    leftOvers.stackSize--;
+                    cell.setAir();
+                    break;
+                case BARREL:
+                    // leftOvers.stackSize = 0;
+                    cell.getTE(TileEntityDayBarrel.class)
+                        .changeItemCount(-amount);
+                    break;
+                case SMACKED:
+                    List<ItemStack> craftRes = CraftUtil.craft1x1(null, true, items[BREAK]);
+                    for (Iterator<ItemStack> it = craftRes.iterator(); it.hasNext();) {
+                        ItemStack is = it.next();
+                        if (ItemUtil.couldMerge(is, leftOvers)) {
+                            is.stackSize = leftOvers.stackSize;
+                            if (is.stackSize <= 0) {
+                                it.remove();
+                            }
+                            break;
                         }
-                        break;
                     }
-                }
-                cell.setAir();
-                return craftRes;
+                    cell.setAir();
+                    return craftRes;
             }
             List<ItemStack> ret = new ArrayList(1);
             leftOvers = ItemUtil.normalize(leftOvers);
@@ -350,7 +364,7 @@ public class CompressionState {
             }
             return ret;
         }
-        
+
         int getBestMode(int lastModeAllowed) {
             int last_valid = lastModeAllowed;
             for (int i = 0; i <= lastModeAllowed; i++) {
@@ -367,21 +381,17 @@ public class CompressionState {
             }
         }
     }
-    
-    
-    private static final int[][] cellIndices = new int[][] {
-        {0, 1, 2},
-        {3, 4, 5},
-        {6, 7, 8}
-    };
-    
+
+    private static final int[][] cellIndices = new int[][] { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 } };
+
     private static int cellIndex(int x, int y) {
         return cellIndices[2 - y][x];
     }
-    
-    
+
     int pair_height = 0;
-    int checkPairs(HashSet<TileEntityCompressionCrafter> walls, TileEntityCompressionCrafter local_root, final ForgeDirection up, final ForgeDirection right) {
+
+    int checkPairs(HashSet<TileEntityCompressionCrafter> walls, TileEntityCompressionCrafter local_root,
+        final ForgeDirection up, final ForgeDirection right) {
         int distance = getPairDistance(walls, local_root);
         if (distance <= 0) {
             return -1;
@@ -392,7 +402,7 @@ public class CompressionState {
             TileEntityCompressionCrafter other = here.getTE(TileEntityCompressionCrafter.class);
             pair_height = i + 1;
             if (other == null) {
-                break; //short frame
+                break; // short frame
             }
             if (other.getFacing() != up) {
                 error(other, "Inconsistent direction");
@@ -405,7 +415,7 @@ public class CompressionState {
         }
         return distance;
     }
-    
+
     static boolean isFrame(Coord c) {
         return c.getTE(TileEntityCompressionCrafter.class) != null;
     }
@@ -422,7 +432,8 @@ public class CompressionState {
             here.adjust(cd);
             TileEntityCompressionCrafter cc = here.getTE(TileEntityCompressionCrafter.class);
             if (cc != null) {
-                if (cc.getFacing().getOpposite() != cd) {
+                if (cc.getFacing()
+                    .getOpposite() != cd) {
                     error(cc, "Facing the wrong way");
                     return -1;
                 }
@@ -435,19 +446,16 @@ public class CompressionState {
                 return i;
             }
         }
-        if (start.getCoord().add(start.getFacing()).getTE(TileEntityCompressionCrafter.class) != null) {
+        if (start.getCoord()
+            .add(start.getFacing())
+            .getTE(TileEntityCompressionCrafter.class) != null) {
             error(start, "Must be 1-3 blocks away from\nthe other Compression Crafter");
             return -1;
         }
         error(start, "Not facing another Compression Crafter");
         return -1;
     }
-    
-    
-    
-    
-    
-    
+
     public void craft(boolean fake, TileEntityCompressionCrafter start) {
         reset();
         if (!populateState(start)) {
@@ -456,10 +464,9 @@ public class CompressionState {
         do_craft(fake);
         reset();
     }
-    
-    
 
     ItemStack[] craftingGrid = new ItemStack[9];
+
     /** return true if something is/canbe crafted */
     private boolean do_craft(boolean fake) {
         Arrays.fill(craftingGrid, null);
@@ -503,18 +510,18 @@ public class CompressionState {
                 } else {
                     maxCraft = Math.min(maxCraft, is.stackSize);
                 }
-                
+
             }
             if (!any) {
                 continue iteratePermutations;
             }
-            
+
             CraftUtil.craft3x3(root, true, true, craftingGrid);
             if (!CraftUtil.craft_succeeded) {
                 continue iteratePermutations;
             }
-            
-            ArrayList<ItemStack> total = new ArrayList(maxCraft+4);
+
+            ArrayList<ItemStack> total = new ArrayList(maxCraft + 4);
             int items_used = 0;
             for (int craftCount = 0; craftCount < maxCraft; craftCount++) {
                 if (craftCount == 0) {
@@ -526,10 +533,11 @@ public class CompressionState {
                         ci.updateBarrelExtraction(maxCraft);
                     }
                 }
-                List<ItemStack> result = CraftUtil.craft3x3(root, fake, !fake && craftCount != maxCraft - 1, craftingGrid);
+                List<ItemStack> result = CraftUtil
+                    .craft3x3(root, fake, !fake && craftCount != maxCraft - 1, craftingGrid);
                 if (!CraftUtil.craft_succeeded) {
                     if (craftCount == 0) {
-                        continue iteratePermutations; //This won't usually happen except for very strange recipes
+                        continue iteratePermutations; // This won't usually happen except for very strange recipes
                     } else {
                         break;
                     }
@@ -538,16 +546,17 @@ public class CompressionState {
                     if (containerItem[i]) {
                         ItemStack got = craftingGrid[i];
                         if (got != null) {
-                            craftingGrid[i] = got.getItem().getContainerItem(got);
+                            craftingGrid[i] = got.getItem()
+                                .getContainerItem(got);
                         }
                     }
                 }
-                
+
                 if (fake) {
                     spreadCraftingAction();
                     return true;
                 }
-                
+
                 items_used++;
                 total.addAll(result);
             }
@@ -563,14 +572,13 @@ public class CompressionState {
         }
         return false;
     }
-    
-    
+
     void spreadCraftingAction() {
         for (TileEntityCompressionCrafter cc : foundWalls) {
             cc.informClient();
         }
         int minX, minY, minZ, maxX, maxY, maxZ;
-        minX = minY = minZ = maxX = maxY = maxZ = 0; //shadup
+        minX = minY = minZ = maxX = maxY = maxZ = 0; // shadup
         boolean first = true;
         for (int i = 0; i < cells.length; i++) {
             CellInfo ci = cells[i];
@@ -593,8 +601,16 @@ public class CompressionState {
             maxZ = Math.max(c.z, maxZ);
         }
         ForgeDirection axis = right.getRotation(up);
-        start.broadcastMessage(null, MessageType.CompressionCrafterBounds, minX, minY, minZ, maxX, maxY, maxZ, (byte) axis.ordinal());
+        start.broadcastMessage(
+            null,
+            MessageType.CompressionCrafterBounds,
+            minX,
+            minY,
+            minZ,
+            maxX,
+            maxY,
+            maxZ,
+            (byte) axis.ordinal());
     }
-    
-    
+
 }

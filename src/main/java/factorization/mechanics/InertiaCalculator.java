@@ -1,13 +1,15 @@
 package factorization.mechanics;
 
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.Vec3;
+
 import factorization.api.Coord;
 import factorization.api.ICoordFunction;
 import factorization.fzds.interfaces.IDeltaChunk;
 import factorization.util.SpaceUtil;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.Vec3;
 
 class InertiaCalculator extends MassCalculator implements ICoordFunction {
+
     static double getInertia(IDeltaChunk idc, Vec3 axisOfRotation) {
         NBTTagCompound tag = idc.getEntityData();
         if (axisNotUpdated(tag, axisOfRotation) && tag.hasKey(inertiaKey)) return tag.getDouble(inertiaKey);

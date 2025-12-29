@@ -2,23 +2,25 @@ package factorization.charge;
 
 import java.io.IOException;
 
-import factorization.api.datahelpers.DataHelper;
-import factorization.api.datahelpers.Share;
-import factorization.shared.*;
-import factorization.util.ItemUtil;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import factorization.api.Charge;
 import factorization.api.IChargeConductor;
+import factorization.api.datahelpers.DataHelper;
+import factorization.api.datahelpers.Share;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
+import factorization.shared.*;
 import factorization.shared.NetworkFactorization.MessageType;
+import factorization.util.ItemUtil;
+import io.netty.buffer.ByteBuf;
 
 public class TileEntityBattery extends TileEntityCommon implements IChargeConductor {
+
     Charge charge = new Charge(this);
     int storage = 0;
     static final int max_storage = 6400;
@@ -32,13 +34,16 @@ public class TileEntityBattery extends TileEntityCommon implements IChargeConduc
     public Charge getCharge() {
         return charge;
     }
-    
+
     @Override
     public IIcon getIcon(ForgeDirection dir) {
         switch (dir) {
-        case UP: return BlockIcons.battery_top;
-        case DOWN: return BlockIcons.battery_bottom;
-        default: return BlockIcons.battery_side;
+            case UP:
+                return BlockIcons.battery_top;
+            case DOWN:
+                return BlockIcons.battery_bottom;
+            default:
+                return BlockIcons.battery_side;
         }
     }
 
@@ -59,7 +64,8 @@ public class TileEntityBattery extends TileEntityCommon implements IChargeConduc
     @Override
     public void putData(DataHelper data) throws IOException {
         charge.serialize("", data);
-        storage = data.as(Share.VISIBLE, "storage").putInt(storage);
+        storage = data.as(Share.VISIBLE, "storage")
+            .putInt(storage);
     }
 
     public static float getFullness(int value) {
@@ -76,21 +82,21 @@ public class TileEntityBattery extends TileEntityCommon implements IChargeConduc
             return;
         }
         charge.update();
-        //if (getCoord().seed() + worldObj.getTotalWorldTime() % 10 != 0) {
-        //	return;
-        //}
+        // if (getCoord().seed() + worldObj.getTotalWorldTime() % 10 != 0) {
+        // return;
+        // }
         int val = getCharge().getValue();
         int store_delta = 0;
         int charge_delta = 0;
         if (val < 20) {
-            //dump a bit out
+            // dump a bit out
             charge_delta = Math.min(20, storage);
             store_delta = -charge_delta;
         } else if (val > 30) {
-            //pull it all in!
+            // pull it all in!
             charge_delta = -val;
             int free = max_storage - storage;
-            store_delta = Math.min(val*2/3, free);
+            store_delta = Math.min(val * 2 / 3, free);
         }
         int tier = storage * 32 / max_storage;
         if (store_delta != 0) {
@@ -140,9 +146,9 @@ public class TileEntityBattery extends TileEntityCommon implements IChargeConduc
         Core.registry.battery.normalizeDamage(is);
         return is;
     }
-    
+
     @Override
     public int getComparatorValue(ForgeDirection side) {
-        return (int) (getFullness()*0xF);
+        return (int) (getFullness() * 0xF);
     }
 }

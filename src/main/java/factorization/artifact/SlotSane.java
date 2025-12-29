@@ -5,7 +5,9 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
 public class SlotSane extends Slot {
+
     int mojangSlotIndex;
+
     public SlotSane(IInventory inv, int slotIndex, int x, int y) {
         super(inv, slotIndex, x, y);
         mojangSlotIndex = slotIndex;

@@ -4,7 +4,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class DseRayTarget extends Entity {
-    //This is used on the client side to give the player something to smack
+
+    // This is used on the client side to give the player something to smack
     DimensionSliceEntity parent;
 
     public DseRayTarget(DimensionSliceEntity parent) {
@@ -13,14 +14,14 @@ public class DseRayTarget extends Entity {
     }
 
     @Override
-    protected void entityInit() { }
+    protected void entityInit() {}
 
     @Override
-    protected void readEntityFromNBT(NBTTagCompound var1) { }
+    protected void readEntityFromNBT(NBTTagCompound var1) {}
 
     @Override
-    protected void writeEntityToNBT(NBTTagCompound var1) { }
-    
+    protected void writeEntityToNBT(NBTTagCompound var1) {}
+
     @Override
     public boolean canBeCollidedWith() {
         return true;

@@ -1,11 +1,13 @@
 package factorization.mechanics;
 
-import factorization.api.Coord;
-import factorization.util.SpaceUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.util.AxisAlignedBB;
 
+import factorization.api.Coord;
+import factorization.util.SpaceUtil;
+
 public class MassHelper {
+
     public static boolean CONSIDER_VOLUME = true;
 
     public static double getBlockMass(Coord at) {
@@ -18,7 +20,8 @@ public class MassHelper {
     }
 
     public static double getMaterialDensity(Coord at) {
-        Material mat = at.getBlock().getMaterial();
+        Material mat = at.getBlock()
+            .getMaterial();
         if (mat == Material.air) {
             return 0.0;
         }

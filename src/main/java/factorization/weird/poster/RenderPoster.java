@@ -12,6 +12,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -36,7 +37,8 @@ public class RenderPoster extends RenderEntity {
         }
         GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
         GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-        GL11.glEnable(GL11.GL_ALPHA_TEST); // This should always be enabled; some other mod's derping things up tho; we can leave it on
+        GL11.glEnable(GL11.GL_ALPHA_TEST); // This should always be enabled; some other mod's derping things up tho; we
+                                           // can leave it on
         GL11.glDisable(GL11.GL_BLEND); // seems to fix that 'no alpha' issue I was having?
         poster.rot.glRotate();
         double s = poster.scale;
@@ -69,7 +71,7 @@ public class RenderPoster extends RenderEntity {
                 needRotationFix = false;
             }
         }
-        GL11.glTranslatef(0, 0, 0.5F/16F);
+        GL11.glTranslatef(0, 0, 0.5F / 16F);
         if (needRotationFix) {
             float scale = 10.5F / 16F;
             GL11.glScalef(scale, scale, scale);
@@ -80,16 +82,19 @@ public class RenderPoster extends RenderEntity {
             GL11.glRotatef(-50.0F, 0.0F, 1.0F, 0.0F);
         }
 
-        int itemColor = is.getItem().getColorFromItemStack(is, 0);
-        float cr = (float)(itemColor >> 16 & 255) / 255.0F;
-        float cg = (float)(itemColor >> 8 & 255) / 255.0F;
-        float cb = (float)(itemColor & 255) / 255.0F;
+        int itemColor = is.getItem()
+            .getColorFromItemStack(is, 0);
+        float cr = (float) (itemColor >> 16 & 255) / 255.0F;
+        float cg = (float) (itemColor >> 8 & 255) / 255.0F;
+        float cb = (float) (itemColor & 255) / 255.0F;
         GL11.glColor4f(cr, cg, cb, 1.0F);
 
         this.renderManager.itemRenderer.renderItem(dummy_entity, is, 0);
 
-        if (is.getItem().requiresMultipleRenderPasses()) {
-            for (int x = 1; x < is.getItem().getRenderPasses(is.getItemDamage()); x++) {
+        if (is.getItem()
+            .requiresMultipleRenderPasses()) {
+            for (int x = 1; x < is.getItem()
+                .getRenderPasses(is.getItemDamage()); x++) {
                 this.renderManager.itemRenderer.renderItem(dummy_entity, is, x);
             }
         }

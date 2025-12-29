@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
 
-import factorization.util.FzUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -14,8 +13,8 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.SidedProxy;
@@ -27,46 +26,49 @@ import cpw.mods.fml.common.gameevent.TickEvent.ServerTickEvent;
 import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import cpw.mods.fml.relauncher.Side;
+import factorization.util.FzUtil;
 
-@Mod(
-        modid = NotifyImplementation.modId,
-        name = NotifyImplementation.name,
-        version = NotifyImplementation.version
-)
+@Mod(modid = NotifyImplementation.modId, name = NotifyImplementation.name, version = NotifyImplementation.version)
 public class NotifyImplementation {
+
     public static final String modId = "factorization.notify";
     public static final String name = "Factorization Notification System";
     public static final String version = "1.0";
-    
-    @SidedProxy(clientSide = "factorization.notify.RenderMessages", serverSide = "factorization.notify.RenderMessagesProxy")
+
+    @SidedProxy(
+        clientSide = "factorization.notify.RenderMessages",
+        serverSide = "factorization.notify.RenderMessagesProxy")
     public static RenderMessagesProxy proxy;
     public static NotifyNetwork net = new NotifyNetwork();
-    
+
     public static NotifyImplementation instance;
-    
+
     {
         NotifyImplementation.instance = this;
         loadBus(this);
         PointNetworkHandler.INSTANCE.initialize();
     }
-    
+
     static void loadBus(Object obj) {
         // A copy of Core.loadBus(), for the sake of independence.
-        FMLCommonHandler.instance().bus().register(obj);
+        FMLCommonHandler.instance()
+            .bus()
+            .register(obj);
         MinecraftForge.EVENT_BUS.register(obj);
     }
-    
+
     @EventHandler
     public void setParent(FMLPreInitializationEvent event) {
         FzUtil.setCoreParent(event);
     }
-    
+
     @EventHandler
     public void registerServerCommands(FMLServerStartingEvent event) {
         event.registerServerCommand(new MutterCommand());
     }
-    
-    void doSend(EntityPlayer player, Object where, World world, EnumSet<Style> style, ItemStack item, String format, String[] args) {
+
+    void doSend(EntityPlayer player, Object where, World world, EnumSet<Style> style, ItemStack item, String format,
+        String[] args) {
         if (where == null) {
             return;
         }
@@ -74,7 +76,8 @@ public class NotifyImplementation {
             return;
         }
         format = styleMessage(style, format);
-        if ((player != null && player.worldObj.isRemote) || FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+        if ((player != null && player.worldObj.isRemote) || FMLCommonHandler.instance()
+            .getEffectiveSide() == Side.CLIENT) {
             proxy.addMessage(where, item, format, args);
         } else {
             TargetPoint target = null;
@@ -109,7 +112,8 @@ public class NotifyImplementation {
                     failed = true;
                 }
                 if (world != null && !failed) {
-                    int dimension = world.getWorldInfo().getVanillaDimension();
+                    int dimension = world.getWorldInfo()
+                        .getVanillaDimension();
                     target = new TargetPoint(dimension, x, y, z, range);
                 }
             }
@@ -118,14 +122,14 @@ public class NotifyImplementation {
             NotifyNetwork.broadcast(packet, player, target);
         }
     }
-    
+
     public static void recieve(EntityPlayer player, Object where, ItemStack item, String styledFormat, String[] args) {
         if (where == null) {
             return;
         }
         proxy.addMessage(where, item, styledFormat, args);
     }
-    
+
     String styleMessage(EnumSet<Style> style, String format) {
         if (style == null) {
             return "\n" + format;
@@ -138,7 +142,7 @@ public class NotifyImplementation {
         }
         return prefix + "\n" + format;
     }
-    
+
     static EnumSet<Style> loadStyle(String firstLine) {
         EnumSet<Style> ret = EnumSet.noneOf(Style.class);
         for (String s : firstLine.split(" ")) {
@@ -148,9 +152,9 @@ public class NotifyImplementation {
         }
         return ret;
     }
-    
+
     private static ArrayList<Notice> recuring_notifications = new ArrayList();
-    
+
     @SubscribeEvent
     public void updateRecuringNotifications(ServerTickEvent event) {
         if (event.phase != Phase.END) return;
@@ -164,20 +168,21 @@ public class NotifyImplementation {
             }
         }
     }
-    
+
     void addRecuringNotification(Notice newRN) {
         synchronized (recuring_notifications) {
             Iterator<Notice> iterator = recuring_notifications.iterator();
             while (iterator.hasNext()) {
                 Notice rn = iterator.next();
-                if (rn.where.equals(newRN.where) && (newRN.targetPlayer == null || newRN.targetPlayer == rn.targetPlayer)) {
+                if (rn.where.equals(newRN.where)
+                    && (newRN.targetPlayer == null || newRN.targetPlayer == rn.targetPlayer)) {
                     iterator.remove();
                 }
             }
             recuring_notifications.add(newRN);
         }
     }
-    
+
     void doSendOnscreenMessage(EntityPlayer player, String message, String[] formatArgs) {
         if (player.worldObj.isRemote) {
             proxy.onscreen(message, formatArgs);
@@ -186,7 +191,7 @@ public class NotifyImplementation {
             NotifyNetwork.broadcast(packet, player, null);
         }
     }
-    
+
     void sendReplacableChatMessage(EntityPlayer player, IChatComponent msg, int msgKey) {
         if (player.worldObj.isRemote) {
             proxy.replaceable(msg, msgKey);

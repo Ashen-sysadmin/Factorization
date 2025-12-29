@@ -17,7 +17,7 @@ public class BlockRenderHeater extends FactorizationBlockRender {
         if (!world_mode || !FzConfig.renderTEs) {
             float c = 0.1F;
             GL11.glColor4f(c, c, c, 1F);
-            //Tessellator.instance.setColorOpaque_F(c, c, c);
+            // Tessellator.instance.setColorOpaque_F(c, c, c);
             renderPart(rb, BlockIcons.heater_heat, d, d, d, 1 - d, 1 - d, 1 - d);
             GL11.glColor4f(1, 1, 1, 1);
         }

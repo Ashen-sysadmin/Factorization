@@ -1,12 +1,7 @@
 package factorization.beauty;
 
-import factorization.algos.FastBag;
-import factorization.api.Coord;
-import factorization.api.ICoordFunction;
-import factorization.shared.Core;
-import factorization.util.DataUtil;
-import factorization.util.ItemUtil;
-import factorization.util.PlayerUtil;
+import java.util.HashSet;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.enchantment.Enchantment;
@@ -23,9 +18,16 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.NoiseGeneratorOctaves;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.util.HashSet;
+import factorization.algos.FastBag;
+import factorization.api.Coord;
+import factorization.api.ICoordFunction;
+import factorization.shared.Core;
+import factorization.util.DataUtil;
+import factorization.util.ItemUtil;
+import factorization.util.PlayerUtil;
 
 public class EntityLeafBomb extends EntityThrowable {
+
     ItemStack stack, origStack;
 
     public EntityLeafBomb(World world) {
@@ -110,6 +112,7 @@ public class EntityLeafBomb extends EntityThrowable {
     int dim;
     double[] noise;
     Coord start, end;
+
     private void initNoise(Coord at) {
         dim = 32;
         int half = dim / 2;
@@ -118,10 +121,8 @@ public class EntityLeafBomb extends EntityThrowable {
         int octaves = 3;
         octaves -= Math.log10(stack.stackSize / 5);
         if (octaves < 1) octaves = 1;
-        noise = new NoiseGeneratorOctaves(rand, octaves).generateNoiseOctaves(null,
-                start.x, start.y, start.z,
-                dim, dim, dim,
-                end.x, end.y, end.z);
+        noise = new NoiseGeneratorOctaves(rand, octaves)
+            .generateNoiseOctaves(null, start.x, start.y, start.z, dim, dim, dim, end.x, end.y, end.z);
     }
 
     double sample(Coord at) {
@@ -160,6 +161,7 @@ public class EntityLeafBomb extends EntityThrowable {
             Coord.sort(at, max);
         }
         Coord.iterateCube(min, max, new ICoordFunction() {
+
             @Override
             public void handle(Coord here) {
                 if (!here.isReplacable()) return;
@@ -169,11 +171,12 @@ public class EntityLeafBomb extends EntityThrowable {
                         accounted++;
                     } else if (n.isNormalCube()) {
                         accounted++;
-                    } else if (n.getBlock().getMaterial() == Material.leaves) {
-                        accounted++;
-                    } else {
-                        return;
-                    }
+                    } else if (n.getBlock()
+                        .getMaterial() == Material.leaves) {
+                            accounted++;
+                        } else {
+                            return;
+                        }
                 }
                 if (accounted == 6) {
                     stack.stackSize++;
@@ -191,7 +194,8 @@ public class EntityLeafBomb extends EntityThrowable {
             }
         } else {
             for (Coord n : at.getNeighborsAdjacent()) {
-                if (n.getBlock().getMaterial() == Material.leaves) return true;
+                if (n.getBlock()
+                    .getMaterial() == Material.leaves) return true;
             }
         }
         return false;

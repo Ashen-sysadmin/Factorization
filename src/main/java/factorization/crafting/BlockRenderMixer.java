@@ -1,8 +1,9 @@
 package factorization.crafting;
 
+import net.minecraft.client.renderer.RenderBlocks;
+
 import org.lwjgl.opengl.GL11;
 
-import net.minecraft.client.renderer.RenderBlocks;
 import factorization.common.BlockIcons;
 import factorization.common.FactoryType;
 import factorization.shared.FactorizationBlockRender;

@@ -1,9 +1,5 @@
 package factorization.citizen;
 
-import factorization.api.Quaternion;
-import factorization.fzds.interfaces.Interpolation;
-import factorization.shared.NetworkFactorization;
-import factorization.shared.ObjectModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderEntity;
 import net.minecraft.client.renderer.entity.RenderItem;
@@ -14,9 +10,16 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.opengl.GL11;
 
+import factorization.api.Quaternion;
+import factorization.fzds.interfaces.Interpolation;
+import factorization.shared.NetworkFactorization;
+import factorization.shared.ObjectModel;
+
 public class RenderCitizen extends RenderEntity {
+
     private EntityLiving dummy_entity = new EntityEnderman(null);
 
     @Override
@@ -24,8 +27,9 @@ public class RenderCitizen extends RenderEntity {
         EntityCitizen citizen = (EntityCitizen) ent;
         if (!citizen.visible) return;
 
-
-        Minecraft.getMinecraft().getTextureManager().bindTexture(getEntityTexture(ent));
+        Minecraft.getMinecraft()
+            .getTextureManager()
+            .bindTexture(getEntityTexture(ent));
         GL11.glPushMatrix();
         GL11.glTranslated(x, y, z);
 

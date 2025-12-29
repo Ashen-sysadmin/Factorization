@@ -1,11 +1,5 @@
 package factorization.servo;
 
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.gameevent.PlayerEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import factorization.common.ItemIcons;
-import factorization.util.PlayerUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.entity.Entity;
@@ -23,32 +17,41 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.event.entity.player.EntityInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+
+import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import factorization.api.Coord;
 import factorization.api.FzColor;
+import factorization.common.ItemIcons;
 import factorization.notify.Notice;
 import factorization.notify.Style;
 import factorization.shared.Core;
 import factorization.shared.Core.TabType;
-import factorization.util.FzUtil;
 import factorization.shared.ItemFactorization;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import factorization.util.FzUtil;
+import factorization.util.PlayerUtil;
 
 public class ItemMatrixProgrammer extends ItemFactorization {
+
     public ItemMatrixProgrammer() {
         super("tool.matrix_programmer", TabType.TOOLS);
         setMaxStackSize(1);
         setContainerItem(this);
         Core.loadBus(this);
     }
-    
+
     @Override
     public boolean doesContainerItemLeaveCraftingGrid(ItemStack par1ItemStack) {
         return false;
     }
-    
+
     @Override
-    public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+    public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
+        float hitX, float hitY, float hitZ) {
         Coord c = new Coord(world, x, y, z);
         TileEntityNote noteBlock = c.getTE(TileEntityNote.class);
         if (noteBlock != null) {
@@ -68,14 +71,17 @@ public class ItemMatrixProgrammer extends ItemFactorization {
             if (noteBlock.note != orig_note) {
                 noteBlock.triggerNote(world, x, y, z);
             }
-            new Notice(noteBlock, "noteblock.pitch." + noteBlock.note).withStyle(Style.EXACTPOSITION).send(player);
+            new Notice(noteBlock, "noteblock.pitch." + noteBlock.note).withStyle(Style.EXACTPOSITION)
+                .send(player);
             return true;
         }
-        /*if (!player.isSneaking()) {
-            if (Core.dev_environ && !world.isRemote) {
-            }
-            return false;
-        }*/
+        /*
+         * if (!player.isSneaking()) {
+         * if (Core.dev_environ && !world.isRemote) {
+         * }
+         * return false;
+         * }
+         */
         TileEntityServoRail rail = c.getTE(TileEntityServoRail.class);
         if (rail == null) {
             return false;
@@ -105,7 +111,7 @@ public class ItemMatrixProgrammer extends ItemFactorization {
     public boolean isItemTool(ItemStack is) {
         return true;
     }
-    
+
     @SubscribeEvent
     public void clickPainting(EntityInteractEvent event) {
         ItemStack is = event.entityPlayer.getHeldItem();
@@ -193,15 +199,17 @@ public class ItemMatrixProgrammer extends ItemFactorization {
         return player.rotationPitch > 75 && player.isSneaking();
     }
 
-
     private static final String authTagName = "fzLmpAuthenticated";
-    private static StatBase authStat = new StatBase("factorization.lmpAuthenticated", new ChatComponentTranslation("factorization.lmpAuthenticated")).registerStat();
+    private static StatBase authStat = new StatBase(
+        "factorization.lmpAuthenticated",
+        new ChatComponentTranslation("factorization.lmpAuthenticated")).registerStat();
 
     public static boolean isUserAuthenticated(EntityPlayerMP player) {
         if (PlayerUtil.isPlayerCreative(player)) return true;
         if (Core.dev_environ) return false;
         StatisticsFile statsFile = PlayerUtil.getStatsFile(player);
-        return (statsFile != null && statsFile.writeStat(authStat) > 0) || player.getEntityData().hasKey(authTagName);
+        return (statsFile != null && statsFile.writeStat(authStat) > 0) || player.getEntityData()
+            .hasKey(authTagName);
     }
 
     public static void setUserAuthenticated(EntityPlayerMP player) {
@@ -209,7 +217,8 @@ public class ItemMatrixProgrammer extends ItemFactorization {
         if (statsFile != null) {
             statsFile.func_150873_a(player, authStat, 1);
         }
-        player.getEntityData().setBoolean(authTagName, true);
+        player.getEntityData()
+            .setBoolean(authTagName, true);
     }
 
     @SubscribeEvent

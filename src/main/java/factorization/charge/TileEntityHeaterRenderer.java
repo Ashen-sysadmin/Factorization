@@ -12,6 +12,7 @@ import factorization.shared.BlockRenderHelper;
 import factorization.shared.Core;
 
 public class TileEntityHeaterRenderer extends TileEntitySpecialRenderer {
+
     static RenderBlocks rb = new RenderBlocks();
 
     @Override
@@ -20,7 +21,7 @@ public class TileEntityHeaterRenderer extends TileEntitySpecialRenderer {
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glPushMatrix();
         bindTexture(Core.blockAtlas);
-        //GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+        // GL11.glEnable(GL12.GL_RESCALE_NORMAL);
         float color = 0.1F;
         TileEntityHeater heater = (TileEntityHeater) te;
         color += (heater.heat / (float) TileEntityHeater.maxHeat) * (1 - color);
@@ -30,11 +31,11 @@ public class TileEntityHeaterRenderer extends TileEntitySpecialRenderer {
         float d = 0;
         GL11.glTranslatef((float) x + d, (float) y + d, (float) z + d);
         BlockRenderHelper block = BlockRenderHelper.instance;
-        float m = 1F/128F;
+        float m = 1F / 128F;
         block.setBlockBoundsOffset(m, m, m);
         block.useTexture(BlockIcons.heater_heat);
         block.beginWithMirroredUVs();
-        int brightness = (int)(color*16) << 4;
+        int brightness = (int) (color * 16) << 4;
         Tessellator.instance.startDrawingQuads();
         Tessellator.instance.setBrightness(brightness);
         Tessellator.instance.setColorOpaque_F(color, color, color);

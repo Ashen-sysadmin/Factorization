@@ -1,6 +1,14 @@
 package factorization.truth.gen;
 
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
+
+import net.minecraftforge.common.MinecraftForge;
+
 import com.google.common.base.Splitter;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.EventBus;
 import cpw.mods.fml.common.eventhandler.EventPriority;
@@ -12,25 +20,26 @@ import factorization.truth.api.ITypesetter;
 import factorization.truth.api.TruthError;
 import factorization.truth.word.ClipboardWord;
 import factorization.truth.word.TextWord;
-import net.minecraftforge.common.MinecraftForge;
-
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 public class EventbusViewer implements IDocGenerator {
+
     @Override
     public void process(ITypesetter out, String arg) throws TruthError {
         if ("".equals(arg)) arg = null;
         inspectBus(out, MinecraftForge.EVENT_BUS, "Forge Event Bus", arg);
-        inspectBus(out, FMLCommonHandler.instance().bus(), "FML Event Bus", arg);
+        inspectBus(
+            out,
+            FMLCommonHandler.instance()
+                .bus(),
+            "FML Event Bus",
+            arg);
         inspectBus(out, MinecraftForge.ORE_GEN_BUS, "Ore Gen Bus", arg);
         inspectBus(out, MinecraftForge.TERRAIN_GEN_BUS, "Terrain Gen Bus", arg);
     }
 
     void inspectBus(ITypesetter out, EventBus bus, String busName, String matchEvent) throws TruthError {
-        ConcurrentHashMap<Object, ArrayList<IEventListener>> listeners = ReflectionHelper.getPrivateValue(EventBus.class, bus, "listeners");
+        ConcurrentHashMap<Object, ArrayList<IEventListener>> listeners = ReflectionHelper
+            .getPrivateValue(EventBus.class, bus, "listeners");
         if (listeners == null) {
             out.write("Reflection failed!");
             return;
@@ -40,7 +49,8 @@ public class EventbusViewer implements IDocGenerator {
         for (Map.Entry<Object, ArrayList<IEventListener>> entry : listeners.entrySet()) {
             Object eventHandler = entry.getKey();
             ArrayList<IEventListener> eventListeners = entry.getValue();
-            for (Method method : eventHandler.getClass().getMethods()) {
+            for (Method method : eventHandler.getClass()
+                .getMethods()) {
                 if (method.getAnnotation(SubscribeEvent.class) != null) {
                     methodsSet.add(method);
                     eventTypesSet.add(method.getParameterTypes()[0]);
@@ -49,18 +59,26 @@ public class EventbusViewer implements IDocGenerator {
         }
         ArrayList<Method> methods = new ArrayList(methodsSet);
         Collections.sort(methods, new Comparator<Method>() {
+
             @Override
             public int compare(Method o1, Method o2) {
-                int c = o1.getClass().getCanonicalName().compareTo(o2.getClass().getCanonicalName());
+                int c = o1.getClass()
+                    .getCanonicalName()
+                    .compareTo(
+                        o2.getClass()
+                            .getCanonicalName());
                 if (c != 0) return c;
-                return o1.getName().compareTo(o2.getName());
+                return o1.getName()
+                    .compareTo(o2.getName());
             }
         });
         ArrayList<Class<?>> eventTypes = new ArrayList(eventTypesSet);
         Collections.sort(eventTypes, new Comparator<Class<?>>() {
+
             @Override
             public int compare(Class<?> o1, Class<?> o2) {
-                return o1.getCanonicalName().compareTo(o2.getCanonicalName());
+                return o1.getCanonicalName()
+                    .compareTo(o2.getCanonicalName());
             }
         });
 
@@ -80,9 +98,12 @@ public class EventbusViewer implements IDocGenerator {
                 if (a.priority() == EventPriority.NORMAL && !a.receiveCanceled()) {
                     out.write("@SubscribeEvent\\nl");
                 } else {
-                    out.write(a.toString().replace("cpw.mods.fml.common.eventhandler.", "") + "\\nl");
+                    out.write(
+                        a.toString()
+                            .replace("cpw.mods.fml.common.eventhandler.", "") + "\\nl");
                 }
-                final String handlerName = m.getDeclaringClass().getCanonicalName();
+                final String handlerName = m.getDeclaringClass()
+                    .getCanonicalName();
                 outSplit(out, handlerName + "." + m.getName(), null);
                 out.write(" [");
                 out.write(new ClipboardWord("/scrap BusRemove " + handlerName + " " + m.getName()));
@@ -101,7 +122,8 @@ public class EventbusViewer implements IDocGenerator {
                     }
                     String hc = highest.getCanonicalName();
                     int start = hc.length();
-                    start -= highest.getSimpleName().length();
+                    start -= highest.getSimpleName()
+                        .length();
                     String ec = canonicalName;
                     simpleName = ec.substring(start);
                 } else {

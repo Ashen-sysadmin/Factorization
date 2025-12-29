@@ -1,6 +1,7 @@
 package factorization.scrap;
 
 public interface IRevertible {
+
     /**
      * Perform the action
      */

@@ -1,7 +1,5 @@
 package factorization.misc;
 
-import com.google.common.base.Strings;
-
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIBase;
@@ -10,6 +8,9 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.event.entity.player.EntityInteractEvent;
+
+import com.google.common.base.Strings;
+
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
@@ -18,6 +19,7 @@ import factorization.shared.Core;
 import factorization.shared.NetworkFactorization.MessageType;
 
 public class BuffNametags {
+
     @SubscribeEvent(priority = EventPriority.LOW)
     public void buffedNametag(EntityInteractEvent event) {
         ItemStack is = event.entityPlayer.getHeldItem();
@@ -32,26 +34,30 @@ public class BuffNametags {
         if (tag.hasKey(name)) return;
         tag.setBoolean(name, true);
         ent.tasks.addTask(0, new EntityAIBase() {
+
             boolean buffApplied = false; // Might not be necessary.
-            
+
             @Override
             public boolean shouldExecute() {
                 if (buffApplied) return false;
                 buffApplied = true;
-                if (ent.getCustomNameTag().equals(origName)) return false;
-                float delta = 2*3;
+                if (ent.getCustomNameTag()
+                    .equals(origName)) return false;
+                float delta = 2 * 3;
                 float origHealth = ent.getMaxHealth();
                 float newMaxHealth = origHealth + delta;
-                ent.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(newMaxHealth);
+                ent.getEntityAttribute(SharedMonsterAttributes.maxHealth)
+                    .setBaseValue(newMaxHealth);
                 ent.heal(delta);
-                
+
                 String particleType = "heart";
                 if (ent instanceof IMob) {
                     particleType = "smoke";
                 }
-                FMLProxyPacket packet = Core.network.entityPacket(ent, MessageType.EntityParticles, (byte) 8, particleType);
+                FMLProxyPacket packet = Core.network
+                    .entityPacket(ent, MessageType.EntityParticles, (byte) 8, particleType);
                 Core.network.broadcastPacket(null, new Coord(ent), packet);
-                
+
                 return false;
             }
         });

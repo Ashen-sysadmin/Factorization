@@ -1,7 +1,5 @@
 package factorization.api.datahelpers;
 
-import java.io.DataOutput;
-
 import cpw.mods.fml.relauncher.Side;
 import io.netty.buffer.ByteBuf;
 
