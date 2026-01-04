@@ -91,7 +91,8 @@ public class Registry {
 
     public ItemFactorizationBlock item_factorization;
     public ItemBlockResource item_resource;
-    public BlockFactorization factory_block, factory_block_barrel;
+    public BlockFactorization factory_block,
+        factory_block_barrel;
     public BlockFactorization factory_rendering_block;
     public BlockRenderHelper blockRender = null, serverTraceHelper = null, clientTraceHelper = null;
     public BlockLightAir lightair_block;
@@ -193,7 +194,7 @@ public class Registry {
         serverTraceHelper = new BlockRenderHelper();
         clientTraceHelper = new BlockRenderHelper();
         factory_block = new BlockFactorization(materialMachine);
-        factory_block_barrel = new BlockFactorization(materialBarrel);
+        factory_block_barrel = factory_block;
         lightair_block = new BlockLightAir();
         resource_block = new BlockResource();
         dark_iron_ore = new BlockDarkIronOre().setBlockName("factorization:darkIronOre")
@@ -218,7 +219,7 @@ public class Registry {
         artifact_forge = new BlockForge();
 
         GameRegistry.registerBlock(factory_block, ItemFactorizationBlock.class, "FzBlock");
-        GameRegistry.registerBlock(factory_block_barrel, ItemFactorizationBlock.class, "FzBlockBarrel");
+        //GameRegistry.registerBlock(factory_block_barrel, ItemFactorizationBlock.class, "FzBlockBarrel");
         GameRegistry.registerBlock(lightair_block, "Lightair");
         GameRegistry.registerBlock(resource_block, ItemBlockResource.class, "ResourceBlock");
         GameRegistry.registerBlock(dark_iron_ore, "DarkIronOre");
